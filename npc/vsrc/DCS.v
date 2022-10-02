@@ -1,9 +1,17 @@
 module DCS(
-    input a,
-    input b,
-    output f,
-    output f1
+    input clk,
+    input rst,
+    output reg[15:0] led
 );
-assign f = a^b;
-assign f1 = 1'b1;
+reg[31:0] cnt;
+always@(posedge clk) begin
+    if(rst)begin
+        led<=1;
+        cnt<=0;
+    end
+    else begin
+        if(cnt==0)led<={led[14:0],led[15]};
+        cnt <= (cnt >= 5000000? 32'd0:cnt+1);
+    end
+end
 endmodule

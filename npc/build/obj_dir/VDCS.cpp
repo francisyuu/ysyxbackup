@@ -9,10 +9,9 @@
 
 VDCS::VDCS(VerilatedContext* _vcontextp__, const char* _vcname__)
     : vlSymsp{new VDCS__Syms(_vcontextp__, _vcname__, this)}
-    , a{vlSymsp->TOP.a}
-    , b{vlSymsp->TOP.b}
-    , f{vlSymsp->TOP.f}
-    , f1{vlSymsp->TOP.f1}
+    , clk{vlSymsp->TOP.clk}
+    , rst{vlSymsp->TOP.rst}
+    , led{vlSymsp->TOP.led}
     , rootp{&(vlSymsp->TOP)}
 {
 }

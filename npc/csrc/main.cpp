@@ -7,6 +7,16 @@
 #include <assert.h>
 
 static TOP_NAME DCS;
+static void single_cycle() {
+  DCS.clk = 0; DCS.eval();
+  DCS.clk = 1; DCS.eval();
+}
+
+static void reset(int n) {
+  DCS.rst = 1;
+  while (n -- > 0) single_cycle();
+  DCS.rst = 0;
+}
 void nvboard_bind_all_pins(VDCS* DCS);
 
 int main() {
@@ -20,6 +30,7 @@ int main() {
     //trace_object->open("obj_dir/sim.vcd");
     nvboard_bind_all_pins(&DCS);
     nvboard_init();
+    reset(10);
 
     //while ((contextp->gotFinish())) {
     while (1) {
@@ -33,6 +44,7 @@ int main() {
         //trace_object->dump(contextp->time());
         //printf("a = %d, b = %d, f = %d\n",a,b,top->f);
         //assert(top->f == (a^b));
+        single_cycle();
         DCS.eval();
         nvboard_update();
     }

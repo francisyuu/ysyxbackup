@@ -25,30 +25,18 @@ void VDCS___024root::__Vconfigure(VDCS__Syms* _vlSymsp, bool first) {
 VDCS___024root::~VDCS___024root() {
 }
 
-void VDCS___024root___initial__TOP__1(VDCS___024root* vlSelf) {
-    if (false && vlSelf) {}  // Prevent unused
-    VDCS__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
-    VL_DEBUG_IF(VL_DBG_MSGF("+    VDCS___024root___initial__TOP__1\n"); );
-    // Body
-    vlSelf->f1 = 1U;
-}
-
 void VDCS___024root___eval_initial(VDCS___024root* vlSelf) {
     if (false && vlSelf) {}  // Prevent unused
     VDCS__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VDCS___024root___eval_initial\n"); );
     // Body
-    VDCS___024root___initial__TOP__1(vlSelf);
+    vlSelf->__Vclklast__TOP__clk = vlSelf->clk;
 }
-
-void VDCS___024root___combo__TOP__2(VDCS___024root* vlSelf);
 
 void VDCS___024root___eval_settle(VDCS___024root* vlSelf) {
     if (false && vlSelf) {}  // Prevent unused
     VDCS__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VDCS___024root___eval_settle\n"); );
-    // Body
-    VDCS___024root___combo__TOP__2(vlSelf);
 }
 
 void VDCS___024root___final(VDCS___024root* vlSelf) {
@@ -62,8 +50,8 @@ void VDCS___024root___ctor_var_reset(VDCS___024root* vlSelf) {
     VDCS__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+    VDCS___024root___ctor_var_reset\n"); );
     // Body
-    vlSelf->a = 0;
-    vlSelf->b = 0;
-    vlSelf->f = 0;
-    vlSelf->f1 = 0;
+    vlSelf->clk = 0;
+    vlSelf->rst = 0;
+    vlSelf->led = 0;
+    vlSelf->DCS__DOT__cnt = 0;
 }
