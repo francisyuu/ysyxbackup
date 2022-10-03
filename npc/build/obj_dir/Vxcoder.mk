@@ -2,9 +2,9 @@
 # DESCRIPTION: Verilator output: Makefile for building Verilated archive or executable
 #
 # Execute this makefile from the object directory:
-#    make -f Vmux412b.mk
+#    make -f Vxcoder.mk
 
-default: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/mux412b
+default: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/xcoder
 
 ### Constants...
 # Perl executable (from $PERL)
@@ -30,13 +30,13 @@ VM_SC_TARGET_ARCH = linux
 
 ### Vars...
 # Design prefix (from --prefix)
-VM_PREFIX = Vmux412b
+VM_PREFIX = Vxcoder
 # Module prefix (from --prefix)
-VM_MODPREFIX = Vmux412b
+VM_MODPREFIX = Vxcoder
 # User CFLAGS (from -CFLAGS on Verilator command line)
 VM_USER_CFLAGS = \
 	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/nvboard/include \
-	-DTOP_NAME="Vmux412b" \
+	-DTOP_NAME="Vxcoder" \
 
 # User LDLIBS (from -LDFLAGS on Verilator command line)
 VM_USER_LDLIBS = \
@@ -47,7 +47,7 @@ VM_USER_LDLIBS = \
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
 	auto_bind \
-	mux412b \
+	xcoder \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
@@ -57,7 +57,7 @@ VM_USER_DIR = \
 
 ### Default rules...
 # Include list of all generated classes
-include Vmux412b_classes.mk
+include Vxcoder_classes.mk
 # Include global rules
 include $(VERILATOR_ROOT)/include/verilated.mk
 
@@ -66,11 +66,11 @@ VPATH += $(VM_USER_DIR)
 
 auto_bind.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/auto_bind.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
-mux412b.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/csrc/mux412b.cpp
+xcoder.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/csrc/xcoder.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 
 ### Link rules... (from --exe)
-/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/mux412b: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
+/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/xcoder: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
 	$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@
 
 

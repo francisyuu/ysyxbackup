@@ -1,76 +1,78 @@
 // Verilated -*- C++ -*-
 // DESCRIPTION: Verilator output: Model implementation (design independent parts)
 
-#include "Vmux412b.h"
-#include "Vmux412b__Syms.h"
+#include "Vxcoder.h"
+#include "Vxcoder__Syms.h"
 
 //============================================================
 // Constructors
 
-Vmux412b::Vmux412b(VerilatedContext* _vcontextp__, const char* _vcname__)
-    : vlSymsp{new Vmux412b__Syms(_vcontextp__, _vcname__, this)}
-    , x{vlSymsp->TOP.x}
-    , y{vlSymsp->TOP.y}
-    , f{vlSymsp->TOP.f}
+Vxcoder::Vxcoder(VerilatedContext* _vcontextp__, const char* _vcname__)
+    : vlSymsp{new Vxcoder__Syms(_vcontextp__, _vcname__, this)}
+    , in{vlSymsp->TOP.in}
+    , en{vlSymsp->TOP.en}
+    , SEGout{vlSymsp->TOP.SEGout}
+    , LEDout{vlSymsp->TOP.LEDout}
+    , flag{vlSymsp->TOP.flag}
     , rootp{&(vlSymsp->TOP)}
 {
 }
 
-Vmux412b::Vmux412b(const char* _vcname__)
-    : Vmux412b(nullptr, _vcname__)
+Vxcoder::Vxcoder(const char* _vcname__)
+    : Vxcoder(nullptr, _vcname__)
 {
 }
 
 //============================================================
 // Destructor
 
-Vmux412b::~Vmux412b() {
+Vxcoder::~Vxcoder() {
     delete vlSymsp;
 }
 
 //============================================================
 // Evaluation loop
 
-void Vmux412b___024root___eval_initial(Vmux412b___024root* vlSelf);
-void Vmux412b___024root___eval_settle(Vmux412b___024root* vlSelf);
-void Vmux412b___024root___eval(Vmux412b___024root* vlSelf);
-QData Vmux412b___024root___change_request(Vmux412b___024root* vlSelf);
+void Vxcoder___024root___eval_initial(Vxcoder___024root* vlSelf);
+void Vxcoder___024root___eval_settle(Vxcoder___024root* vlSelf);
+void Vxcoder___024root___eval(Vxcoder___024root* vlSelf);
+QData Vxcoder___024root___change_request(Vxcoder___024root* vlSelf);
 #ifdef VL_DEBUG
-void Vmux412b___024root___eval_debug_assertions(Vmux412b___024root* vlSelf);
+void Vxcoder___024root___eval_debug_assertions(Vxcoder___024root* vlSelf);
 #endif  // VL_DEBUG
-void Vmux412b___024root___final(Vmux412b___024root* vlSelf);
+void Vxcoder___024root___final(Vxcoder___024root* vlSelf);
 
-static void _eval_initial_loop(Vmux412b__Syms* __restrict vlSymsp) {
+static void _eval_initial_loop(Vxcoder__Syms* __restrict vlSymsp) {
     vlSymsp->__Vm_didInit = true;
-    Vmux412b___024root___eval_initial(&(vlSymsp->TOP));
+    Vxcoder___024root___eval_initial(&(vlSymsp->TOP));
     // Evaluate till stable
     int __VclockLoop = 0;
     QData __Vchange = 1;
     do {
         VL_DEBUG_IF(VL_DBG_MSGF("+ Initial loop\n"););
-        Vmux412b___024root___eval_settle(&(vlSymsp->TOP));
-        Vmux412b___024root___eval(&(vlSymsp->TOP));
+        Vxcoder___024root___eval_settle(&(vlSymsp->TOP));
+        Vxcoder___024root___eval(&(vlSymsp->TOP));
         if (VL_UNLIKELY(++__VclockLoop > 100)) {
             // About to fail, so enable debug to see what's not settling.
             // Note you must run make with OPT=-DVL_DEBUG for debug prints.
             int __Vsaved_debug = Verilated::debug();
             Verilated::debug(1);
-            __Vchange = Vmux412b___024root___change_request(&(vlSymsp->TOP));
+            __Vchange = Vxcoder___024root___change_request(&(vlSymsp->TOP));
             Verilated::debug(__Vsaved_debug);
-            VL_FATAL_MT("/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/vsrc/mux412b.v", 2, "",
+            VL_FATAL_MT("/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/vsrc/xcoder.v", 1, "",
                 "Verilated model didn't DC converge\n"
                 "- See https://verilator.org/warn/DIDNOTCONVERGE");
         } else {
-            __Vchange = Vmux412b___024root___change_request(&(vlSymsp->TOP));
+            __Vchange = Vxcoder___024root___change_request(&(vlSymsp->TOP));
         }
     } while (VL_UNLIKELY(__Vchange));
 }
 
-void Vmux412b::eval_step() {
-    VL_DEBUG_IF(VL_DBG_MSGF("+++++TOP Evaluate Vmux412b::eval_step\n"); );
+void Vxcoder::eval_step() {
+    VL_DEBUG_IF(VL_DBG_MSGF("+++++TOP Evaluate Vxcoder::eval_step\n"); );
 #ifdef VL_DEBUG
     // Debug assertions
-    Vmux412b___024root___eval_debug_assertions(&(vlSymsp->TOP));
+    Vxcoder___024root___eval_debug_assertions(&(vlSymsp->TOP));
 #endif  // VL_DEBUG
     // Initialize
     if (VL_UNLIKELY(!vlSymsp->__Vm_didInit)) _eval_initial_loop(vlSymsp);
@@ -79,19 +81,19 @@ void Vmux412b::eval_step() {
     QData __Vchange = 1;
     do {
         VL_DEBUG_IF(VL_DBG_MSGF("+ Clock loop\n"););
-        Vmux412b___024root___eval(&(vlSymsp->TOP));
+        Vxcoder___024root___eval(&(vlSymsp->TOP));
         if (VL_UNLIKELY(++__VclockLoop > 100)) {
             // About to fail, so enable debug to see what's not settling.
             // Note you must run make with OPT=-DVL_DEBUG for debug prints.
             int __Vsaved_debug = Verilated::debug();
             Verilated::debug(1);
-            __Vchange = Vmux412b___024root___change_request(&(vlSymsp->TOP));
+            __Vchange = Vxcoder___024root___change_request(&(vlSymsp->TOP));
             Verilated::debug(__Vsaved_debug);
-            VL_FATAL_MT("/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/vsrc/mux412b.v", 2, "",
+            VL_FATAL_MT("/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/vsrc/xcoder.v", 1, "",
                 "Verilated model didn't converge\n"
                 "- See https://verilator.org/warn/DIDNOTCONVERGE");
         } else {
-            __Vchange = Vmux412b___024root___change_request(&(vlSymsp->TOP));
+            __Vchange = Vxcoder___024root___change_request(&(vlSymsp->TOP));
         }
     } while (VL_UNLIKELY(__Vchange));
 }
@@ -99,17 +101,17 @@ void Vmux412b::eval_step() {
 //============================================================
 // Invoke final blocks
 
-void Vmux412b::final() {
-    Vmux412b___024root___final(&(vlSymsp->TOP));
+void Vxcoder::final() {
+    Vxcoder___024root___final(&(vlSymsp->TOP));
 }
 
 //============================================================
 // Utilities
 
-VerilatedContext* Vmux412b::contextp() const {
+VerilatedContext* Vxcoder::contextp() const {
     return vlSymsp->_vm_contextp__;
 }
 
-const char* Vmux412b::name() const {
+const char* Vxcoder::name() const {
     return vlSymsp->name();
 }

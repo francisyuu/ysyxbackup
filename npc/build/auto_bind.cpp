@@ -1,11 +1,10 @@
 #include <nvboard.h>
-#include "Vmux412b.h"
+#include "Vxcoder.h"
 
-void nvboard_bind_all_pins(Vmux412b* top) {
-	nvboard_bind_pin( &top->x[0], BIND_RATE_SCR, BIND_DIR_IN , 2, SW2, SW3);
-	nvboard_bind_pin( &top->x[1], BIND_RATE_SCR, BIND_DIR_IN , 2, SW4, SW5);
-	nvboard_bind_pin( &top->x[2], BIND_RATE_SCR, BIND_DIR_IN , 2, SW6, SW7);
-	nvboard_bind_pin( &top->x[3], BIND_RATE_SCR, BIND_DIR_IN , 2, SW8, SW9);
-	nvboard_bind_pin( &top->y, BIND_RATE_SCR, BIND_DIR_IN , 2, SW1, SW0);
-	nvboard_bind_pin( &top->f, BIND_RATE_SCR, BIND_DIR_OUT, 2, LD0, LD1);
+void nvboard_bind_all_pins(Vxcoder* top) {
+	nvboard_bind_pin( &top->in, BIND_RATE_SCR, BIND_DIR_IN , 8, SW7, SW6, SW5, SW4, SW3, SW2, SW1, SW0);
+	nvboard_bind_pin( &top->en, BIND_RATE_SCR, BIND_DIR_IN , 1, SW8);
+	nvboard_bind_pin( &top->SEGout, BIND_RATE_SCR, BIND_DIR_OUT, 7, SEG0A, SEG0B, SEG0C, SEG0D, SEG0E, SEG0F, SEG0G);
+	nvboard_bind_pin( &top->LEDout, BIND_RATE_SCR, BIND_DIR_OUT, 3, LD2, LD1, LD0);
+	nvboard_bind_pin( &top->flag, BIND_RATE_SCR, BIND_DIR_OUT, 1, LD3);
 }
