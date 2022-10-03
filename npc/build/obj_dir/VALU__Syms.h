@@ -4,31 +4,31 @@
 // Internal details; most calling programs do not need this header,
 // unless using verilator public meta comments.
 
-#ifndef VERILATED_VXCODER__SYMS_H_
-#define VERILATED_VXCODER__SYMS_H_  // guard
+#ifndef VERILATED_VALU__SYMS_H_
+#define VERILATED_VALU__SYMS_H_  // guard
 
 #include "verilated_heavy.h"
 
 // INCLUDE MODEL CLASS
 
-#include "Vxcoder.h"
+#include "VALU.h"
 
 // INCLUDE MODULE CLASSES
-#include "Vxcoder___024root.h"
+#include "VALU___024root.h"
 
 // SYMS CLASS (contains all model state)
-class Vxcoder__Syms final : public VerilatedSyms {
+class VALU__Syms final : public VerilatedSyms {
   public:
     // INTERNAL STATE
-    Vxcoder* const __Vm_modelp;
+    VALU* const __Vm_modelp;
     bool __Vm_didInit = false;
 
     // MODULE INSTANCE STATE
-    Vxcoder___024root              TOP;
+    VALU___024root                 TOP;
 
     // CONSTRUCTORS
-    Vxcoder__Syms(VerilatedContext* contextp, const char* namep, Vxcoder* modelp);
-    ~Vxcoder__Syms();
+    VALU__Syms(VerilatedContext* contextp, const char* namep, VALU* modelp);
+    ~VALU__Syms();
 
     // METHODS
     const char* name() { return TOP.name(); }

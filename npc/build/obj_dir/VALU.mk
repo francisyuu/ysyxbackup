@@ -2,9 +2,9 @@
 # DESCRIPTION: Verilator output: Makefile for building Verilated archive or executable
 #
 # Execute this makefile from the object directory:
-#    make -f Vxcoder.mk
+#    make -f VALU.mk
 
-default: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/xcoder
+default: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/ALU
 
 ### Constants...
 # Perl executable (from $PERL)
@@ -30,13 +30,13 @@ VM_SC_TARGET_ARCH = linux
 
 ### Vars...
 # Design prefix (from --prefix)
-VM_PREFIX = Vxcoder
+VM_PREFIX = VALU
 # Module prefix (from --prefix)
-VM_MODPREFIX = Vxcoder
+VM_MODPREFIX = VALU
 # User CFLAGS (from -CFLAGS on Verilator command line)
 VM_USER_CFLAGS = \
 	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/nvboard/include \
-	-DTOP_NAME="Vxcoder" \
+	-DTOP_NAME="VALU" \
 
 # User LDLIBS (from -LDFLAGS on Verilator command line)
 VM_USER_LDLIBS = \
@@ -47,7 +47,7 @@ VM_USER_LDLIBS = \
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
 	auto_bind \
-	xcoder \
+	ALU \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
@@ -57,7 +57,7 @@ VM_USER_DIR = \
 
 ### Default rules...
 # Include list of all generated classes
-include Vxcoder_classes.mk
+include VALU_classes.mk
 # Include global rules
 include $(VERILATOR_ROOT)/include/verilated.mk
 
@@ -66,11 +66,11 @@ VPATH += $(VM_USER_DIR)
 
 auto_bind.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/auto_bind.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
-xcoder.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/csrc/xcoder.cpp
+ALU.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/csrc/ALU.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 
 ### Link rules... (from --exe)
-/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/xcoder: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
+/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/build/ALU: $(VK_USER_OBJS) $(VK_GLOBAL_OBJS) $(VM_PREFIX)__ALL.a $(VM_HIER_LIBS)
 	$(LINK) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) $(LIBS) $(SC_LIBS) -o $@
 
 
