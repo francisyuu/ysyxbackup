@@ -5,19 +5,19 @@
 // The class here is then constructed to instantiate the design.
 // See the Verilator manual for examples.
 
-#ifndef VERILATED_VFSM_H_
-#define VERILATED_VFSM_H_  // guard
+#ifndef VERILATED_VVGA_H_
+#define VERILATED_VVGA_H_  // guard
 
 #include "verilated_heavy.h"
 
-class VFSM__Syms;
-class VFSM___024root;
+class VVGA__Syms;
+class VVGA___024root;
 
 // This class is the main interface to the Verilated model
-class VFSM VL_NOT_FINAL {
+class VVGA VL_NOT_FINAL {
   private:
     // Symbol table holding complete model state (owned by this class)
-    VFSM__Syms* const vlSymsp;
+    VVGA__Syms* const vlSymsp;
 
   public:
 
@@ -25,16 +25,13 @@ class VFSM VL_NOT_FINAL {
     // The application code writes and reads these signals to
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clk,0,0);
-    VL_IN8(&ps2clk,0,0);
-    VL_IN8(&ps2data,0,0);
     VL_IN8(&rst,0,0);
-    VL_OUT8(&SEG0,6,0);
-    VL_OUT8(&SEG1,6,0);
-    VL_OUT8(&SEG2,6,0);
-    VL_OUT8(&SEG3,6,0);
-    VL_OUT8(&SEG4,6,0);
-    VL_OUT8(&SEG5,6,0);
-    VL_OUT8(&outputdata,7,0);
+    VL_OUT8(&VGA_VSYNC,0,0);
+    VL_OUT8(&VGA_HSYNC,0,0);
+    VL_OUT8(&VGA_BLANK_N,0,0);
+    VL_OUT8(&VGA_R,7,0);
+    VL_OUT8(&VGA_G,7,0);
+    VL_OUT8(&VGA_B,7,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.
@@ -42,19 +39,19 @@ class VFSM VL_NOT_FINAL {
 
     // Root instance pointer to allow access to model internals,
     // including inlined /* verilator public_flat_* */ items.
-    VFSM___024root* const rootp;
+    VVGA___024root* const rootp;
 
     // CONSTRUCTORS
     /// Construct the model; called by application code
     /// If contextp is null, then the model will use the default global context
     /// If name is "", then makes a wrapper with a
     /// single model invisible with respect to DPI scope names.
-    explicit VFSM(VerilatedContext* contextp, const char* name = "TOP");
-    explicit VFSM(const char* name = "TOP");
+    explicit VVGA(VerilatedContext* contextp, const char* name = "TOP");
+    explicit VVGA(const char* name = "TOP");
     /// Destroy the model; called (often implicitly) by application code
-    virtual ~VFSM();
+    virtual ~VVGA();
   private:
-    VL_UNCOPYABLE(VFSM);  ///< Copying not allowed
+    VL_UNCOPYABLE(VVGA);  ///< Copying not allowed
 
   public:
     // API METHODS
