@@ -4,31 +4,31 @@
 // Internal details; most calling programs do not need this header,
 // unless using verilator public meta comments.
 
-#ifndef VERILATED_VALU__SYMS_H_
-#define VERILATED_VALU__SYMS_H_  // guard
+#ifndef VERILATED_VSHIFTER__SYMS_H_
+#define VERILATED_VSHIFTER__SYMS_H_  // guard
 
 #include "verilated_heavy.h"
 
 // INCLUDE MODEL CLASS
 
-#include "VALU.h"
+#include "Vshifter.h"
 
 // INCLUDE MODULE CLASSES
-#include "VALU___024root.h"
+#include "Vshifter___024root.h"
 
 // SYMS CLASS (contains all model state)
-class VALU__Syms final : public VerilatedSyms {
+class Vshifter__Syms final : public VerilatedSyms {
   public:
     // INTERNAL STATE
-    VALU* const __Vm_modelp;
+    Vshifter* const __Vm_modelp;
     bool __Vm_didInit = false;
 
     // MODULE INSTANCE STATE
-    VALU___024root                 TOP;
+    Vshifter___024root             TOP;
 
     // CONSTRUCTORS
-    VALU__Syms(VerilatedContext* contextp, const char* namep, VALU* modelp);
-    ~VALU__Syms();
+    Vshifter__Syms(VerilatedContext* contextp, const char* namep, Vshifter* modelp);
+    ~Vshifter__Syms();
 
     // METHODS
     const char* name() { return TOP.name(); }
