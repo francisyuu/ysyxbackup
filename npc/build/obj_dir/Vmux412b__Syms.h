@@ -4,31 +4,31 @@
 // Internal details; most calling programs do not need this header,
 // unless using verilator public meta comments.
 
-#ifndef VERILATED_VDCS__SYMS_H_
-#define VERILATED_VDCS__SYMS_H_  // guard
+#ifndef VERILATED_VMUX412B__SYMS_H_
+#define VERILATED_VMUX412B__SYMS_H_  // guard
 
 #include "verilated_heavy.h"
 
 // INCLUDE MODEL CLASS
 
-#include "VDCS.h"
+#include "Vmux412b.h"
 
 // INCLUDE MODULE CLASSES
-#include "VDCS___024root.h"
+#include "Vmux412b___024root.h"
 
 // SYMS CLASS (contains all model state)
-class VDCS__Syms final : public VerilatedSyms {
+class Vmux412b__Syms final : public VerilatedSyms {
   public:
     // INTERNAL STATE
-    VDCS* const __Vm_modelp;
+    Vmux412b* const __Vm_modelp;
     bool __Vm_didInit = false;
 
     // MODULE INSTANCE STATE
-    VDCS___024root                 TOP;
+    Vmux412b___024root             TOP;
 
     // CONSTRUCTORS
-    VDCS__Syms(VerilatedContext* contextp, const char* namep, VDCS* modelp);
-    ~VDCS__Syms();
+    Vmux412b__Syms(VerilatedContext* contextp, const char* namep, Vmux412b* modelp);
+    ~Vmux412b__Syms();
 
     // METHODS
     const char* name() { return TOP.name(); }

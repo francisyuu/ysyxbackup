@@ -1,16 +1,16 @@
 // Verilated -*- C++ -*-
 // DESCRIPTION: Verilator output: Symbol table implementation internals
 
-#include "VDCS__Syms.h"
-#include "VDCS.h"
-#include "VDCS___024root.h"
+#include "Vmux412b__Syms.h"
+#include "Vmux412b.h"
+#include "Vmux412b___024root.h"
 
 // FUNCTIONS
-VDCS__Syms::~VDCS__Syms()
+Vmux412b__Syms::~Vmux412b__Syms()
 {
 }
 
-VDCS__Syms::VDCS__Syms(VerilatedContext* contextp, const char* namep,VDCS* modelp)
+Vmux412b__Syms::Vmux412b__Syms(VerilatedContext* contextp, const char* namep,Vmux412b* modelp)
     : VerilatedSyms{contextp}
     // Setup internal state of the Syms class
     , __Vm_modelp(modelp)
