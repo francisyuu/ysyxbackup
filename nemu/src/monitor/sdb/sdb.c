@@ -18,7 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-
+#include <memory/vaddr.h>
 static int is_batch_mode = false;
 
 void init_regex();
@@ -52,6 +52,56 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_si(char *args) {
+  /* extract the first argument */
+  char *arg = strtok(NULL, " ");
+  int n;
+
+  if (arg == NULL) {
+    /* no argument given */
+    cpu_exec(1);
+    }
+  else {
+    sscanf(arg,"%d",&n);
+    Log("run %d instructions",n);
+    cpu_exec(n);
+  }
+
+  return 0;
+}
+
+static int cmd_x(char *args) {
+  /* extract the first argument */
+  char *arg1 = strtok(NULL, " ");
+  char *arg2 = strtok(NULL, " ");
+  int n;
+  long unsigned int address;
+
+  if (arg1 == NULL || arg2 == NULL) {
+    /* no argument given */
+  Log("x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp");
+  }
+  else if(sscanf(arg1,"%d",&n)==1&&sscanf(arg2,"0x%lx",&address)==1){
+      for(int i=0;i<n;i++)
+      {
+          printf("addr:0x%08lx  data:0x%08lx\n",address,vaddr_read(address,4));
+          address+=4;
+      }
+  }
+  else Log("please give the right argument\n");
+
+  return 0;
+}
+
+static int cmd_info(char *args) {
+  char *arg = strtok(NULL, " ");
+    if(arg == NULL)isa_reg_display();
+    else if(strcmp(arg,"r")==0)isa_reg_display();
+    else if(strcmp(arg,"w")==0);
+    else printf("please give an arg:r for registers, w for watchpoints\n");
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -62,6 +112,13 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+  { "si", "run n instructions and stop,default 1 if n not given", cmd_si},
+  { "info", "info r: print the state of rigisters;\n info w:print infomation of the watching points", cmd_info },
+  { "x", "x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp", cmd_x },
+  { "p", "p EXPR: calculate EXPR", cmd_q },
+  { "w", "w EXPR: stop the program when the value of EXPR change", cmd_q },
+  { "d", "d N: delete watching point N ", cmd_q },
+
 
   /* TODO: Add more commands */
 
