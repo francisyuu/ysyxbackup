@@ -1,16 +1,16 @@
 // Verilated -*- C++ -*-
 // DESCRIPTION: Verilator output: Symbol table implementation internals
 
-#include "VVGA__Syms.h"
-#include "VVGA.h"
-#include "VVGA___024root.h"
+#include "VDisplay__Syms.h"
+#include "VDisplay.h"
+#include "VDisplay___024root.h"
 
 // FUNCTIONS
-VVGA__Syms::~VVGA__Syms()
+VDisplay__Syms::~VDisplay__Syms()
 {
 }
 
-VVGA__Syms::VVGA__Syms(VerilatedContext* contextp, const char* namep,VVGA* modelp)
+VDisplay__Syms::VDisplay__Syms(VerilatedContext* contextp, const char* namep,VDisplay* modelp)
     : VerilatedSyms{contextp}
     // Setup internal state of the Syms class
     , __Vm_modelp(modelp)
