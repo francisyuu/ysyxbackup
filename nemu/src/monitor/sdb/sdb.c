@@ -102,6 +102,13 @@ static int cmd_info(char *args) {
   return 0;
 }
 
+static int cmd_p(char *args) {
+  char *arg = strtok(NULL, "\0");
+  bool exprcheck;
+    if(arg == NULL)printf("please give an EXPR\n");
+    else printf("result=%lu\n",expr(arg,&exprcheck));
+  return 0;
+}
 static int cmd_help(char *args);
 
 static struct {
@@ -115,7 +122,7 @@ static struct {
   { "si", "run n instructions and stop,default 1 if n not given", cmd_si},
   { "info", "info r: print the state of rigisters;\n info w:print infomation of the watching points", cmd_info },
   { "x", "x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp", cmd_x },
-  { "p", "p EXPR: calculate EXPR", cmd_q },
+  { "p", "p EXPR: calculate EXPR", cmd_p },
   { "w", "w EXPR: stop the program when the value of EXPR change", cmd_q },
   { "d", "d N: delete watching point N ", cmd_q },
 
