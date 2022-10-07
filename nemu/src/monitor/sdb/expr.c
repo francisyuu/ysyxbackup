@@ -19,14 +19,15 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
-#define TK_OPH TK_EQ
-#define TK_OPE TK_PLUS
+#define OP_LEVELMIN 3
+#define OP_LEVELMAX 7
 
 //#define SHOW_MATCH
 //#define SHOW_VAL
+//#define SHOW_OP
 
 enum {
-TK_NOTYPE,TK_NUMBER,TK_LEFTB,TK_RIGHTB,TK_EQ,TK_MULT,TK_DIV,TK_MINUS,TK_PLUS,
+TK_NOTYPE,TK_NUMBER,TK_HEX,TK_REG,TK_LEFTB,TK_RIGHTB,TK_MULT,TK_DIV,TK_MINUS,TK_PLUS,TK_EQ,TK_NEQ,TK_AND,TK_OR,
 
   /* TODO: Add more token types */
 
@@ -44,13 +45,18 @@ uint8_t level;
 
 {" +", TK_NOTYPE,0},    // spaces
 {"[0-9]+", TK_NUMBER,1},    // spaces
+{"0x[0-9]+", TK_HEX,1},    // spaces
+{"\\$[$a-z0-9]{2,3}", TK_REG,1},    // spaces
 {"\\(", TK_LEFTB,2},         // plus
 {"\\)", TK_RIGHTB,2},         // plus
-{"==", TK_EQ,3},        // equal
 {"\\*", TK_MULT,4},         // multiply
 {"\\/", TK_DIV,4},         // divide
 {"\\+", TK_PLUS,5},         // plus
 {"-", TK_MINUS,5},         // minus
+{"==", TK_EQ,6},        // equal
+{"!=", TK_NEQ,6},        // equal
+{"&&", TK_AND,7},        // equal
+{"\\|\\|", TK_OR,7},        // equal
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -203,11 +209,12 @@ word_t eval(int p,int q)
     //find op
     for(int n=p;n<=q;n++)
     {
+      //printf("p=%d,q=%d,n=%d\n",p,q,n);
       if(tokens[n].type==TK_RIGHTB)
       {
         printf("\033[31merror:parentheses matching failed:no '('\n\033[0m");
       }
-      else if(tokens[n].type>=TK_OPH&&tokens[n].type<=TK_OPE)
+      else if(tokens[n].level>=OP_LEVELMIN&&tokens[n].level<=OP_LEVELMAX)
       {
         //printf("typen=%d,typeop=%d\n",tokens[n].type,tokens[op].type);
         if(tokens[n].level>=tokens[op].level)op=n;
@@ -224,7 +231,10 @@ word_t eval(int p,int q)
         printf("\033[31merror:parentheses matching failed:no ')'\n\033[0m");
       }
     }
-    if(tokens[op].type>=TK_OPH&&tokens[op].type<=TK_OPE)
+#ifdef SHOW_OP
+      printf("op=%s n=%d\n",tokens[op].str,op);
+#endif
+    if(tokens[op].level>=OP_LEVELMIN&&tokens[op].level<=OP_LEVELMAX)
     {
     }
     else{
