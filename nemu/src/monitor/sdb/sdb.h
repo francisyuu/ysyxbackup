@@ -16,8 +16,24 @@
 #ifndef __SDB_H__
 #define __SDB_H__
 
+#define WP_EXPR_LEN_MAX 1024
+
 #include <common.h>
+typedef struct watchpoint {
+  int NO;
+  char expr[WP_EXPR_LEN_MAX];
+  word_t val;
+  struct watchpoint *next;
+
+  /* TODO: Add more members if necessary */
+
+} WP;
 
 word_t expr(char *e, bool *success);
+WP* new_up(char* expr);
+void free_wpn(int n);
+void show_wp();
+void wp_update(int* state);
+
 
 #endif

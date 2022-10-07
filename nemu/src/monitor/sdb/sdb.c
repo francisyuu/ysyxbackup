@@ -97,7 +97,7 @@ static int cmd_info(char *args) {
   char *arg = strtok(NULL, " ");
     if(arg == NULL)isa_reg_display();
     else if(strcmp(arg,"r")==0)isa_reg_display();
-    else if(strcmp(arg,"w")==0);
+    else if(strcmp(arg,"w")==0)show_wp();
     else printf("please give an arg:r for registers, w for watchpoints\n");
   return 0;
 }
@@ -109,6 +109,24 @@ static int cmd_p(char *args) {
     else printf("result=%lu\n",expr(arg,&exprcheck));
   return 0;
 }
+
+static int cmd_w(char *args) {
+  char *arg = strtok(NULL, "\0");
+    if(strlen(arg)>WP_EXPR_LEN_MAX)printf("expr too long\n");
+    else if(arg == NULL)printf("please give an EXPR\n");
+    else new_up(args);
+  return 0;
+}
+
+static int cmd_d(char *args) {
+  char *arg = strtok(NULL, "\0");
+    int n;
+    if(sscanf(arg,"%d",&n)==1)free_wpn(n);
+    else printf("please give a wp.NO\n");
+  return 0;
+}
+
+
 static int cmd_help(char *args);
 
 static struct {
@@ -123,8 +141,8 @@ static struct {
   { "info", "info r: print the state of rigisters;\n info w:print infomation of the watching points", cmd_info },
   { "x", "x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp", cmd_x },
   { "p", "p EXPR: calculate EXPR", cmd_p },
-  { "w", "w EXPR: stop the program when the value of EXPR change", cmd_q },
-  { "d", "d N: delete watching point N ", cmd_q },
+  { "w", "w EXPR: stop the program when the value of EXPR change", cmd_w },
+  { "d", "d N: delete watching point N ", cmd_d },
 
 
   /* TODO: Add more commands */

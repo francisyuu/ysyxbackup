@@ -19,6 +19,7 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
+#include <memory/vaddr.h>
 #define OP_LEVELMIN 3
 #define OP_LEVELMAX 7
 
@@ -44,8 +45,8 @@ uint8_t level;
  */
 
 {" +", TK_NOTYPE,0},    // spaces
+{"0x[0-9a-f]+", TK_HEX,1},    // spaces
 {"[0-9]+", TK_NUMBER,1},    // spaces
-{"0x[0-9]+", TK_HEX,1},    // spaces
 {"\\$[$a-z0-9]{2,3}", TK_REG,1},    // spaces
 {"\\(", TK_LEFTB,2},         // plus
 {"\\)", TK_RIGHTB,2},         // plus
@@ -120,6 +121,8 @@ static bool make_token(char *e) {
           case TK_NOTYPE:
             break;
           case TK_NUMBER:
+          case TK_REG:
+          case TK_HEX:
           case TK_LEFTB:
           case TK_RIGHTB:
           case TK_EQ:
@@ -137,20 +140,22 @@ static bool make_token(char *e) {
             }
             else
             {
-              printf("substr too long, save substr failed");
+              printf("\033[31merror:substr too long, save substr failed\n\033[0m");
               assert(0);
             }
             nr_token+=1;
             break;
             }
-          default: TODO();
+          default: 
+            printf("\033[31merror:no such case\n\033[0m");
+            TODO();
         }
         break;
       }
     }
 
     if (i == NR_REGEX) {
-      printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
+      printf("\033[31mno match at position %d\n%s\n%*.s^\n\033[0m", position, e, position, "");
       return false;
     }
   }
@@ -177,7 +182,7 @@ bool check_parentheses(int p,int q)
   else return false;
 }
 
-word_t eval(int p,int q)
+word_t eval(int p,int q,bool *success)
 {
   //printf("p=%d,q=%d\n",p,q);
   if (p > q) {
@@ -185,16 +190,26 @@ word_t eval(int p,int q)
     printf("\033[31merror:bad expression1\n\033[0m");
   }
   else if (p == q) {
-    //word_t val=0;
-    uint32_t val=0;
-    if(tokens[p].type==TK_NUMBER)
-    {
-      sscanf(tokens[p].str,"%u",&val);
-      return val;
-    }
-    else 
-    {
-      printf("\033[31merror:no operate number\n\033[0m");
+    word_t val=0;
+    switch(tokens[p].type){
+      case TK_NUMBER:
+        sscanf(tokens[p].str,"%lu",&val);
+        return val;
+        break;
+      case TK_REG:
+        char regstr[32];
+        sscanf(tokens[p].str,"$%s",regstr);
+        val=isa_reg_str2val(regstr,success);
+        if(*success)return val;
+        else printf("\033[31merror:wrong reg name\n\033[0m");
+        break;
+      case TK_HEX:
+        sscanf(tokens[p].str,"0x%lx",&val);
+        return val;
+        break;
+      default:
+        printf("\033[31merror:no operate number\n\033[0m");
+        break;
     }
   }
   else if (check_parentheses(p, q) == true) {
@@ -202,7 +217,7 @@ word_t eval(int p,int q)
          *      * If that is the case, just throw away the parentheses.
          *           */
     //printf("checkparentheses true\n");
-        return eval(p + 1, q - 1);
+        return eval(p + 1, q - 1,success);
   }
   else {
     int op=p;
@@ -243,11 +258,14 @@ word_t eval(int p,int q)
         /*op = //the position of 主运算符 in the token expression;*/
     if(op==p)
     {
-      //word_t val = eval(op + 1, q);
-      uint32_t val = (uint32_t)eval(op + 1, q);
+      word_t val = eval(op + 1, q,success);
       switch(tokens[op].type){
         case TK_PLUS:return val;
         case TK_MINUS:return -val;
+        case TK_MULT:
+        sscanf(tokens[op].str,"%lu",&val);
+        val=vaddr_read(val,8);
+        return val;
         default:{
                   printf("\033[31merror:bad expression2\n\033[0m");
                 }
@@ -255,32 +273,30 @@ word_t eval(int p,int q)
     }
     else
     {
-      /*word_t val1 = eval(p, op - 1);*/
-      /*word_t val2 = eval(op + 1, q);*/
-      uint32_t val1 = (uint32_t)eval(p, op - 1);
-      uint32_t val2 = (uint32_t)eval(op + 1, q);
+      word_t val1 = eval(p, op - 1,success);
+      word_t val2 = eval(op + 1, q,success);
 #ifdef SHOW_VAL
-      printf("val1=%u,op=%s val2=%u\n",val1,tokens[op].str,val2);
+      printf("val1=%lu,op=%s val2=%lu\n",val1,tokens[op].str,val2);
 #endif
       switch(tokens[op].type){
         case TK_EQ:
           if(val1==val2)return 1;
           else return 0;
           break;
-        case TK_MULT:return (uint32_t)(val1*val2);
+        case TK_MULT:return (val1*val2);
           break;
         case TK_DIV:
           if(val2!=0)
-            return (uint32_t)(val1/val2);
+            return (val1/val2);
           else{
             //assert(val2!=0);
-            printf("val1=%u,op=%s val2=%u\n",val1,tokens[op].str,val2);
+            printf("val1=%lu,op=%s val2=%lu\n",val1,tokens[op].str,val2);
             printf("\033[31merror:divzero\n\033[0m");
           } 
           break;
-        case TK_PLUS:return (uint32_t)(val1+val2);
+        case TK_PLUS:return (val1+val2);
           break;
-        case TK_MINUS:return (uint32_t)(val1-val2);
+        case TK_MINUS:return (val1-val2);
           break;
         default:
           printf("\033[31merror:bad expression3\n\033[0m");
@@ -289,6 +305,7 @@ word_t eval(int p,int q)
     }
   }
   //printf("\033[31merror shown upside\n\033[0m");
+  *success=false;
   return false;
 }
 word_t expr(char *e, bool *success) {
@@ -296,9 +313,10 @@ word_t expr(char *e, bool *success) {
     *success = false;
     return 0;
   }
+  *success = true;
 
   /* TODO: Insert codes to evaluate the expression. */
   //TODO();
 
-  return eval(0,nr_token-1);
+  return eval(0,nr_token-1,success);
 }
