@@ -41,6 +41,10 @@ gdb: run-env
 	$(call git_commit, "gdb NEMU")
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
 
+PA0_LINECNT=14468
+count: run-env
+	fd -e c -e h |xargs cat -b|tail -1|awk '($$1=$$1-$(PA0_LINECNT))&&$$2="code lines written from PA0 till now:"{print $$2$$1}'
+
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
 	-@$(MAKE) -s -C $@ clean
