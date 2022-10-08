@@ -79,7 +79,7 @@ static int cmd_x(char *args) {
 
   if (arg1 == NULL || arg2 == NULL) {
     /* no argument given */
-  Log("x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp");
+  Log("x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp\n");
   }
   else if(sscanf(arg1,"%d",&n)==1&&sscanf(arg2,"0x%lx",&address)==1){
       for(int i=0;i<n;i++)
@@ -97,23 +97,38 @@ static int cmd_info(char *args) {
   char *arg = strtok(NULL, " ");
     if(arg == NULL)isa_reg_display();
     else if(strcmp(arg,"r")==0)isa_reg_display();
-    else if(strcmp(arg,"w")==0)show_wp();
-    else printf("please give an arg:r for registers, w for watchpoints\n");
+    else if(strcmp(arg,"w")==0)
+    {
+      arg = strtok(NULL,"\0");
+      int n;
+      if(arg == NULL)show_wp();
+      else if(sscanf(arg,"%d",&n)==1)show_wpn(n);
+      else Log("please give a wp.NO\n");
+    }
+    else Log("please give an arg:r for registers, w for all watchpoints,w N for watchpoint N\n");
   return 0;
 }
 
 static int cmd_p(char *args) {
   char *arg = strtok(NULL, "\0");
   bool exprcheck;
-    if(arg == NULL)printf("please give an EXPR\n");
+    if(arg == NULL)Log("please give an EXPR\n");
     else printf("result=%lu\n",expr(arg,&exprcheck));
+  return 0;
+}
+
+static int cmd_ph(char *args) {
+  char *arg = strtok(NULL, "\0");
+  bool exprcheck;
+    if(arg == NULL)Log("please give an EXPR\n");
+    else printf("result=0x%lx\n",expr(arg,&exprcheck));
   return 0;
 }
 
 static int cmd_w(char *args) {
   char *arg = strtok(NULL, "\0");
-    if(strlen(arg)>WP_EXPR_LEN_MAX)printf("expr too long\n");
-    else if(arg == NULL)printf("please give an EXPR\n");
+    if(strlen(arg)>WP_EXPR_LEN_MAX)Log("expr too long\n");
+    else if(arg == NULL)Log("please give an EXPR\n");
     else new_up(args);
   return 0;
 }
@@ -121,11 +136,29 @@ static int cmd_w(char *args) {
 static int cmd_d(char *args) {
   char *arg = strtok(NULL, "\0");
     int n;
-    if(sscanf(arg,"%d",&n)==1)free_wpn(n);
-    else printf("please give a wp.NO\n");
+    if(arg == NULL)Log("please give a wp.NO\n");
+    else if(sscanf(arg,"%d",&n)==1)free_wpn(n);
+    else Log("please give a wp.NO\n");
   return 0;
 }
 
+static int cmd_h(char *args) {
+  char *arg = strtok(NULL, "\0");
+    int n;
+    if(arg == NULL)Log("please give a wp.NO\n");
+    else if(sscanf(arg,"%d",&n)==1)toggle_hexshow(n);
+    else Log("please give a wp.NO\n");
+  return 0;
+}
+
+static int cmd_sw(char *args) {
+  char *arg = strtok(NULL, "\0");
+    int n;
+    if(arg == NULL)Log("please give an wp.NO\n");
+    else if(sscanf(arg,"%d",&n)==1)toggle_alwaysshow(n);
+    else Log("please give a wp.NO\n");
+  return 0;
+}
 
 static int cmd_help(char *args);
 
@@ -138,11 +171,14 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si", "run n instructions and stop,default 1 if n not given", cmd_si},
-  { "info", "info r: print the state of rigisters;\n info w:print infomation of the watching points", cmd_info },
+  { "info", "info r: print the state of rigisters;\n info w (N):print infomation of the watchpoints or watchpoint N", cmd_info },
   { "x", "x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp", cmd_x },
-  { "p", "p EXPR: calculate EXPR", cmd_p },
+  { "p", "p EXPR: calculate EXPR and show result in decimal", cmd_p },
+  { "ph", "ph EXPR: calculate EXPR and show result in hex", cmd_ph },
   { "w", "w EXPR: stop the program when the value of EXPR change", cmd_w },
+  { "sw", "sw N: toggle alwaysshow mode(show val every cmd si) watchpoint N,default alwaysshow OFF ", cmd_sw },
   { "d", "d N: delete watching point N ", cmd_d },
+  { "h", "hex N: toggle hexshow mode watching point N,default hex on ", cmd_h },
 
 
   /* TODO: Add more commands */
@@ -169,7 +205,7 @@ static int cmd_help(char *args) {
         return 0;
       }
     }
-    printf("Unknown command '%s'\n", arg);
+    Log("Unknown command '%s'\n", arg);
   }
   return 0;
 }
@@ -212,7 +248,7 @@ void sdb_mainloop() {
       }
     }
 
-    if (i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
+    if (i == NR_CMD) { Log("Unknown command '%s'\n", cmd); }
   }
 }
 

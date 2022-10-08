@@ -71,24 +71,6 @@ WP* new_up(char* exprin)
   return NULL;
 }
 
-void free_wpn(int n)
-{
-  if(head==NULL)printf("no watchpoint exists\n");
-  else {
-    WP *scan=head;
-    while(scan!=free_){
-      if(scan->NO==n){
-        free_wp(scan);
-        show_wp();
-        return;
-      }
-      else scan=scan->next;
-    }
-    printf("\033[31mno such watchpoint\n\033[0m");
-    show_wp();
-  }
-}
-
 void show_wp()
 {
   if(head==NULL)printf("\nno watchpoint exists\n");
@@ -105,9 +87,59 @@ void show_wp()
     scan=head;
     while(scan!=free_){
       printf("wp_%d:%s\n",scan->NO,scan->expr);
-      printf("val:%ld\n",scan->val);
+      printf(scan->HEX_OFF?"val:%ld\n":"val:0x%lx\n",scan->val);
       scan=scan->next;
     }
+  }
+}
+
+WP* find_wpn(int n)
+{
+  if(head==NULL)printf("no watchpoint exists\n");
+  else {
+    WP *scan=head;
+    while(scan!=free_){
+      if(scan->NO==n){
+        return scan;
+      }
+      else scan=scan->next;
+    }
+    printf("\033[31mno such watchpoint\n\033[0m");
+    show_wp();
+  }
+  return NULL;
+}
+
+void free_wpn(int n)
+{
+    WP *scan=find_wpn(n);
+    if(scan!=NULL){
+        free_wp(scan);
+      }
+}
+
+void toggle_hexshow(int n)
+{
+  WP *scan=find_wpn(n);
+  if(scan!=NULL){
+    scan->HEX_OFF=!scan->HEX_OFF;
+  }
+}
+
+void toggle_alwaysshow(int n)
+{
+  WP *scan=find_wpn(n);
+  if(scan!=NULL){
+    scan->ALWAYS_SHOW_ON=!scan->ALWAYS_SHOW_ON;
+  }
+}
+
+void show_wpn(int n)
+{
+  WP *scan=find_wpn(n);
+  if(scan!=NULL){
+    printf("wp_%d:%s\n",scan->NO,scan->expr);
+    printf(scan->HEX_OFF?"val:%ld\n":"val:0x%lx\n",scan->val);
   }
 }
 
@@ -117,7 +149,7 @@ void wp_update(int* state)
   {
     WP *scan=head;
     bool success=false;
-    while(head!=free_)
+    while(scan!=free_)
     {
       word_t val=expr(scan->expr,&success);
       if(success==false){
@@ -126,7 +158,15 @@ void wp_update(int* state)
       if(scan->val!=val)
       {
         printf("wp_%d triggered\n",scan->NO);
+        printf(scan->HEX_OFF?"val before:%ld\n":"val before:0x%lx\n",scan->val);
+        printf(scan->HEX_OFF?"val now:%ld\n":"val now:0x%lx\n",val);
         *state=NEMU_STOP;
+      }
+      else if(scan->ALWAYS_SHOW_ON==true)
+      {
+        printf("wp_%d always show\n",scan->NO);
+        printf(scan->HEX_OFF?"val before:%ld\n":"val before:0x%lx\n",scan->val);
+        printf(scan->HEX_OFF?"val now:%ld\n":"val now:0x%lx\n",val);
       }
       scan->val=val;
       scan=scan->next;
