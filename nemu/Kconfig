@@ -117,7 +117,13 @@ config CC_ASAN
   depends on MODE_SYSTEM
   bool "Enable address sanitizer"
   default n
+
+config CC_PPO
+  bool "Enable Preprocessing output"
+  default n
+
 endmenu
+
 
 menu "Testing and Debugging"
 
