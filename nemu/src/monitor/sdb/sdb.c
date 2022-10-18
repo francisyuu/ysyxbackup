@@ -75,16 +75,24 @@ static int cmd_x(char *args) {
   char *arg1 = strtok(NULL, " ");
   char *arg2 = strtok(NULL, " ");
   int n;
+  bool exprsuccess;
   long unsigned int address;
 
-  if (arg1 == NULL || arg2 == NULL) {
+  if (arg1 == NULL && arg2 == NULL) {
     /* no argument given */
   Log("x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp\n");
   }
-  else if(sscanf(arg1,"%d",&n)==1&&sscanf(arg2,"0x%lx",&address)==1){
+  else if(arg2==NULL){
+    address=expr(arg1,&exprsuccess);
+    if(exprsuccess==false)return false;
+    printf("addr:0x%08lx  data:0x%08lx %lu\n",address,vaddr_read(address,4),vaddr_read(address,4));
+  }
+  else if(sscanf(arg1,"%d",&n)==1){
+      address=expr(arg2,&exprsuccess);
+      if(exprsuccess==false)return false;
       for(int i=0;i<n;i++)
       {
-          printf("addr:0x%08lx  data:0x%08lx\n",address,vaddr_read(address,4));
+          printf("addr:0x%08lx  data:0x%08lx %lu\n",address,vaddr_read(address,4),vaddr_read(address,4));
           address+=4;
       }
   }
