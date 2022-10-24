@@ -55,7 +55,7 @@ void *memset(void *s, int c, size_t n) {
   int i=0;
   while(i!=n)
   {
-    *((char*)s+i)=(char)c;
+    *((unsigned char*)s+i)=(unsigned char)c;
     i++;
   }
   return s;
@@ -73,7 +73,7 @@ int memcmp(const void *s1, const void *s2, size_t n) {
   int i=0;
   while(i!=n)
   {
-    int diff=*((char*)s1+i)-*((char*)s2+i);
+    int diff=*((unsigned char*)s1+i)-*((unsigned char*)s2+i);
     if(diff!=0)return diff;
     i++;
   }
