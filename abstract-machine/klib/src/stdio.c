@@ -10,12 +10,13 @@ char* itoa(int num, char* str, int radix)
   char index[]="0123456789ABCDEF";
   unsigned int unum;
   int i=0,j,k;
-  if(radix==10&&num<0)
+  if(radix==-10&&num<0)
   {
     unum=(unsigned)(-num);
     str[i++]='-';
   }
   else unum=(unsigned)num;
+	if(radix==-10)radix=10;
   do
   {
     str[i++]=index[unum%(unsigned)radix];
@@ -35,7 +36,89 @@ char* itoa(int num, char* str, int radix)
 }
 
 int printf(const char *fmt, ...) {
-  panic("Not implemented");
+  va_list ap;
+  int fmti=0;
+  int num=0;
+  va_start(ap,fmt);
+  while(*(fmt+fmti)!=0)
+  {
+    if(*(fmt+fmti)!='%')
+    {
+      num++;
+			putch(*(fmt+fmti));
+    }
+    else
+    {
+      fmti++;
+      switch(*(fmt+fmti))
+      {
+        case '%':
+					putch('%');
+          num++;
+          break;
+        case 'c':
+          putch((char)va_arg(ap,int));
+          num++;
+          break;
+        case 'd':
+					{
+						int integer=va_arg(ap,int);
+						char str[32];
+						itoa(integer,str,-10);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							putch(*(str+n++));
+							num++;
+						}
+					}
+          break;
+        case 'u':
+					{
+						unsigned int integer=va_arg(ap,unsigned int);
+						char str[32];
+						itoa(integer,str,10);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							putch(*(str+n++));
+							num++;
+						}
+					}
+          break;
+        case 'h':
+					{
+						int integer=va_arg(ap,int);
+						char str[32];
+						itoa(integer,str,16);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							putch(*(str+n++));
+							num++;
+						}
+					}
+          break;
+        case 's':
+					{
+						char *str=va_arg(ap,char *);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							putch(*(str+n++));
+							num++;
+						}
+					}
+          break;
+        default:
+          return -1;
+          break;
+      }
+    }
+		fmti++;
+  }
+  va_end(ap);
+  return num;
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
@@ -50,9 +133,10 @@ int sprintf(char *out, const char *fmt, ...) {
   va_start(ap,fmt);
   while(*(fmt+fmti)!=0)
   {
+			//printf("char:'%c'\n",*(fmt+fmti));
     if(*(fmt+fmti)!='%')
     {
-      *(out+outi++)=*(fmt+fmti++);
+      *(out+outi++)=*(fmt+fmti);
       num++;
     }
     else
@@ -69,31 +153,61 @@ int sprintf(char *out, const char *fmt, ...) {
           num++;
           break;
         case 'd':
-          int integer=va_arg(ap,int);
-          char strd[32];
-          itoa(integer,strd,10);
-          int nd=0;
-          while(*(strd+nd)!=0)
-          {
-            *(out+outi++)=*(strd+nd++);
-            num++;
-          }
+					{
+						int integer=va_arg(ap,int);
+						char str[32];
+						itoa(integer,str,-10);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
+          break;
+        case 'u':
+					{
+						unsigned int integer=va_arg(ap,unsigned int);
+						char str[32];
+						itoa(integer,str,10);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
+          break;
+        case 'h':
+					{
+						int integer=va_arg(ap,int);
+						char str[32];
+						itoa(integer,str,16);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
           break;
         case 's':
-          char *strs=va_arg(ap,char *);
-          int ns=0;
-          while(*(strs+ns)!=0)
-          {
-            *(out+outi++)=*(strs+ns++);
-            num++;
-          }
+					{
+						char *str=va_arg(ap,char *);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
           break;
         default:
           return -1;
           break;
       }
-      fmti++;
     }
+    fmti++;
   }
   va_end(ap);
   *(out+outi)=0;

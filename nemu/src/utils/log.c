@@ -121,6 +121,7 @@ struct funcpack_t
 	int nmax;
 	int depth;
 	int curn;
+	long long int watchdog;
 	funcs_t *f;
 }funcpack;
 
@@ -133,7 +134,6 @@ void ftrace_init(const char* elfname)
   Elf64_Ehdr elf_header;
   success=fread(&elf_header,sizeof(elf_header),1,fp);
 	assert(success!=0);
-	printf("%lu\n",elf_header.e_shoff);
   Elf64_Shdr *elf_shdr=(Elf64_Shdr*)malloc(sizeof(Elf64_Shdr)*elf_header.e_shnum);
   fseek(fp,elf_header.e_shoff,SEEK_SET);
   success=fread(elf_shdr,sizeof(Elf64_Shdr)*elf_header.e_shnum,1,fp);
@@ -159,6 +159,7 @@ void ftrace_init(const char* elfname)
 	funcpack.nmax=0;
 	funcpack.curn=0;
 	funcpack.depth=0;
+	funcpack.watchdog=0;
   for(symnum=0;symnum<(elf_shdr[symshnum].sh_size/elf_shdr[symshnum].sh_entsize);symnum++)
   {
     if((elf_sym[symnum].st_info&0xf)==STT_FUNC)
@@ -203,8 +204,10 @@ void ftrace_write(word_t pc,word_t dnpc)
 		if(dnpc>=funcpack.f[i].addr&&
 				dnpc<=funcpack.f[i].end)
 		{
+			funcpack.watchdog++;
 			if(i!=funcpack.curn)
 			{
+				funcpack.watchdog=0;
 				fprintf(ftrace.fp,"0x%08lx:",pc);
 				if(dnpc==funcpack.f[i].addr)
 				{
@@ -220,6 +223,10 @@ void ftrace_write(word_t pc,word_t dnpc)
 				}
 			}
 			funcpack.curn=i;
+			if(funcpack.watchdog>1000000){
+				printf("%08lx:usr program locked at [%s@0x%08lx]\n",pc,funcpack.f[i].name,funcpack.f[i].addr);
+				assert(0);
+			}
 			return;
 		}
 	}
