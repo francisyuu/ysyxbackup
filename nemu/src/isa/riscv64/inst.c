@@ -49,7 +49,7 @@ static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, wor
     case TYPE_U:                   immU(); break;//ori
     case TYPE_J:                   immJ(); break; 
   }
-  printf("rd=%s,rs1=%s,rs2=%s,imm=0x%lx %ld\n",reg_name(rd,0),reg_name(rs1,0),reg_name(rs2,0),*imm,(int64_t)*imm);
+  //printf("rd=%s,rs1=%s,rs2=%s,imm=0x%lx %ld\n",reg_name(rd,0),reg_name(rs1,0),reg_name(rs2,0),*imm,(int64_t)*imm);
 }
 
 static int decode_exec(Decode *s) {

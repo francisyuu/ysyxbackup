@@ -165,6 +165,18 @@ config WATCHPOINT
   bool "Enable watchpoint"
   default y
 
+config IRINGBUF
+  bool "Enable iringbuf"
+  default y
+
+config MTRACE
+  bool "Enable memtrace"
+  default y
+
+config FTRACE
+  bool "Enable functrace"
+  default y
+
 choice
   prompt "Reference design"
   default DIFFTEST_REF_SPIKE if ISA_riscv64 || ISA_riscv32

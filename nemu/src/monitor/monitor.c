@@ -42,6 +42,7 @@ static void welcome() {
 void sdb_set_batch_mode();
 
 static char *log_file = NULL;
+static char elf_file[128];
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
@@ -84,7 +85,17 @@ static int parse_args(int argc, char *argv[]) {
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
-      case 1: img_file = optarg; return 0;
+			case 1: {
+#ifdef CONFIG_FTRACE
+								//elf_file=malloc(strlen(optarg)+1);
+								strncpy(elf_file,optarg,strlen(optarg)-3);
+								elf_file[strlen(optarg)-3]=0;
+								strcat(elf_file,"elf");
+								//free(elfname);
+#endif
+								img_file = optarg; return 0;
+
+							}
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
         printf("\t-b,--batch              run with batch mode\n");
@@ -109,6 +120,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Open the log file. */
   init_log(log_file);
+	ftrace_init(elf_file);
 
   /* Initialize memory. */
   init_mem();

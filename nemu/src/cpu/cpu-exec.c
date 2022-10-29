@@ -37,10 +37,16 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
+#ifdef CONFIG_IRINGBUF
+  iring_write(_this->logbuf);
+#endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 #ifdef CONFIG_WATCHPOINT
   wp_update(&nemu_state.state);
+#endif
+#ifdef CONFIG_FTRACE
+  ftrace_write(_this->pc,dnpc);
 #endif
 }
 
