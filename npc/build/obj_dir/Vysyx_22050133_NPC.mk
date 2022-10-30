@@ -46,11 +46,21 @@ VM_USER_LDLIBS = \
 
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
+	cpu-exec \
+	mem \
+	log \
+	monitor \
+	expr \
+	sdb \
+	watchpoint \
+	reg \
 	ysyx_22050133_NPC \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
-	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/csrc \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb \
 
 
 ### Default rules...
@@ -62,7 +72,23 @@ include $(VERILATOR_ROOT)/include/verilated.mk
 ### Executable rules... (from --exe)
 VPATH += $(VM_USER_DIR)
 
-ysyx_22050133_NPC.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/csrc/ysyx_22050133_NPC.cpp
+cpu-exec.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu-exec.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+mem.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/mem.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+log.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/log.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+monitor.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/monitor.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+expr.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb/expr.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+sdb.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb/sdb.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+watchpoint.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb/watchpoint.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+reg.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/reg.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+ysyx_22050133_NPC.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/ysyx_22050133_NPC.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 
 ### Link rules... (from --exe)

@@ -27,12 +27,16 @@ VM_TRACE_FST_WRITER_THREAD = 0
 VM_CLASSES_FAST += \
 	Vysyx_22050133_NPC \
 	Vysyx_22050133_NPC___024root \
+	Vysyx_22050133_NPC_ysyx_22050133_NPC \
 	Vysyx_22050133_NPC___024unit \
+	Vysyx_22050133_NPC_ysyx_22050133_RegisterFile \
 
 # Generated module classes, non-fast-path, compile with low/medium optimization
 VM_CLASSES_SLOW += \
 	Vysyx_22050133_NPC___024root__Slow \
+	Vysyx_22050133_NPC_ysyx_22050133_NPC__Slow \
 	Vysyx_22050133_NPC___024unit__Slow \
+	Vysyx_22050133_NPC_ysyx_22050133_RegisterFile__Slow \
 
 # Generated support classes, fast-path, compile with highest optimization
 VM_SUPPORT_FAST += \

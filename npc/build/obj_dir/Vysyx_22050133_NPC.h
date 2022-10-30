@@ -13,6 +13,7 @@
 
 class Vysyx_22050133_NPC__Syms;
 class Vysyx_22050133_NPC___024root;
+class Vysyx_22050133_NPC_ysyx_22050133_NPC;
 class Vysyx_22050133_NPC___024unit;
 
 
@@ -29,17 +30,18 @@ class Vysyx_22050133_NPC VL_NOT_FINAL {
     // propagate new values into/out from the Verilated model.
     VL_IN8(&clk,0,0);
     VL_IN8(&rst,0,0);
-    VL_OUT(&pc,31,0);
+    VL_OUT64(&pc,63,0);
+    VL_OUT64(&npc,63,0);
     VL_IN(&inst,31,0);
-    VL_OUT(&addr,31,0);
+    VL_OUT64(&addr,63,0);
     VL_OUT8(&wen,0,0);
-    VL_IN(&din,31,0);
-    VL_OUT64(&rddata,63,0);
-    VL_OUT(&dout,31,0);
+    VL_IN64(&din,63,0);
+    VL_OUT64(&dout,63,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.
     // Otherwise the application code can consider these internals.
+    Vysyx_22050133_NPC_ysyx_22050133_NPC* const ysyx_22050133_NPC;
     Vysyx_22050133_NPC___024unit* const __PVT____024unit;
 
     // Root instance pointer to allow access to model internals,

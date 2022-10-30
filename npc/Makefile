@@ -4,7 +4,7 @@ INC_PATH ?=
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc \
-					-O3 --x-assign fast --x-initial fast --noassert
+					-O3 --x-assign fast --x-initial fast --noassert 
 
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
@@ -20,7 +20,8 @@ $(SRC_AUTO_BIND): $(NXDC_FILES)
 
 # project source
 VSRCS = $(shell find $(abspath ./npcvsrc) -name "*.v")
-CSRCS = $(shell find $(abspath ./csrc) -name "$(TOPNAME).cpp")
+CSRCS = $(shell find $(abspath ./npccsrc) -name "$(TOPNAME).cpp")
+CSRCS += $(shell find $(abspath ./npccsrc) -name "*.c")
 #CSRCS += $(SRC_AUTO_BIND)
 
 # rules for NVBoard
