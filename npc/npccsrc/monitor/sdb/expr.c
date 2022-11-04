@@ -13,13 +13,14 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
+//#include <isa.h>
 
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
-#include <memory/vaddr.h>
+#include <common.h>
+//#include <memory/vaddr.h>
 #define OP_LEVELMIN 3
 #define OP_LEVELMAX 7
 
@@ -76,7 +77,7 @@ void init_regex() {
     ret = regcomp(&re[i], rules[i].regex, REG_EXTENDED);
     if (ret != 0) {
       regerror(ret, &re[i], error_msg, 128);
-      panic("regex compilation failed: %s\n%s", error_msg, rules[i].regex);
+      printf("C_REDregex compilation failed: %s\n%sC_END", error_msg, rules[i].regex);
     }
   }
 }
@@ -148,7 +149,7 @@ static bool make_token(char *e) {
             }
           default: 
             printf("\033[31merror:no such case\n\033[0m");
-            TODO();
+            //TODO();
         }
         break;
       }

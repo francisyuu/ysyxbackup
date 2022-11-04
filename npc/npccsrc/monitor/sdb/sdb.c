@@ -13,12 +13,12 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
-#include <cpu/cpu.h>
+//#include <isa.h>
+//#include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "sdb.h"
-#include <memory/vaddr.h>
+#include <sdb.h>
+//#include <memory/vaddr.h>
 static int is_batch_mode = false;
 
 void init_regex();
@@ -63,7 +63,7 @@ static int cmd_si(char *args) {
     }
   else {
     sscanf(arg,"%d",&n);
-    Log("run %d instructions",n);
+    printf("run %d instructions",n);
     cpu_exec(n);
   }
 
@@ -80,7 +80,7 @@ static int cmd_x(char *args) {
 
   if (arg1 == NULL && arg2 == NULL) {
     /* no argument given */
-  Log("x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp\n");
+  printf("x N EXPR: use the result of EXPR as the start memory address,then print N*4bytes memory data in hex \n example:x 10 $esp\n");
   }
   else if(arg2==NULL){
     address=expr(arg1,&exprsuccess);
@@ -96,7 +96,7 @@ static int cmd_x(char *args) {
           address+=4;
       }
   }
-  else Log("please give the right argument\n");
+  else printf("please give the right argument\n");
 
   return 0;
 }
@@ -111,16 +111,16 @@ static int cmd_info(char *args) {
       int n;
       if(arg == NULL)show_wp();
       else if(sscanf(arg,"%d",&n)==1)show_wpn(n);
-      else Log("please give a wp.NO\n");
+      else printf("please give a wp.NO\n");
     }
-    else Log("please give an arg:r for registers, w for all watchpoints,w N for watchpoint N\n");
+    else printf("please give an arg:r for registers, w for all watchpoints,w N for watchpoint N\n");
   return 0;
 }
 
 static int cmd_p(char *args) {
   char *arg = strtok(NULL, "\0");
   bool exprcheck;
-    if(arg == NULL)Log("please give an EXPR\n");
+    if(arg == NULL)printf("please give an EXPR\n");
     else printf("result=%lu\n",expr(arg,&exprcheck));
   return 0;
 }
@@ -128,15 +128,15 @@ static int cmd_p(char *args) {
 static int cmd_ph(char *args) {
   char *arg = strtok(NULL, "\0");
   bool exprcheck;
-    if(arg == NULL)Log("please give an EXPR\n");
+    if(arg == NULL)printf("please give an EXPR\n");
     else printf("result=0x%lx\n",expr(arg,&exprcheck));
   return 0;
 }
 
 static int cmd_w(char *args) {
   char *arg = strtok(NULL, "\0");
-    if(strlen(arg)>WP_EXPR_LEN_MAX)Log("expr too long\n");
-    else if(arg == NULL)Log("please give an EXPR\n");
+    if(strlen(arg)>WP_EXPR_LEN_MAX)printf("expr too long\n");
+    else if(arg == NULL)printf("please give an EXPR\n");
     else new_up(args);
   return 0;
 }
@@ -144,27 +144,27 @@ static int cmd_w(char *args) {
 static int cmd_d(char *args) {
   char *arg = strtok(NULL, "\0");
     int n;
-    if(arg == NULL)Log("please give a wp.NO\n");
+    if(arg == NULL)printf("please give a wp.NO\n");
     else if(sscanf(arg,"%d",&n)==1)free_wpn(n);
-    else Log("please give a wp.NO\n");
+    else printf("please give a wp.NO\n");
   return 0;
 }
 
 static int cmd_h(char *args) {
   char *arg = strtok(NULL, "\0");
     int n;
-    if(arg == NULL)Log("please give a wp.NO\n");
+    if(arg == NULL)printf("please give a wp.NO\n");
     else if(sscanf(arg,"%d",&n)==1)toggle_hexshow(n);
-    else Log("please give a wp.NO\n");
+    else printf("please give a wp.NO\n");
   return 0;
 }
 
 static int cmd_sw(char *args) {
   char *arg = strtok(NULL, "\0");
     int n;
-    if(arg == NULL)Log("please give an wp.NO\n");
+    if(arg == NULL)printf("please give an wp.NO\n");
     else if(sscanf(arg,"%d",&n)==1)toggle_alwaysshow(n);
-    else Log("please give a wp.NO\n");
+    else printf("please give a wp.NO\n");
   return 0;
 }
 
@@ -213,7 +213,7 @@ static int cmd_help(char *args) {
         return 0;
       }
     }
-    Log("Unknown command '%s'\n", arg);
+    printf("Unknown command '%s'\n", arg);
   }
   return 0;
 }
@@ -256,14 +256,16 @@ void sdb_mainloop() {
       }
     }
 
-    if (i == NR_CMD) { Log("Unknown command '%s'\n", cmd); }
+    if (i == NR_CMD) { printf("Unknown command '%s'\n", cmd); }
   }
 }
 
 void init_sdb() {
+  printf("init sdb ... \n");
   /* Compile the regular expressions. */
   init_regex();
 
   /* Initialize the watchpoint pool. */
   init_wp_pool();
+  printf("init sdb finished \n");
 }

@@ -15,9 +15,7 @@
 
 // INCLUDE MODULE CLASSES
 #include "Vysyx_22050133_NPC___024root.h"
-#include "Vysyx_22050133_NPC_ysyx_22050133_NPC.h"
 #include "Vysyx_22050133_NPC___024unit.h"
-#include "Vysyx_22050133_NPC_ysyx_22050133_RegisterFile.h"
 
 // DPI TYPES for DPI Export callbacks (Internal use)
 
@@ -31,11 +29,6 @@ class Vysyx_22050133_NPC__Syms final : public VerilatedSyms {
     // MODULE INSTANCE STATE
     Vysyx_22050133_NPC___024root   TOP;
     Vysyx_22050133_NPC___024unit   TOP____024unit;
-    Vysyx_22050133_NPC_ysyx_22050133_NPC TOP__ysyx_22050133_NPC;
-    Vysyx_22050133_NPC_ysyx_22050133_RegisterFile TOP__ysyx_22050133_NPC__ysyx_22050133_RegisterFile_dut;
-
-    // SCOPE NAMES
-    VerilatedScope __Vscope_ysyx_22050133_NPC__ysyx_22050133_RegisterFile_dut;
 
     // CONSTRUCTORS
     Vysyx_22050133_NPC__Syms(VerilatedContext* contextp, const char* namep, Vysyx_22050133_NPC* modelp);

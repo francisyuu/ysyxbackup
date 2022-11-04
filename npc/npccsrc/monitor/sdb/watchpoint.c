@@ -46,20 +46,20 @@ WP* new_up(char* exprin)
 {
   if(free_!=NULL)
   {
-    WP *new=free_;
+    WP *newwp=free_;
     bool new_success=false;
     if(head==NULL)head=free_;
-    strcpy(new->expr,exprin);
-    new->val=expr(exprin,&new_success);
+    strcpy(newwp->expr,exprin);
+    newwp->val=expr(exprin,&new_success);
     free_=free_->next;
     if(free_==NULL)printf("\033[31mwarning:wp_pool full\n\033[0m");
     if(new_success){
       show_wp();
-      return new;
+      return newwp;
     }
     else {
       printf("new watchpoint failed\n");
-      free_wp(new);
+      free_wp(newwp);
       show_wp();
     }
   }
@@ -153,19 +153,19 @@ void wp_update(int* state)
     {
       word_t val=expr(scan->expr,&success);
       if(success==false){
-        printf("wp_%d update failed\n",scan->NO);
+        printf("wp_%d:%s update failde\n",scan->NO,scan->expr);
       }
       if(scan->val!=val)
       {
-        printf("wp_%d triggered\n",scan->NO);
-        printf(scan->HEX_OFF?"val before:%ld\n":"val before:0x%lx\n",scan->val);
+        printf("wp_%d:%s triggered\n",scan->NO,scan->expr);
+        printf(scan->HEX_OFF?"val bef:%ld\n":"val bef:0x%lx\n",scan->val);
         printf(scan->HEX_OFF?"val now:%ld\n":"val now:0x%lx\n",val);
         *state=NEMU_STOP;
       }
       else if(scan->ALWAYS_SHOW_ON==true)
       {
-        printf("wp_%d always show\n",scan->NO);
-        printf(scan->HEX_OFF?"val before:%ld\n":"val before:0x%lx\n",scan->val);
+        printf("wp_%d:%s always show\n",scan->NO,scan->expr);
+        printf(scan->HEX_OFF?"val bef:%ld\n":"val bef:0x%lx\n",scan->val);
         printf(scan->HEX_OFF?"val now:%ld\n":"val now:0x%lx\n",val);
       }
       scan->val=val;

@@ -35,32 +35,55 @@ VM_PREFIX = Vysyx_22050133_NPC
 VM_MODPREFIX = Vysyx_22050133_NPC
 # User CFLAGS (from -CFLAGS on Verilator command line)
 VM_USER_CFLAGS = \
-	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/nvboard/include \
+	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/include \
 	-DTOP_NAME="Vysyx_22050133_NPC" \
+	-O2 \
+	-MMD \
+	-Wall \
+	-Werror \
+	-Og \
+	-ggdb3 \
+	-I/usr/lib/llvm-14/include \
+	-std=c++14 \
+	-fno-exceptions \
+	-D_GNU_SOURCE \
+	-D__STDC_CONSTANT_MACROS \
+	-D__STDC_LIMIT_MACROS \
+	-fPIE \
 
 # User LDLIBS (from -LDFLAGS on Verilator command line)
 VM_USER_LDLIBS = \
-	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/nvboard/build/nvboard.a \
 	-lSDL2 \
 	-lSDL2_image \
+	-lreadline \
+	-ldl \
+	-pie \
+	-fPIE \
+	-lLLVM-14 \
 
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
 	cpu-exec \
 	mem \
-	log \
+	reg \
 	monitor \
 	expr \
 	sdb \
 	watchpoint \
-	reg \
+	disasm \
+	log \
+	rand \
+	state \
+	timer \
 	ysyx_22050133_NPC \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils \
 
 
 ### Default rules...
@@ -72,11 +95,11 @@ include $(VERILATOR_ROOT)/include/verilated.mk
 ### Executable rules... (from --exe)
 VPATH += $(VM_USER_DIR)
 
-cpu-exec.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu-exec.c
+cpu-exec.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu/cpu-exec.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
-mem.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/mem.c
+mem.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu/mem.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
-log.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/log.c
+reg.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu/reg.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 monitor.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/monitor.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
@@ -86,7 +109,15 @@ sdb.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monito
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 watchpoint.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb/watchpoint.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
-reg.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/reg.c
+disasm.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils/disasm.cc
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+log.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils/log.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+rand.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils/rand.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+state.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils/state.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+timer.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils/timer.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 ysyx_22050133_NPC.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/ysyx_22050133_NPC.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<

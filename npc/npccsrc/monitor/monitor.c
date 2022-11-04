@@ -13,12 +13,13 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
-#include <memory/paddr.h>
+//#include <isa.h>
+//#include <memory/paddr.h>
+#include "common.h"
 
-void init_rand();
+//void init_rand();
 void init_log(const char *log_file);
-void init_mem();
+//void init_mem();
 void init_difftest(char *ref_so_file, long img_size, int port);
 void init_device();
 void init_sdb();
@@ -36,7 +37,7 @@ void init_disasm(const char *triple);
 // // assert(0);
 //}
 
-#ifndef CONFIG_TARGET_AM
+//#ifndef CONFIG_TARGET_AM
 #include <getopt.h>
 
 void sdb_set_batch_mode();
@@ -46,10 +47,22 @@ static char elf_file[128];
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
+uint32_t default_img[]={0x00000093,
+                   0x00108093,
+                   0x00208093,
+                   0x00308093,
+                   0x00408093,
+                   0x00100073,
+                   0x00608093,
+                   0x00708093,
+                   0x00808093
+};
 
 static long load_img() {
+  printf("load img...\n");
   if (img_file == NULL) {
-    Log("No image is given. Use the default build-in image.");
+    printf("No image is given. Use the default build-in image.");
+    memcpy(pmem,default_img,36);
     return 4096; // built-in image size
   }
 
@@ -59,17 +72,19 @@ static long load_img() {
   fseek(fp, 0, SEEK_END);
   long size = ftell(fp);
 
-  Log("The image is %s, size = %ld", img_file, size);
+  printf("The image is %s, size = %ld\n", img_file, size);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
+  int ret = fread(pmem, size, 1, fp);
   assert(ret == 1);
 
   fclose(fp);
+  printf("load img finished\n");
   return size;
 }
 
 static int parse_args(int argc, char *argv[]) {
+  printf("args init...\n");
   const struct option table[] = {
     {"batch"    , no_argument      , NULL, 'b'},
     {"log"      , required_argument, NULL, 'l'},
@@ -103,9 +118,10 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
         printf("\n");
-        exit(0);
+        assert(0);
     }
   }
+  printf("args init finished\n");
   return 0;
 }
 
@@ -120,7 +136,9 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Open the log file. */
   init_log(log_file);
+#ifdef CONFIG_FTRACE
 	ftrace_init(elf_file);
+#endif
 
   /* Initialize memory. */
   //init_mem();
@@ -133,38 +151,39 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
+  cpu_reset(1);
 
   /* Initialize differential testing. */
-  //init_difftest(diff_so_file, img_size, difftest_port);
+#ifdef CONFIG_DIFFTEST
+  init_difftest(diff_so_file, img_size, difftest_port);
+#endif
 
   /* Initialize the simple debugger. */
   init_sdb();
 
-  IFDEF(CONFIG_ITRACE, init_disasm(
-    MUXDEF(CONFIG_ISA_x86,     "i686",
-    MUXDEF(CONFIG_ISA_mips32,  "mipsel",
-    MUXDEF(CONFIG_ISA_riscv32, "riscv32",
-    MUXDEF(CONFIG_ISA_riscv64, "riscv64", "bad")))) "-pc-linux-gnu"
-  ));
+#ifdef CONFIG_ITRACE
+  init_disasm("riscv64-pc-linux-gnu");
+#endif
+  printf("init all finished! \n");
 
   /* Display welcome message. */
 //  welcome();
 }
-#else // CONFIG_TARGET_AM
-static long load_img() {
-  extern char bin_start, bin_end;
-  size_t size = &bin_end - &bin_start;
-  Log("img size = %ld", size);
-  memcpy(guest_to_host(RESET_VECTOR), &bin_start, size);
-  return size;
-}
+//#else // CONFIG_TARGET_AM
+//static long load_img() {
+  //extern char bin_start, bin_end;
+  //size_t size = &bin_end - &bin_start;
+  //Log("img size = %ld", size);
+  //memcpy(guest_to_host(RESET_VECTOR), &bin_start, size);
+  //return size;
+//}
 
-void am_init_monitor() {
-  init_rand();
-  init_mem();
-  init_isa();
-  load_img();
-  IFDEF(CONFIG_DEVICE, init_device());
-  welcome();
-}
-#endif
+//void am_init_monitor() {
+  //init_rand();
+  //init_mem();
+  //init_isa();
+  //load_img();
+  //IFDEF(CONFIG_DEVICE, init_device());
+  //welcome();
+//}
+//#endif

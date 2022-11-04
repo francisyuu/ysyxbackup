@@ -16,9 +16,13 @@
 #ifndef __SDB_H__
 #define __SDB_H__
 
-#define WP_EXPR_LEN_MAX 1024
-
 #include <common.h>
+
+#define WP_EXPR_LEN_MAX 1024
+#define word_t uint64_t
+#define sword_t uint64_t
+#define vaddr_t uint64_t
+
 typedef struct watchpoint {
   int NO;
   bool HEX_OFF;
@@ -39,6 +43,7 @@ void toggle_alwaysshow(int n);
 void show_wp();
 void show_wpn(int n);
 void wp_update(int* state);
+void sdb_mainloop();
 
 
 #endif

@@ -10,7 +10,6 @@
 //==========
 
 class Vysyx_22050133_NPC__Syms;
-class Vysyx_22050133_NPC_ysyx_22050133_NPC;
 class Vysyx_22050133_NPC___024unit;
 
 
@@ -19,24 +18,26 @@ class Vysyx_22050133_NPC___024unit;
 VL_MODULE(Vysyx_22050133_NPC___024root) {
   public:
     // CELLS
-    Vysyx_22050133_NPC_ysyx_22050133_NPC* ysyx_22050133_NPC;
     Vysyx_22050133_NPC___024unit* __PVT____024unit;
 
     // PORTS
     VL_IN8(clk,0,0);
     VL_IN8(rst,0,0);
-    VL_OUT8(wen,0,0);
-    VL_IN(inst,31,0);
     VL_OUT64(pc,63,0);
     VL_OUT64(npc,63,0);
-    VL_OUT64(addr,63,0);
-    VL_IN64(din,63,0);
-    VL_OUT64(dout,63,0);
+
+    // LOCAL SIGNALS
+    IData/*31:0*/ ysyx_22050133_NPC__DOT__inst;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__dnpc;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__rddata;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__rs1data;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__rs2data;
+    VlUnpacked<QData/*63:0*/, 32> ysyx_22050133_NPC__DOT__ysyx_22050133_RegisterFile_dut__DOT__rf;
 
     // LOCAL VARIABLES
     CData/*0:0*/ __Vclklast__TOP__clk;
-    QData/*63:0*/ __Vchglast__TOP__ysyx_22050133_NPC__ysyx_22050133_EXU_dut__DOT__add_a;
-    QData/*63:0*/ __Vchglast__TOP__ysyx_22050133_NPC__ysyx_22050133_EXU_dut__DOT__add_b;
+    QData/*63:0*/ __Vtask_vmem_read__0__rdata;
+    QData/*63:0*/ __Vtask_inst_read__2__rdata;
 
     // INTERNAL VARIABLES
     Vysyx_22050133_NPC__Syms* vlSymsp;  // Symbol table

@@ -13,7 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <common.h>
+#include "common.h"
 #include <elf.h>
 
 extern uint64_t g_nr_guest_inst;
@@ -130,7 +130,7 @@ void ftrace_init(const char* elfname)
   FILE* fp;
 	int success;
   fp=fopen(elfname,"r");
-  assert(fp!=NULL);
+	Assert(fp!=NULL,"ftrace enabled but no img is given!\n");
   Elf64_Ehdr elf_header;
   success=fread(&elf_header,sizeof(elf_header),1,fp);
 	assert(success!=0);
@@ -148,7 +148,7 @@ void ftrace_init(const char* elfname)
       if(elf_shdr[strshnum].sh_type==SHT_STRTAB)break;
   }
   Elf64_Sym *elf_sym=(Elf64_Sym*)malloc(elf_shdr[symshnum].sh_size);
-  char *elf_str=malloc(elf_shdr[strshnum].sh_size);
+  char *elf_str=(char*)malloc(elf_shdr[strshnum].sh_size);
   fseek(fp,elf_shdr[symshnum].sh_offset,SEEK_SET);
   success=fread(elf_sym,elf_shdr[symshnum].sh_size,1,fp);
 	assert(success!=0);
@@ -167,7 +167,7 @@ void ftrace_init(const char* elfname)
       funcpack.nmax++;
     }
   }
-  funcpack.f=malloc(sizeof(funcs_t)*funcpack.nmax); 
+  funcpack.f=(funcs_t*)malloc(sizeof(funcs_t)*funcpack.nmax); 
   int funcnum=0;
   for(symnum=0;symnum<(elf_shdr[symshnum].sh_size/elf_shdr[symshnum].sh_entsize);symnum++)
   {

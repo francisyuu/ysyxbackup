@@ -14,12 +14,6 @@ Vysyx_22050133_NPC::Vysyx_22050133_NPC(VerilatedContext* _vcontextp__, const cha
     , rst{vlSymsp->TOP.rst}
     , pc{vlSymsp->TOP.pc}
     , npc{vlSymsp->TOP.npc}
-    , inst{vlSymsp->TOP.inst}
-    , addr{vlSymsp->TOP.addr}
-    , wen{vlSymsp->TOP.wen}
-    , din{vlSymsp->TOP.din}
-    , dout{vlSymsp->TOP.dout}
-    , ysyx_22050133_NPC{vlSymsp->TOP.ysyx_22050133_NPC}
     , __PVT____024unit{vlSymsp->TOP.__PVT____024unit}
     , rootp{&(vlSymsp->TOP)}
 {
