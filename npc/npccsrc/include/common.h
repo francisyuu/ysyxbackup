@@ -24,10 +24,6 @@
 //#include "verilated.h"
 //#include "verilated_vcd_c.h" 
 
-#define word_t uint64_t
-#define sword_t uint64_t
-#define vaddr_t uint64_t
-#define paddr_t uint64_t
 
 #define CONFIG_ITRACE 1
 #define CONFIG_IRINGBUF 1
@@ -86,6 +82,7 @@ void isa_reg_display();
 uint64_t isa_reg_str2val(const char *s, bool *success);
 
 void init_monitor(int argc, char *argv[]);
+int is_exit_status_bad();
 void init_log(const char *log_file);
 void mtrace_write(char * str);
 void iring_write(char * str);

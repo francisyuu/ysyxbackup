@@ -57,7 +57,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   IFDEF(CONFIG_IRINGBUF, iring_write(_this->logbuf));
   IFDEF(CONFIG_WATCHPOINT, wp_update(&nemu_state.state));
   IFDEF(CONFIG_FTRACE, ftrace_write(_this->pc,dnpc));
-  IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+  if (nemu_state.state == NEMU_RUNNING)IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {

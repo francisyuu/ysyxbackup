@@ -5,10 +5,11 @@ uint8_t pmem[CONFIG_MSIZE];
 void _vmem_read(long long raddr, long long *rdata) {
       // 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
       if(raddr==0)return;
-      Assert(raddr>=0x80000000&&raddr<=0x82000000,"can not access address %lx",(uint64_t)raddr);
+      Assert(raddr>=PMEM_LEFT&&raddr<=PMEM_RIGHT,"can not access address %lx",(uint64_t)raddr);
       uint64_t data;
       long long paddr=(raddr-PMEM_LEFT)&~0x7ull;
       memcpy(&data,pmem+paddr,8);
+			printf("R:0x%08llx,0x%016lx\n",paddr,data);
       *rdata=data;
   }
 
@@ -18,9 +19,10 @@ extern "C" void inst_read(long long raddr, long long *rdata) {
 }
 
 extern "C" void vmem_read(long long raddr, long long *rdata, char wmask) {
-  if(raddr==0||wmask!=0)return;
+  if(raddr==0)return;
   _vmem_read(raddr,rdata);
 #ifdef CONFIG_MTRACE
+  if(wmask!=0)return;
   char str[64];
   sprintf(str,"%08lx:R:addr=%08llx,data=%016llx",cpu.pc,raddr,*rdata);
   mtrace_write(str);
@@ -65,7 +67,8 @@ extern "C" void vmem_write(long long waddr, long long wdata, char wmask) {
         default:
             Assert(0,"Inst wrong:wrong wmem len");
       }
-      memcpy(pmem+paddr,&wdata,wlen);
+			//printf("W:0x%08llx,0x%016llx,%dbyte\n",paddr,wdata,wlen);
+      memcpy(pmem+paddr,&wdata,8);
 #ifdef CONFIG_MTRACE
   char str[64];
   sprintf(str,"%08lx:W:addr=%08llx,data=%016llx,len=%d",cpu.pc,waddr,wdata,wlen);

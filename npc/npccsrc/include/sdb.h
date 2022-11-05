@@ -16,12 +16,13 @@
 #ifndef __SDB_H__
 #define __SDB_H__
 
-#include <common.h>
-
-#define WP_EXPR_LEN_MAX 1024
 #define word_t uint64_t
 #define sword_t uint64_t
 #define vaddr_t uint64_t
+#define paddr_t uint64_t
+#include <common.h>
+
+#define WP_EXPR_LEN_MAX 1024
 
 typedef struct watchpoint {
   int NO;
