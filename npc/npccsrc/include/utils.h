@@ -55,6 +55,7 @@ uint64_t get_time();
 #define ANSI_NONE       "\33[0m"
 
 #define FMT_WORD "0x%016lx"
+#define FMT_PADDR "0x%016lx"
 #define ANSI_FMT(str, fmt) fmt str ANSI_NONE
 
 #define log_write(...) \

@@ -86,7 +86,7 @@ int printf(const char *fmt, ...) {
 						}
 					}
           break;
-        case 'h':
+        case 'x':
 					{
 						int integer=va_arg(ap,int);
 						char str[32];
@@ -178,7 +178,7 @@ int sprintf(char *out, const char *fmt, ...) {
 						}
 					}
           break;
-        case 'h':
+        case 'x':
 					{
 						int integer=va_arg(ap,int);
 						char str[32];

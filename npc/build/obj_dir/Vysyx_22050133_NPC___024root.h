@@ -27,11 +27,12 @@ VL_MODULE(Vysyx_22050133_NPC___024root) {
     VL_OUT64(npc,63,0);
 
     // LOCAL SIGNALS
-    IData/*31:0*/ ysyx_22050133_NPC__DOT__inst;
+    CData/*4:0*/ ysyx_22050133_NPC__DOT__rd;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__rdwen;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__OPEXX;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__FEBREAK;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__dnpc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__rddata;
-    QData/*63:0*/ ysyx_22050133_NPC__DOT__rs1data;
-    QData/*63:0*/ ysyx_22050133_NPC__DOT__rs2data;
     VlUnpacked<QData/*63:0*/, 32> ysyx_22050133_NPC__DOT__ysyx_22050133_RegisterFile_dut__DOT__rf;
 
     // LOCAL VARIABLES

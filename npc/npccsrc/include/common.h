@@ -13,6 +13,7 @@
 #include <debug.h>
 #include <utils.h>
 #include <sdb.h>
+#include <device.h>
 
 #include "Vysyx_22050133_NPC.h"
 //#include "Vysyx_22050133_NPC_ysyx_22050133_NPC.h"
@@ -25,12 +26,23 @@
 //#include "verilated_vcd_c.h" 
 
 
+//#define CONFIG_DEBUGINFO
+#ifdef CONFIG_DEBUGINFO
 #define CONFIG_ITRACE 1
 #define CONFIG_IRINGBUF 1
 #define CONFIG_FTRACE 1
 #define CONFIG_MTRACE 1
+#define CONFIG_DTRACE 1
 #define CONFIG_WATCHPOINT 1
-#define CONFIG_DIFFTEST 1
+//#define CONFIG_DIFFTEST 1
+#endif
+
+#define CONFIG_DEVICE 1
+#define CONFIG_HAS_SERIAL 1
+#define CONFIG_HAS_TIMER 1
+#define CONFIG_HAS_VGA 1
+#define CONFIG_HAS_KEYBOARD 1
+#define CONFIG_HAS_AUDIO 1
 
 #define C_RED "\033[0;31m"
 #define C_GREEN "\033[0;32m"
@@ -71,7 +83,7 @@ extern const char *regs[];
 
 extern "C" void vmem_read(long long raddr, long long *rdata, char wmask);
 extern "C" void inst_read(long long raddr, long long *rdata);
-extern "C" void vmem_write(long long waddr, long long wdata, char wmask);
+extern "C" void vmem_write(long long waddr, long long wdata, char wmask,long long wdataraw);
 word_t vaddr_read(word_t addr,int n);
 
 void stopsim();
@@ -85,6 +97,7 @@ void init_monitor(int argc, char *argv[]);
 int is_exit_status_bad();
 void init_log(const char *log_file);
 void mtrace_write(char * str);
+void dtrace_write(char * str);
 void iring_write(char * str);
 void ftrace_init(const char* elfname);
 void ftrace_free();

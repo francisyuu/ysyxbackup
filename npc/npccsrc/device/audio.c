@@ -14,7 +14,6 @@
 ***************************************************************************************/
 
 #include <common.h>
-#include <device/map.h>
 #include <SDL2/SDL.h>
 
 enum {
@@ -36,7 +35,7 @@ void AudioCallback(void* userdata, uint8_t* stream,int len)
 {
 	int nread = len;
 	memset(stream, 0, len);
-	//printf("len=%d\n",audio_base[reg_count]);
+	/*printf("%d %d %d %d %d\n",audio_base[0],audio_base[1],audio_base[2],audio_base[3],audio_base[5]);*/
 	if (audio_base[reg_count] < len) nread = audio_base[reg_count];
 	if (nread==0)return;
 	int over=head+nread-CONFIG_SB_SIZE;
@@ -61,6 +60,7 @@ void AudioCallback(void* userdata, uint8_t* stream,int len)
 	}
 }
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
+	/*printf("%d %d %d %d %d\n",audio_base[0],audio_base[1],audio_base[2],audio_base[3],audio_base[5]);*/
 	if(audio_base[reg_init]==1)
 	{
 	//printf("init%x\n",offset);
@@ -82,8 +82,8 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
 void init_audio() {
   uint32_t space_size = sizeof(uint32_t) * nr_reg;
   audio_base = (uint32_t *)new_space(space_size);
-  add_mmio_map("audio", CONFIG_AUDIO_CTL_MMIO, audio_base, space_size, audio_io_handler);
+  add_mmio_map("audio", AUDIO_ADDR, audio_base, space_size, audio_io_handler);
   sbuf = (uint8_t *)new_space(CONFIG_SB_SIZE);
-  add_mmio_map("audio-sbuf", CONFIG_SB_ADDR, sbuf, CONFIG_SB_SIZE, NULL);
+  add_mmio_map("audio-sbuf", AUDIO_SBUF_ADDR, sbuf, CONFIG_SB_SIZE, NULL);
 	audio_base[reg_sbuf_size]=CONFIG_SB_SIZE;
 }

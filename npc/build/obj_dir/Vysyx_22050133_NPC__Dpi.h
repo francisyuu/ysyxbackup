@@ -26,7 +26,7 @@ extern "C" {
     // DPI import at npcvsrc/npcdefine.v:147:30
     extern void vmem_read(long long raddr, long long* rdata, char wmask);
     // DPI import at npcvsrc/npcdefine.v:153:30
-    extern void vmem_write(long long waddr, long long wdata, char wmask);
+    extern void vmem_write(long long waddr, long long wdata, char wmask, long long wdataraw);
 
 #ifdef __cplusplus
 }

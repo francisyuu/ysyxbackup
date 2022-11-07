@@ -37,7 +37,7 @@ VM_MODPREFIX = Vysyx_22050133_NPC
 VM_USER_CFLAGS = \
 	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/include \
 	-DTOP_NAME="Vysyx_22050133_NPC" \
-	-O2 \
+	-Og \
 	-MMD \
 	-Wall \
 	-Werror \
@@ -66,6 +66,19 @@ VM_USER_CLASSES = \
 	cpu-exec \
 	mem \
 	reg \
+	alarm \
+	audio \
+	device \
+	disk \
+	intr \
+	map \
+	mmio \
+	port-io \
+	keyboard \
+	rtc \
+	sdcard \
+	serial \
+	vga \
 	monitor \
 	expr \
 	sdb \
@@ -81,6 +94,8 @@ VM_USER_CLASSES = \
 VM_USER_DIR = \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device \
+	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/io \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/sdb \
 	/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/utils \
@@ -100,6 +115,32 @@ cpu-exec.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/c
 mem.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu/mem.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 reg.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/cpu/reg.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+alarm.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/alarm.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+audio.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/audio.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+device.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/device.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+disk.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/disk.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+intr.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/intr.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+map.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/io/map.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+mmio.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/io/mmio.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+port-io.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/io/port-io.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+keyboard.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/keyboard.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+rtc.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/rtc.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+sdcard.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/sdcard.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+serial.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/serial.c
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+vga.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/device/vga.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 monitor.o: /home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/monitor/monitor.c
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<

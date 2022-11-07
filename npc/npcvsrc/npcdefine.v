@@ -151,7 +151,7 @@ import "DPI-C" function void inst_read(
     input longint raddr, output longint rdata
 );
 import "DPI-C" function void vmem_write(
-    input longint waddr, input longint wdata, input byte wmask
+    input longint waddr, input longint wdata, input byte wmask,input longint wdataraw
 );
 import "DPI-C" function void reg_info(
     input logic[4:0] rs1,input longint rs1d,

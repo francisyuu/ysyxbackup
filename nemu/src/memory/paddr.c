@@ -57,11 +57,6 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-#ifdef CONFIG_MTRACE
-  char str[64];
-  sprintf(str,"mread :addr=%08x,len=%d,pc=%08lx",addr,len,cpu.pc);
-  mtrace_write(str);
-#endif
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);

@@ -42,7 +42,9 @@ static void welcome() {
 void sdb_set_batch_mode();
 
 static char *log_file = NULL;
+#ifdef CONFIG_FTRACE
 static char elf_file[128];
+#endif
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
@@ -120,7 +122,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Open the log file. */
   init_log(log_file);
-	ftrace_init(elf_file);
+
+	IFDEF(CONFIG_FTRACE,ftrace_init(elf_file));
 
   /* Initialize memory. */
   init_mem();

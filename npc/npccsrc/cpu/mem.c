@@ -1,15 +1,17 @@
 #include "common.h"
+#include "time.h"
 
 uint8_t pmem[CONFIG_MSIZE];
 
 void _vmem_read(long long raddr, long long *rdata) {
       // 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
-      if(raddr==0)return;
-      Assert(raddr>=PMEM_LEFT&&raddr<=PMEM_RIGHT,"can not access address %lx",(uint64_t)raddr);
+#ifdef CONFIG_DEBUGINFO
+      Assert(raddr>=PMEM_LEFT&&raddr<=PMEM_RIGHT,"can not access Raddress %lx",(uint64_t)raddr);
+#endif
       uint64_t data;
       long long paddr=(raddr-PMEM_LEFT)&~0x7ull;
       memcpy(&data,pmem+paddr,8);
-			printf("R:0x%08llx,0x%016lx\n",paddr,data);
+			//printf("R:0x%08llx,0x%016lx\n",paddr,data);
       *rdata=data;
   }
 
@@ -20,6 +22,12 @@ extern "C" void inst_read(long long raddr, long long *rdata) {
 
 extern "C" void vmem_read(long long raddr, long long *rdata, char wmask) {
   if(raddr==0)return;
+  else if(raddr>PMEM_RIGHT)
+    {
+      if(wmask!=0)return;
+      *rdata=mmio_read((paddr_t)(raddr&~0x7ull),8);
+      return;
+    }
   _vmem_read(raddr,rdata);
 #ifdef CONFIG_MTRACE
   if(wmask!=0)return;
@@ -33,24 +41,19 @@ word_t vaddr_read(word_t addr,int n)
 {
   word_t data;
   word_t mask=0xffffffffffffffff;
-  _vmem_read(addr,(long long *)&data);
-  if((addr&0x4)==4)
-  {
-    data=data>>32;
-    if(n>4)LogR("Cant read 8 bytes through a 4 byte aliged address");
-    for(int i=8;i>n;i--)mask=mask>>8;
-  }
-  else
-  {
-    for(int i=8;i>n;i--)
+  if(((addr&0x7ull)+n)>8)printf("warning:read over%lx:%dbytes",addr,n);
+  if(addr>PMEM_RIGHT)
     {
-      mask=mask>>8;
+      printf("access device, may cause dtrace\n");
+      data=mmio_read((paddr_t)(addr&~0x7ull),8);
     }
-    data=data&mask;
-  }
+  else _vmem_read(addr,(long long *)&data);
+  data=data>>((addr&0x7ull)*8);
+  mask=mask>>(8*(8-n));
+  data=data&mask;
   return data;
 }
-extern "C" void vmem_write(long long waddr, long long wdata, char wmask) {
+extern "C" void vmem_write(long long waddr, long long wdata, char wmask,long long wdataraw) {
       if(wmask==0)return;
       uint8_t mask=(uint8_t)wmask;
       long long paddr=(waddr-PMEM_LEFT)&~0x7ull;
@@ -67,6 +70,14 @@ extern "C" void vmem_write(long long waddr, long long wdata, char wmask) {
         default:
             Assert(0,"Inst wrong:wrong wmem len");
       }
+      if(waddr>PMEM_RIGHT)
+      {
+        mmio_write((paddr_t)waddr,wlen,(uint64_t)wdataraw);
+        return;
+      }
+#ifdef CONFIG_DEBUGINFO
+      Assert(waddr>=PMEM_LEFT&&waddr<=PMEM_RIGHT,"can not access Waddress %lx",(uint64_t)waddr);
+#endif
 			//printf("W:0x%08llx,0x%016llx,%dbyte\n",paddr,wdata,wlen);
       memcpy(pmem+paddr,&wdata,8);
 #ifdef CONFIG_MTRACE

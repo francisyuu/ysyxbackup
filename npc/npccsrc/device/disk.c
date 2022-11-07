@@ -13,22 +13,7 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
-#include <memory/paddr.h>
+/*#include <device/map.h>*/
 
-word_t vaddr_ifetch(vaddr_t addr, int len) {
-  return paddr_read(addr, len);
-}
-
-word_t vaddr_read(vaddr_t addr, int len) {
-#ifdef CONFIG_MTRACE
-  char str[64];
-  sprintf(str,"mread :addr=%08lx,len=%d,pc=%08lx",addr,len,cpu.pc);
-  mtrace_write(str);
-#endif
-  return paddr_read(addr, len);
-}
-
-void vaddr_write(vaddr_t addr, int len, word_t data) {
-  paddr_write(addr, len, data);
-}
+/*void init_disk() {*/
+/*}*/

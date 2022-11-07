@@ -4,7 +4,7 @@ INC_PATH ?= $(abspath ./npccsrc/include)
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc \
-					-O3 --x-assign fast --x-initial fast --noassert 
+					-Og --x-assign fast --x-initial fast --noassert 
 
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
@@ -31,7 +31,7 @@ CSRCS += $(shell find $(abspath ./npccsrc) -name "*.cc")
 # rules for verilator
 CONFIG_CC_DEBUG = 1
 INCFLAGS = $(addprefix -I, $(INC_PATH))
-CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\"" -O2 -MMD -Wall -Werror 
+CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\"" -Og -MMD -Wall -Werror 
 CFLAGS += $(if $(CONFIG_CC_DEBUG),-Og -ggdb3,)
 CFLAGS += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
 #CFLAGS += $(shell llvm-config --cxxflags) -fPIE

@@ -68,9 +68,9 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_inst_read_TOP____0
     rdata = rdata__Vcvt;
 }
 
-extern "C" void vmem_write(long long waddr, long long wdata, char wmask);
+extern "C" void vmem_write(long long waddr, long long wdata, char wmask, long long wdataraw);
 
-VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit(QData/*63:0*/ waddr, QData/*63:0*/ wdata, CData/*7:0*/ wmask) {
+VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit(QData/*63:0*/ waddr, QData/*63:0*/ wdata, CData/*7:0*/ wmask, QData/*63:0*/ wdataraw) {
     VL_DEBUG_IF(VL_DBG_MSGF("+        Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit\n"); );
     // Body
     long long waddr__Vcvt;
@@ -79,7 +79,9 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____
     for (size_t wdata__Vidx = 0; wdata__Vidx < 1; ++wdata__Vidx) wdata__Vcvt = wdata;
     char wmask__Vcvt;
     for (size_t wmask__Vidx = 0; wmask__Vidx < 1; ++wmask__Vidx) wmask__Vcvt = wmask;
-    vmem_write(waddr__Vcvt, wdata__Vcvt, wmask__Vcvt);
+    long long wdataraw__Vcvt;
+    for (size_t wdataraw__Vidx = 0; wdataraw__Vidx < 1; ++wdataraw__Vidx) wdataraw__Vcvt = wdataraw;
+    vmem_write(waddr__Vcvt, wdata__Vcvt, wmask__Vcvt, wdataraw__Vcvt);
 }
 
 extern "C" void reg_info(const svLogicVecVal* rs1, long long rs1d, const svLogicVecVal* rs2, long long rs2d, const svLogicVecVal* rd, long long rdd);

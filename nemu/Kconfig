@@ -166,18 +166,22 @@ config WATCHPOINT
   default y
 
 config IRINGBUF
-  depends on ITRACE
+  depends on TRACE
   bool "Enable iringbuf"
   default y
 
 config MTRACE
-  depends on ITRACE
+  depends on TRACE
   bool "Enable memtrace"
   default y
 
 config FTRACE
-  depends on ITRACE
+  depends on TRACE
   bool "Enable functrace"
+  default n
+config DTRACE
+  depends on TRACE
+  bool "Enable devicetrace"
   default y
 
 choice

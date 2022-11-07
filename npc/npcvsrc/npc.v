@@ -53,6 +53,7 @@ wire [63:0]doutA;
 wire [63:0]douts;
 always @(*) begin
     vmem_read(addr, dinA, wmask);
+		//$monitor("addr=%x dinA=%x din=%x",addr,dinA,din);
 end
 assign din=addr[2] ? 
             addr[1] ? 
@@ -68,7 +69,7 @@ wire [7:0]wmasks=wmask<<addr[2:0];
 wire[63:0] wmask1={{8{wmasks[7]}},{8{wmasks[6]}},{8{wmasks[5]}},{8{wmasks[4]}},{8{wmasks[3]}},{8{wmasks[2]}},{8{wmasks[1]}},{8{wmasks[0]}}};
 
 always @(*) begin
-    vmem_write(addr, doutA, wmask);
+    vmem_write(addr, doutA, wmask,dout);
 end
 
 always @(*) begin
@@ -533,7 +534,7 @@ assign rs1data = rs1==0 ? 0:rf[rs1];
 assign rs2data = rs2==0 ? 0:rf[rs2];
 always @(posedge clk) begin
   if (wen) rf[rd] <= rddata;
-  reg_info(rs1,rs1data,rs2,rs2data,rd,rddata);
+  //reg_info(rs1,rs1data,rs2,rs2data,rd,rddata);
 end
 endmodule
 

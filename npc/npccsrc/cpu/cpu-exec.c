@@ -48,9 +48,10 @@ CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
-static bool g_print_always = true;
+static bool g_print_always = false;
 
 
+#ifdef CONFIG_DEBUGINFO
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_ITRACE, log_write("%s\n", _this->logbuf));
@@ -59,12 +60,15 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   IFDEF(CONFIG_FTRACE, ftrace_write(_this->pc,dnpc));
   if (nemu_state.state == NEMU_RUNNING)IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 }
+#endif
 
 static void exec_once(Decode *s, vaddr_t pc) {
+#ifdef CONFIG_DEBUGINFO
   s->pc = pc;
   s->dnpc = cpu.npc;
   s->snpc = cpu.npc;
   s->inst= cpu.inst;
+#endif
   cpu_single_cycle();
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
@@ -87,10 +91,12 @@ static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
+#ifdef CONFIG_DEBUGINFO
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
+#endif
     if (nemu_state.state != NEMU_RUNNING) break;
-    //IFDEF(CONFIG_DEVICE, device_update());
+    IFDEF(CONFIG_DEVICE, device_update());
   }
 }
 

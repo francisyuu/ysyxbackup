@@ -19,15 +19,18 @@
 extern uint64_t g_nr_guest_inst;
 FILE *log_fp = NULL;
 
-struct tracepack
+typedef struct
 {
   FILE *fp;
   int buf_len;
   int line_cnt;
+  int line_len;
   fpos_t pos;
-}iring,mtrace,ftrace;
+}tracepack_t;
+tracepack_t iring,mtrace,ftrace,dtrace;
 #define iring_buf_max 200
 #define mtrace_buf_max 200
+#define dtrace_buf_max 200
 
 void init_log(const char *log_file) {
   log_fp = stdout;
@@ -39,6 +42,7 @@ void init_log(const char *log_file) {
     iring.fp=NULL;
     iring.buf_len=iring_buf_max;
     iring.line_cnt=0;
+    iring.line_len=64;
     char iring_file[128];
     strcpy(iring_file,log_file);
     strcat(iring_file,".iringbuf");
@@ -49,11 +53,23 @@ void init_log(const char *log_file) {
     mtrace.fp=NULL;
     mtrace.buf_len=mtrace_buf_max;
     mtrace.line_cnt=0;
+    mtrace.line_len=64;
     char mtrace_file[128];
     strcpy(mtrace_file,log_file);
     strcat(mtrace_file,".mtrace");
     mtrace.fp=fopen(mtrace_file,"w");
     fgetpos(mtrace.fp,&mtrace.pos);
+#endif
+#ifdef CONFIG_DTRACE
+    dtrace.fp=NULL;
+    dtrace.buf_len=dtrace_buf_max;
+    dtrace.line_cnt=0;
+    dtrace.line_len=64;
+    char dtrace_file[128];
+    strcpy(dtrace_file,log_file);
+    strcat(dtrace_file,".dtrace");
+    dtrace.fp=fopen(dtrace_file,"w");
+    fgetpos(dtrace.fp,&dtrace.pos);
 #endif
 #ifdef CONFIG_FTRACE
     ftrace.fp=NULL;
@@ -66,41 +82,37 @@ void init_log(const char *log_file) {
   }
   Log("Log is written to %s", log_file ? log_file : "stdout");
 }
-void mtrace_write(char * str)
+void ring_write(tracepack_t *t,char* str)
 {
-  if(++mtrace.line_cnt>=mtrace.buf_len)
+  if(++t->line_cnt>=t->buf_len)
   {
-    fsetpos(mtrace.fp,&mtrace.pos);
-    fprintf(mtrace.fp,"%s","  ");
-    mtrace.line_cnt=0;
-    rewind(mtrace.fp);
-    fgetpos(mtrace.fp,&mtrace.pos);
+    fsetpos(t->fp,&t->pos);
+    fprintf(t->fp,"%s","  ");
+    t->line_cnt=0;
+    rewind(t->fp);
+    fgetpos(t->fp,&t->pos);
   }
-  fsetpos(mtrace.fp,&mtrace.pos);
-  fprintf(mtrace.fp,"%s","  \n");
-  fprintf(mtrace.fp,"%s",str);
-  for(int spacenum=64-strlen(str);spacenum>0;spacenum--)fprintf(mtrace.fp,"%s"," ");
-  fgetpos(mtrace.fp,&mtrace.pos);
-  fprintf(mtrace.fp,"%s","<-");
+  fsetpos(t->fp,&t->pos);
+  fprintf(t->fp,"%s","  \n");
+  fprintf(t->fp,"%s",str);
+  for(int spacenum=t->line_len-strlen(str);spacenum>0;spacenum--)fprintf(t->fp,"%s"," ");
+  fgetpos(t->fp,&t->pos);
+  fprintf(t->fp,"%s","<-");
 }
-
 void iring_write(char * str)
 {
-  if(++iring.line_cnt>=iring.buf_len)
-  {
-    fsetpos(iring.fp,&iring.pos);
-    fprintf(iring.fp,"%s","  ");
-    iring.line_cnt=0;
-    rewind(iring.fp);
-    fgetpos(iring.fp,&iring.pos);
-  }
-  fsetpos(iring.fp,&iring.pos);
-  fprintf(iring.fp,"%s","  \n");
-  fprintf(iring.fp,"%s",str);
-  for(int spacenum=64-strlen(str);spacenum>0;spacenum--)fprintf(iring.fp,"%s"," ");
-  fgetpos(iring.fp,&iring.pos);
-  fprintf(iring.fp,"%s","<-");
+  ring_write(&iring,str);
 }
+void mtrace_write(char * str)
+{
+  ring_write(&mtrace,str);
+}
+void dtrace_write(char * str)
+{
+  ring_write(&dtrace,str);
+}
+
+
 
 bool log_enable() {
   return MUXDEF(CONFIG_TRACE, (g_nr_guest_inst >= CONFIG_TRACE_START) &&
@@ -127,7 +139,6 @@ struct funcpack_t
 
 void ftrace_init(const char* elfname)
 {
-  printf("ftrance init...\n");
   FILE* fp;
 	int success;
   fp=fopen(elfname,"r");
@@ -192,7 +203,6 @@ void ftrace_init(const char* elfname)
 	free(elf_shdr);
 	free(elf_sym);
 	free(elf_str);
-  printf("ftrance init finished\n");
 }
 void ftrace_free()
 {
