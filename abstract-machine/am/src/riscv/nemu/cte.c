@@ -6,15 +6,20 @@ static Context* (*user_handler)(Event, Context*) = NULL;
 
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
+		/*printf("c=%x\n",c);*/
+		/*printf("m=%x\n",c->mcause);*/
     Event ev = {0};
     switch (c->mcause) {
+			case 0xb:ev.event = EVENT_YIELD;break;
       default: ev.event = EVENT_ERROR; break;
     }
+		/*printf("event%d\n",ev.event);*/
 
     c = user_handler(ev, c);
     assert(c != NULL);
   }
 
+	c->mepc+=4;
   return c;
 }
 

@@ -12,7 +12,7 @@
 `define ysyx_22050133_OP_RXX    7'b0110011
 `define ysyx_22050133_OP_RWX    7'b0111011
 `define ysyx_22050133_OP_FXX    7'b0001111
-`define ysyx_22050133_OP_EXX    7'b1110011
+`define ysyx_22050133_OP_SYS    7'b1110011
 
 `define ysyx_22050133_F3_JALR   3'b000
 `define ysyx_22050133_F3_BEQ    3'b000
@@ -64,6 +64,13 @@
 `define ysyx_22050133_F3_SLLW   3'b001
 `define ysyx_22050133_F3_SRLW   3'b101
 `define ysyx_22050133_F3_SRAW   3'b101
+
+`define ysyx_22050133_F3_CSRRW  3'b001
+`define ysyx_22050133_F3_CSRRS  3'b010
+`define ysyx_22050133_F3_CSRRC  3'b011
+`define ysyx_22050133_F3_CSRRWI 3'b101
+`define ysyx_22050133_F3_CSRRSI 3'b110
+`define ysyx_22050133_F3_CSRRCI 3'b111
 
 `define ysyx_22050133_F3_MUL    3'b000
 `define ysyx_22050133_F3_MULH   3'b001
@@ -139,6 +146,21 @@ begin
 end
 endfunction
 
+function [1:0] CSRi;
+  input[63:0] csr;
+begin
+	case(csr[11:0])
+		12'h300:CSRi=0;
+		12'h305:CSRi=1;
+		12'h341:CSRi=2;
+		12'h342:CSRi=3;
+		//12'h304:CSRi=4;
+		//12'h344:CSRi=5;
+	  default:CSRi=0;
+	endcase
+end
+endfunction
+
 import "DPI-C" function void stopsim();
 import "DPI-C" function void set_gpr_ptr(input logic [63:0] a []);
 import "DPI-C" function void set_pc(
@@ -157,5 +179,8 @@ import "DPI-C" function void reg_info(
     input logic[4:0] rs1,input longint rs1d,
     input logic[4:0] rs2,input longint rs2d,
     input logic[4:0] rd,input longint rdd
+);
+import "DPI-C" function void npc_etrace(
+    input longint pc,input longint NO
 );
 `endif 

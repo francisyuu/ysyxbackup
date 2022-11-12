@@ -26,13 +26,14 @@
 //#include "verilated_vcd_c.h" 
 
 
-//#define CONFIG_DEBUGINFO
+#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
 #define CONFIG_ITRACE 1
-#define CONFIG_IRINGBUF 1
-#define CONFIG_FTRACE 1
-#define CONFIG_MTRACE 1
+//#define CONFIG_IRINGBUF 1
+//#define CONFIG_FTRACE 1
+//#define CONFIG_MTRACE 1
 #define CONFIG_DTRACE 1
+#define CONFIG_ETRACE 1
 #define CONFIG_WATCHPOINT 1
 //#define CONFIG_DIFFTEST 1
 #endif
@@ -84,6 +85,7 @@ extern const char *regs[];
 extern "C" void vmem_read(long long raddr, long long *rdata, char wmask);
 extern "C" void inst_read(long long raddr, long long *rdata);
 extern "C" void vmem_write(long long waddr, long long wdata, char wmask,long long wdataraw);
+extern "C" void npc_etrace(long long pc,long long NO);
 word_t vaddr_read(word_t addr,int n);
 
 void stopsim();
@@ -96,6 +98,7 @@ uint64_t isa_reg_str2val(const char *s, bool *success);
 void init_monitor(int argc, char *argv[]);
 int is_exit_status_bad();
 void init_log(const char *log_file);
+void etrace_write(char * str);
 void mtrace_write(char * str);
 void dtrace_write(char * str);
 void iring_write(char * str);

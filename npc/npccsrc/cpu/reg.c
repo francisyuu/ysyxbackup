@@ -26,6 +26,13 @@ extern "C" void reg_info(
 			regs[*((uint32_t*)rd)],(uint64_t)rdd
 			);
 }
+extern "C" void npc_etrace(long long pc,long long NO) {
+#ifdef CONFIG_ETRACE
+	char str[128];
+	sprintf(str,"0x%lx:ecall NO%ld",(word_t)pc,(word_t)NO);
+	etrace_write(str);
+#endif
+}
 
 const char *regs[] = {
   "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",

@@ -22,6 +22,13 @@ const char *regs[] = {
   "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
+const char *csrs[] = {
+  "mstatus", "mtvec", "mepc", "mcause", 
+};
+const word_t csrindexs[] = {
+  0x300, 0x305, 0x341, 0x342, 
+};
+word_t cpu_csr[4]={0xa00001800,0,0,0};
 
 void isa_reg_display() {
     for(int i=0;i<32;i++)
@@ -38,6 +45,13 @@ word_t isa_reg_str2val(const char *s, bool *success) {
       return cpu.gpr[i];
     }
   }
+  for(int i=0;i<4;i++)
+  {
+    if(strcmp(s,csrs[i])==0){
+      *success=true;
+      return cpu_csr[i];
+    }
+  }
   if(strcmp(s,"pc")==0)
   {
     *success=true;
@@ -45,4 +59,61 @@ word_t isa_reg_str2val(const char *s, bool *success) {
   }
   *success=false;
   return 0;
+}
+word_t csrindex(char* s)
+{
+  for(int i=0;i<4;i++)
+  {
+    if(strcmp(s,csrs[i])==0)
+      return csrindexs[i];
+  }
+	return -1;
+}
+
+void csrW(word_t csr, word_t data)
+{
+	int i=-1;
+	/*printf("csr=%lx",csr);*/
+	switch(csr)
+	{
+		case 0x300:
+			i=0;
+			break;
+		case 0x305:
+			i=1;
+			break;
+		case 0x341:
+			i=2;
+			break;
+		case 0x342:
+			i=3;
+			break;
+		default:
+			Assert(0,"wrong csr!\n");
+	}
+	cpu_csr[i]=data;
+}
+
+word_t csrR(word_t csr)
+{
+	int i=-1;
+	/*printf("csr=%lx",csr);*/
+	switch(csr)
+	{
+		case 0x300:
+			i=0;
+			break;
+		case 0x305:
+			i=1;
+			break;
+		case 0x341:
+			i=2;
+			break;
+		case 0x342:
+			i=3;
+			break;
+		default:
+			Assert(0,"wrong csr!\n");
+	}
+	return cpu_csr[i];
 }

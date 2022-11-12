@@ -43,7 +43,8 @@ void sdb_set_batch_mode();
 
 static char *log_file = NULL;
 #ifdef CONFIG_FTRACE
-static char elf_file[128];
+static char *elf_file = NULL;
+/*static char elf_file[128];*/
 #endif
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
@@ -89,11 +90,13 @@ static int parse_args(int argc, char *argv[]) {
       case 'd': diff_so_file = optarg; break;
 			case 1: {
 #ifdef CONFIG_FTRACE
-								//elf_file=malloc(strlen(optarg)+1);
-								strncpy(elf_file,optarg,strlen(optarg)-3);
-								elf_file[strlen(optarg)-3]=0;
-								strcat(elf_file,"elf");
-								//free(elfname);
+								elf_file=malloc(strlen(optarg)+1);
+                strcpy(elf_file,optarg);
+                int namebin=strlen(optarg)-3;
+                memset(elf_file+namebin,'e',1);
+                memset(elf_file+namebin+1,'l',1);
+                memset(elf_file+namebin+2,'f',1);
+                /*printf("opt=%s\n",optarg);*/
 #endif
 								img_file = optarg; return 0;
 

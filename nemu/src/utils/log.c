@@ -27,10 +27,11 @@ typedef struct
   int line_len;
   fpos_t pos;
 }tracepack_t;
-tracepack_t iring,mtrace,ftrace,dtrace;
-#define iring_buf_max 200
-#define mtrace_buf_max 200
+tracepack_t iring,mtrace,ftrace,dtrace,etrace;
+#define iring_buf_max 20
+#define mtrace_buf_max 20
 #define dtrace_buf_max 200
+#define etrace_buf_max 20
 
 void init_log(const char *log_file) {
   log_fp = stdout;
@@ -71,6 +72,17 @@ void init_log(const char *log_file) {
     dtrace.fp=fopen(dtrace_file,"w");
     fgetpos(dtrace.fp,&dtrace.pos);
 #endif
+#ifdef CONFIG_ETRACE
+    etrace.fp=NULL;
+    etrace.buf_len=etrace_buf_max;
+    etrace.line_cnt=0;
+    etrace.line_len=64;
+    char etrace_file[128];
+    strcpy(etrace_file,log_file);
+    strcat(etrace_file,".etrace");
+    etrace.fp=fopen(etrace_file,"w");
+    fgetpos(etrace.fp,&etrace.pos);
+#endif
 #ifdef CONFIG_FTRACE
     ftrace.fp=NULL;
     char ftrace_file[128];
@@ -110,6 +122,10 @@ void mtrace_write(char * str)
 void dtrace_write(char * str)
 {
   ring_write(&dtrace,str);
+}
+void etrace_write(char * str)
+{
+  ring_write(&etrace,str);
 }
 
 
@@ -235,7 +251,7 @@ void ftrace_write(word_t pc,word_t dnpc)
 				}
 			}
 			funcpack.curn=i;
-			if(funcpack.watchdog>1000000){
+			if(funcpack.watchdog>10000000){
 				printf("%08lx:usr program locked at [%s@0x%08lx]\n",pc,funcpack.f[i].name,funcpack.f[i].addr);
 				assert(0);
 			}

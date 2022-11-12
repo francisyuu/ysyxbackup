@@ -19,7 +19,13 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */
-
+#ifdef CONFIG_ETRACE
+	char str[128];
+	sprintf(str,"0x%lx:ecall NO%ld",epc,NO);
+	etrace_write(str);
+#endif
+	csrW(csrindex("mepc"),epc);
+	csrW(csrindex("mcause"),NO);
   return 0;
 }
 

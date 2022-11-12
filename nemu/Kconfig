@@ -172,16 +172,20 @@ config IRINGBUF
 
 config MTRACE
   depends on TRACE
-  bool "Enable memtrace"
+  bool "Enable mem trace"
   default y
 
 config FTRACE
   depends on TRACE
-  bool "Enable functrace"
+  bool "Enable func trace"
   default n
 config DTRACE
   depends on TRACE
-  bool "Enable devicetrace"
+  bool "Enable device trace"
+  default y
+config ETRACE
+  depends on TRACE
+  bool "Enable exception trace"
   default y
 
 choice

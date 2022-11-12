@@ -224,7 +224,7 @@ wire OPXXIW   =  opcode==`ysyx_22050133_OP_XXIW  ;
 wire OPRXX    =  opcode==`ysyx_22050133_OP_RXX   ; 
 wire OPRWX    =  opcode==`ysyx_22050133_OP_RWX   ; 
 wire OPFXX    =  opcode==`ysyx_22050133_OP_FXX   ; 
-wire OPEXX    =  opcode==`ysyx_22050133_OP_EXX   ; 
+wire OPSYS    =  opcode==`ysyx_22050133_OP_SYS   ; 
 
 wire F3JALR    =  funct3==`ysyx_22050133_F3_JALR     ; 
 wire F3BEQ     =  funct3==`ysyx_22050133_F3_BEQ      ; 
@@ -276,6 +276,13 @@ wire F3SUBW    =  funct3==`ysyx_22050133_F3_SUBW     ;
 wire F3SLLW    =  funct3==`ysyx_22050133_F3_SLLW     ; 
 wire F3SRLW    =  funct3==`ysyx_22050133_F3_SRLW     ; 
 wire F3SRAW    =  funct3==`ysyx_22050133_F3_SRAW     ; 
+
+wire F3CSRRW   =  funct3==`ysyx_22050133_F3_CSRRW    ; 
+wire F3CSRRS   =  funct3==`ysyx_22050133_F3_CSRRS    ; 
+wire F3CSRRC   =  funct3==`ysyx_22050133_F3_CSRRC    ; 
+wire F3CSRRWI  =  funct3==`ysyx_22050133_F3_CSRRWI   ; 
+wire F3CSRRSI  =  funct3==`ysyx_22050133_F3_CSRRSI   ; 
+wire F3CSRRCI  =  funct3==`ysyx_22050133_F3_CSRRCI   ; 
 
 wire F3MUL     =  funct3==`ysyx_22050133_F3_MUL      ; 
 wire F3MULH    =  funct3==`ysyx_22050133_F3_MULH     ; 
@@ -341,10 +348,6 @@ wire FPAUSE   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_PAUSE
 wire FECALL   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_ECALL 
 wire FEBREAK  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_EBREAK
 
-always@(posedge clk)begin
-  if(OPEXX)
-    if(FEBREAK)stopsim();
-end
 
 wire signed [63:0]rs1datas=rs1data;
 wire signed [63:0]rs2datas=rs2data;
@@ -397,6 +400,23 @@ wire[63:0] Rslliw =  SEXT(rs1data<<immI[4:0],3);
 wire[63:0] Rsrliw =  SEXT({32'd0,rs1data[31:0]>>immI[4:0]},3);
 wire[63:0] Rsraiw =  SEXT({32'd0,signed'(rs1data[31:0])>>>immI[4:0]},3);
 
+//reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
+reg[63:0] csr[3:0];
+always@(posedge clk)begin
+	if(rst)csr[0]<=64'ha00001800;
+	else if(OPSYS)begin
+    if(FEBREAK)stopsim();
+		else if(FECALL)begin
+			//$monitor("hello\n");
+			npc_etrace(pc,64'hb);
+			csr[2]<=pc;
+			csr[3]<=64'hb;
+		end
+		else if(F3CSRRW)csr[CSRi(immI)]<=rs1data;
+		else if(F3CSRRS)csr[CSRi(immI)]<=csr[CSRi(immI)]|rs1data;
+	end
+end
+
 assign dnpc=
   OPJAL ? pc+immJ
   :OPJALR ? (rs1data+immI)&64'hfffffffe
@@ -408,9 +428,12 @@ assign dnpc=
     :F3BLTU ? Rsub[63]^rs1data[63] ? pc+immB:0
     :F3BGEU ? !(Rsub[63]^rs1data[63]) ? pc+immB:0
     :0
+	:OPSYS ?
+		FECALL ? csr[1]
+		:0
   :0;
 assign rdwen=
-  (OPLUI|OPAUIPC|OPJAL|OPJALR|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX) ? 1:0;
+  (OPLUI|OPAUIPC|OPJAL|OPJALR|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX|OPSYS) ? 1:0;
 assign rddata=
   OPLUI ? immU
   :OPAUIPC ? pc+immU
@@ -492,6 +515,10 @@ assign rddata=
       :F3REMUW ? Rremuw
       :0
     :0
+	:OPSYS?
+		F3CSRRW?csr[CSRi(immI)]
+		:F3CSRRS?csr[CSRi(immI)]
+		:0
   :0;
 assign addr=
   OPSXX ? 

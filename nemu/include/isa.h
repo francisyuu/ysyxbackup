@@ -33,6 +33,9 @@ extern CPU_state cpu;
 extern const char* regs[];
 void isa_reg_display();
 word_t isa_reg_str2val(const char *name, bool *success);
+word_t csrR(word_t csr);
+void csrW(word_t csr, word_t data);
+word_t csrindex(char* s);
 
 // exec
 struct Decode;

@@ -103,3 +103,15 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_reg_info_TOP____02
     for (size_t rdd__Vidx = 0; rdd__Vidx < 1; ++rdd__Vidx) rdd__Vcvt = rdd;
     reg_info(rs1__Vcvt, rs1d__Vcvt, rs2__Vcvt, rs2d__Vcvt, rd__Vcvt, rdd__Vcvt);
 }
+
+extern "C" void npc_etrace(long long pc, long long NO);
+
+VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_npc_etrace_TOP____024unit(QData/*63:0*/ pc, QData/*63:0*/ NO) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+        Vysyx_22050133_NPC___024unit____Vdpiimwrap_npc_etrace_TOP____024unit\n"); );
+    // Body
+    long long pc__Vcvt;
+    for (size_t pc__Vidx = 0; pc__Vidx < 1; ++pc__Vidx) pc__Vcvt = pc;
+    long long NO__Vcvt;
+    for (size_t NO__Vidx = 0; NO__Vidx < 1; ++NO__Vidx) NO__Vcvt = NO;
+    npc_etrace(pc__Vcvt, NO__Vcvt);
+}

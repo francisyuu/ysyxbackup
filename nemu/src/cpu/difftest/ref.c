@@ -42,7 +42,9 @@ void difftest_exec(uint64_t n) {
 }
 
 void difftest_raise_intr(word_t NO) {
-  assert(0);
+	isa_raise_intr(NO,cpu.pc);
+	cpu.pc=csrR(csrindex("mtvec"));
+  /*assert(0);*/
 }
 
 void init_mem();
