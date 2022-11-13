@@ -44,6 +44,7 @@ void sdb_set_batch_mode();
 static char *log_file = NULL;
 #ifdef CONFIG_FTRACE
 static char *elf_file = NULL;
+static char *disk_file = NULL;
 /*static char elf_file[128];*/
 #endif
 static char *diff_so_file = NULL;
@@ -76,17 +77,19 @@ static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
     {"batch"    , no_argument      , NULL, 'b'},
     {"log"      , required_argument, NULL, 'l'},
+    {"disk"     , required_argument, NULL, 'k'},
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:k:d:p:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
+      case 'k': disk_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
 			case 1: {
 #ifdef CONFIG_FTRACE
@@ -126,7 +129,8 @@ void init_monitor(int argc, char *argv[]) {
   /* Open the log file. */
   init_log(log_file);
 
-	IFDEF(CONFIG_FTRACE,ftrace_init(elf_file));
+	IFDEF(CONFIG_FTRACE,ftrace_init(elf_file,"os_elf:"));
+	if(disk_file!=NULL)ftrace_init(disk_file,"disk_elf:");
 
   /* Initialize memory. */
   init_mem();

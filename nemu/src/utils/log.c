@@ -136,7 +136,15 @@ bool log_enable() {
 }
 
 //ftrace-------------------------------------------//
-
+#define FWHITELIST
+const char *fwhitelist[]=
+{
+	"printf",
+	"putc",
+	"puts",
+	"itoa",
+};
+int fwlsize=sizeof(fwhitelist)/sizeof(fwhitelist[0]);
 typedef struct
 {
   word_t  addr;
@@ -144,16 +152,18 @@ typedef struct
   char name[64];
 }funcs_t;
 
+#define FNMAX 200
 struct funcpack_t
 {
 	int nmax;
 	int depth;
 	int curn;
 	long long int watchdog;
-	funcs_t *f;
+	/*funcs_t *f;*/
+	funcs_t f[FNMAX];
 }funcpack;
 
-void ftrace_init(const char* elfname)
+void ftrace_init(const char* elfname,const char* label)
 {
   FILE* fp;
 	int success;
@@ -184,10 +194,7 @@ void ftrace_init(const char* elfname)
   success=fread(elf_str,1,elf_shdr[strshnum].sh_size,fp);
 	assert(success!=0);
   int symnum;
-	funcpack.nmax=0;
-	funcpack.curn=0;
-	funcpack.depth=0;
-	funcpack.watchdog=0;
+  int funcnum=funcpack.nmax;
   for(symnum=0;symnum<(elf_shdr[symshnum].sh_size/elf_shdr[symshnum].sh_entsize);symnum++)
   {
     if((elf_sym[symnum].st_info&0xf)==STT_FUNC)
@@ -195,8 +202,8 @@ void ftrace_init(const char* elfname)
       funcpack.nmax++;
     }
   }
-  funcpack.f=(funcs_t*)malloc(sizeof(funcs_t)*funcpack.nmax); 
-  int funcnum=0;
+	assert(funcpack.nmax<FNMAX);
+  /*funcpack.f=(funcs_t*)malloc(sizeof(funcs_t)*funcpack.nmax); */
   for(symnum=0;symnum<(elf_shdr[symshnum].sh_size/elf_shdr[symshnum].sh_entsize);symnum++)
   {
     if((elf_sym[symnum].st_info&0xf)==STT_FUNC)
@@ -208,9 +215,10 @@ void ftrace_init(const char* elfname)
 				funcpack.f[funcnum].end=elf_sym[symnum].st_value;
 			}
       else funcpack.f[funcnum].end=elf_sym[symnum].st_value+elf_sym[symnum].st_size-1;
-      strcpy(funcpack.f[funcnum].name,elf_str+elf_sym[symnum].st_name);
+      strcpy(funcpack.f[funcnum].name,label);
+      strcat(funcpack.f[funcnum].name,elf_str+elf_sym[symnum].st_name);
       //printf("funcload:addr:%08lx end:%08lx ",funcpack.f[funcnum].addr,funcpack.f[funcnum].end);
-      fprintf(ftrace.fp,"funcload:addr:%08lx end:%08lx ",funcpack.f[funcnum].addr,funcpack.f[funcnum].end);
+      fprintf(ftrace.fp,"func%dload:addr:%08lx end:%08lx ",funcnum,funcpack.f[funcnum].addr,funcpack.f[funcnum].end);
       //printf("name:%s\n",funcpack.f[funcnum].name);
       fprintf(ftrace.fp,"name:%s\n",funcpack.f[funcnum].name);
 			funcnum++;
@@ -222,16 +230,24 @@ void ftrace_init(const char* elfname)
 }
 void ftrace_free()
 {
-	free(funcpack.f);
+	/*free(funcpack.f);*/
 }
 void ftrace_write(word_t pc,word_t dnpc)
 {
-	//printf("0x%08lx 0x%08lx\n",pc,dnpc);
+	/*printf("0x%08lx 0x%08lx\n",pc,dnpc);*/
 	for(int i=0;i<funcpack.nmax;i++)
 	{
+			/*printf("i=%d %lx\n",i,funcpack.f[i].addr);*/
 		if(dnpc>=funcpack.f[i].addr&&
 				dnpc<=funcpack.f[i].end)
 		{
+#ifdef FWHITELIST
+			for(int j=0;j<fwlsize;j++)
+			{
+				if(strstr(funcpack.f[i].name,fwhitelist[j])!=NULL)return;
+				/*printf("?");*/
+			}
+#endif
 			funcpack.watchdog++;
 			if(i!=funcpack.curn)
 			{

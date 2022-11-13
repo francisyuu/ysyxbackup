@@ -29,13 +29,13 @@ void do_syscall(Context *c) {
   a[1] = c->GPR2;
   a[2] = c->GPR3;
   a[3] = c->GPR4;
-	/*printf("%s:a0=%d a1=%d a2=%d \n",syscallname[a[0]],a[1],a[2],a[3]);*/
+	printf("\n%s:a0=0x%x a1=0x%x a2=0x%x \n",syscallname[a[0]],a[1],a[2],a[3]);
 
   switch (a[0]) {
 		case SYS_exit:
 			{
-				halt(a[1]);
-				/*if(a[1]==SYS_exit)halt(a[1]);*/
+				/*halt(a[1]);*/
+				if(a[1]==SYS_exit)halt(a[1]);
 				break;
 			}
 		case SYS_yield:yield();break;
@@ -46,6 +46,14 @@ void do_syscall(Context *c) {
 					c->GPRx=a[3];
 				}
 				else c->GPRx=-1;
+				break;
+			}
+		case SYS_brk:
+			{
+				printf("clear 0x%x 0x%x\n",a[1],a[2]);
+					memset((char *)a[2],0,a[1]-a[2]);
+				c->GPRx=0;
+				/*if(a[1]==SYS_exit)halt(a[1]);*/
 				break;
 			}
     default: panic("Unhandled syscall ID = %d", a[0]);

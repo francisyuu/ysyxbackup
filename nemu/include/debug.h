@@ -44,7 +44,7 @@ void iring_write(char * str);
 void mtrace_write(char * str);
 void dtrace_write(char * str);
 void etrace_write(char * str);
-void ftrace_init(const char* elfname);
+void ftrace_init(const char* elfname,const char* label);
 void ftrace_write(word_t pc,word_t dnpc);
 void ftrace_free();
 #endif

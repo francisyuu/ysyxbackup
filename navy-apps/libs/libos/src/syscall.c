@@ -66,8 +66,14 @@ int _write(int fd, void *buf, size_t count) {
   /*_exit(SYS_write);*/
 }
 
+extern char end;
 void *_sbrk(intptr_t increment) {
-  return (void *)-1;
+	static intptr_t addr=&end;
+	intptr_t lastaddr=addr;
+	addr=addr+increment;
+	if(_syscall_(SYS_brk,addr,lastaddr,0)==0)return lastaddr;
+	else return (void *)-1;
+	/*return (void *)-1;*/
 }
 
 int _read(int fd, void *buf, size_t count) {
