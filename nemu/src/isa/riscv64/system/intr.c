@@ -21,7 +21,7 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
    */
 #ifdef CONFIG_ETRACE
 	char str[128];
-	sprintf(str,"0x%lx:ecall NO%ld",epc,NO);
+	sprintf(str,"0x%lx:ecall NO:%ld callNO:%ld",epc,NO,cpu.gpr[17]);
 	etrace_write(str);
 #endif
 	csrW(csrindex("mepc"),epc);

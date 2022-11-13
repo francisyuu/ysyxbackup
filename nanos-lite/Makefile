@@ -5,14 +5,17 @@ NAME = nanos-lite
 SRCS = $(shell find -L ./src/ -name "*.c" -o -name "*.cpp" -o -name "*.S")
 include $(AM_HOME)/Makefile
 
+
 ifeq ($(ARCH),native)
 ISA = am_native
 else
 INC_PATH += include $(NAVY_HOME)/libs/libc/include
 endif
 
+TEST ?= dummy
 ./src/resources.S: $(RAMDISK_FILE)
 	@touch $@
+	cp $(NAVY_HOME)/tests/$(TEST)/build/$(TEST)-$(ISA) $(AM_HOME)/../nanos-lite/build/ramdisk.img
 
 ifeq ($(HAS_NAVY),)
 files = $(RAMDISK_FILE) src/files.h src/syscall.h
