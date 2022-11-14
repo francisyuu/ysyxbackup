@@ -136,7 +136,7 @@ bool log_enable() {
 }
 
 //ftrace-------------------------------------------//
-#define FWHITELIST
+/*#define FWHITELIST*/
 const char *fwhitelist[]=
 {
 	"printf",
@@ -152,7 +152,7 @@ typedef struct
   char name[64];
 }funcs_t;
 
-#define FNMAX 200
+#define FNMAX 500
 struct funcpack_t
 {
 	int nmax;
@@ -261,7 +261,7 @@ void ftrace_write(word_t pc,word_t dnpc)
 				}
 				else
 				{
-					funcpack.depth--;
+					if(funcpack.depth>0)funcpack.depth--;
 				  for(int n=0;n<funcpack.depth;n++)fprintf(ftrace.fp,"-");
 					fprintf(ftrace.fp,"ret [%s@0x%08lx]\n",funcpack.f[i].name,funcpack.f[i].addr);
 				}

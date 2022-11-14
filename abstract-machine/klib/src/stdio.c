@@ -217,7 +217,93 @@ int sprintf(char *out, const char *fmt, ...) {
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
-  panic("Not implemented");
+  va_list ap;
+  int outi=0;
+  int fmti=0;
+  int num=0;
+  va_start(ap,fmt);
+  while(*(fmt+fmti)!=0&&num<n)
+  {
+			//printf("char:'%c'\n",*(fmt+fmti));
+    if(*(fmt+fmti)!='%')
+    {
+      *(out+outi++)=*(fmt+fmti);
+      num++;
+    }
+    else
+    {
+      fmti++;
+      switch(*(fmt+fmti))
+      {
+        case '%':
+          *(out+outi++)='%';
+          num++;
+          break;
+        case 'c':
+          *(out+outi++)=(char)va_arg(ap,int);
+          num++;
+          break;
+        case 'd':
+					{
+						int integer=va_arg(ap,int);
+						char str[32];
+						itoa(integer,str,-10);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
+          break;
+        case 'u':
+					{
+						unsigned int integer=va_arg(ap,unsigned int);
+						char str[32];
+						itoa(integer,str,10);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
+          break;
+        case 'x':
+        case 'p':
+					{
+						int integer=va_arg(ap,int);
+						char str[32];
+						itoa(integer,str,16);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
+          break;
+        case 's':
+					{
+						char *str=va_arg(ap,char *);
+						int n=0;
+						while(*(str+n)!=0)
+						{
+							*(out+outi++)=*(str+n++);
+							num++;
+						}
+					}
+          break;
+        default:
+          return -1;
+          break;
+      }
+    }
+    fmti++;
+  }
+  va_end(ap);
+  *(out+outi)=0;
+  return num;
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {

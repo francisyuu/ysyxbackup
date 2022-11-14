@@ -25,7 +25,14 @@ char *strcpy(char *dst, const char *src) {
 }
 
 char *strncpy(char *dst, const char *src, size_t n) {
-  panic("Not implemented");
+  int i=0;
+  while(*(src+i)!=0&&i<n)
+  {
+    *(dst+i)=*(src+i);
+    i++;
+  }
+  *(dst+i)=0;
+  return dst;
 }
 
 char *strcat(char *dst, const char *src) {
