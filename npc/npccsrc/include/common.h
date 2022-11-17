@@ -26,7 +26,7 @@
 //#include "verilated_vcd_c.h" 
 
 
-#define CONFIG_DEBUGINFO
+//#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
 #define CONFIG_ITRACE 1
 //#define CONFIG_IRINGBUF 1

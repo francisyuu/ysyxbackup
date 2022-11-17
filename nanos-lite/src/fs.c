@@ -49,14 +49,19 @@ int fs_open(const char *pathname, int flags, int mode)
 	for(int i=0;i<(sizeof(file_table)/sizeof(Finfo));i++)
 	{
 		/*printf("%d:%s %s\n",i,file_table[i].name,pathname);*/
-		if(strcmp(file_table[i].name,pathname)==0)return i;
+		if(strcmp(file_table[i].name,pathname)==0)
+		{
+			file_table[i].open_offset=0;
+			return i;
+		}
 	}
+	printf("no such file %s",pathname);
 	assert(0);
 	return -1;
 }
 size_t fs_read(int fd, void *buf, size_t len)
 {
-	if(file_table[fd].read!=NULL)return file_table[fd].read(buf,0,len);
+	if(file_table[fd].read!=NULL)return file_table[fd].read(buf,file_table[fd].open_offset,len);
 	int reallen=file_table[fd].open_offset+len>file_table[fd].size?file_table[fd].size-file_table[fd].open_offset:len;
 	if(reallen<0)return 0;
 	ramdisk_read(buf,file_table[fd].disk_offset+file_table[fd].open_offset,reallen);

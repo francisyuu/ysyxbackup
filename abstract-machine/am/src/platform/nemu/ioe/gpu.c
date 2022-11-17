@@ -46,7 +46,7 @@ void __am_gpu_status(AM_GPU_STATUS_T *status) {
 
 void __am_gpu_memcpy(AM_GPU_MEMCPY_T *mem)
 {
-	for(int i=0;i<mem->size;i++)
+	for(int i=0;i<mem->size/4;i++)
 	{
 		outl(FB_ADDR+mem->dest+i*4,*((uint32_t*)mem->src+i));
 	}

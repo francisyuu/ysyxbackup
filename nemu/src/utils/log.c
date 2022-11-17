@@ -136,7 +136,7 @@ bool log_enable() {
 }
 
 //ftrace-------------------------------------------//
-/*#define FWHITELIST*/
+#define FWHITELIST
 const char *fwhitelist[]=
 {
 	"printf",

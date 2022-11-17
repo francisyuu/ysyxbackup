@@ -5,14 +5,82 @@
 #include <stdlib.h>
 
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
+	/*printf("sdl");printf("blitsurface");*/
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
+	int x,y,w,h;
+	if(srcrect==NULL)
+	{
+		x=0;
+		y=0;
+		w=src->w;
+		h=src->h;
+	}
+	/*printf("%d %d %d %d\n",x,y,w,h);*/
+	int psize=dst->format->BytesPerPixel;
+	int rectlsize=w*psize;
+	for(int i=0;i<h;i++)
+	{
+		memcpy(dst->pixels+((dstrect->y+i)*dst->w+dstrect->x)*psize,
+					src->pixels+((y+i)*w+x)*psize,
+					rectlsize
+				);
+		/*for(int a=0;a<100000;a++)printf("");*/
+  /*SDL_UpdateRect(dst,0,0,400,300);*/
+	}
 }
 
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+	int x,y,w,h;
+	if(dstrect==NULL)
+	{
+		x=0;
+		y=0;
+		w=dst->w;
+		h=dst->h;
+	}
+	else
+	{
+		x=dstrect->x;
+		y=dstrect->y;
+		w=dstrect->w;
+		h=dstrect->h;
+	}
+	/*printf("%d %d %d %d\n",x,y,w,h);*/
+	/*uint32_t p[120000];*/
+	for(int i=0;i<h;i++)
+	{
+		for(int j=0;j<w;j++)
+		{
+			*((uint32_t *)dst->pixels+(y+i)*w+x+j)=color;
+		}
+	}
+	/*printf("%x",p);*/
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
+	/*uint32_t *p=(uint32_t *)malloc(w*h);*/
+	/*for(int i=0;i<w*h;i++)*/
+	/*{*/
+		/**(p+i)=s->format->palette->colors[s->pixels[i]].val;*/
+	/*}*/
+	if(s->format->BitsPerPixel==32)NDL_DrawRect((uint32_t*)s->pixels, x, y, w, h); 
+	else if(s->format->BitsPerPixel==8)
+	{
+		uint32_t *p=malloc(s->w*s->h*4);
+		int offset;
+		for(int i=0;i<h;i++)
+		{
+			offset=(y+i)*w+x;
+			for(int j=0;j<w;j++)
+			{
+				*(p+offset+j)=s->format->palette->colors[s->pixels[offset+j]].val;
+			}
+		}
+		NDL_DrawRect(p, x, y, w, h); 
+		free(p);
+	}
+	/*else printf("sdl");printf("updaterect");*/
 }
 
 // APIs below are already implemented.
