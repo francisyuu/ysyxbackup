@@ -343,10 +343,11 @@ wire F7REMUW   =  funct7==`ysyx_22050133_F7_REMUW   ;
 
 wire F7RXX3    =  funct7==`ysyx_22050133_F7_RXX3    ; 
 
-wire FFENCE   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_FENCE
-wire FPAUSE   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_PAUSE 
-wire FECALL   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_ECALL 
-wire FEBREAK  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_EBREAK
+wire FFENCE  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_FENCE;
+wire FPAUSE  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_PAUSE;
+wire FECALL  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_ECALL; 
+wire FEBREAK =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_EBREAK;
+wire FMRET   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_MRET; 
 
 
 wire signed [63:0]rs1datas=rs1data;
@@ -430,6 +431,7 @@ assign dnpc=
     :0
 	:OPSYS ?
 		FECALL ? csr[1]
+		:FMRET ? csr[2]
 		:0
   :0;
 assign rdwen=

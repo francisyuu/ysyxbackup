@@ -5,17 +5,27 @@ static Context* (*user_handler)(Event, Context*) = NULL;
 
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
+		/*printf("c=%x\n",c);*/
+		/*printf("m=%x 0=%x 1=%x 2=%x 3=%x r=%x\n",c->mcause,c->GPR1,c->GPR2,c->GPR3,c->GPR4,c->GPRx);*/
     Event ev = {0};
     switch (c->mcause) {
-			case 0xb:ev.event = EVENT_YIELD;break;
+			case 0xb:
+				switch(c->GPR1){
+					case -1:ev.event = EVENT_YIELD;break;
+					default:ev.event = EVENT_SYSCALL;break;
+				}
+				break;
       default: ev.event = EVENT_ERROR; break;
     }
+		/*printf("event%d\n",ev.event);*/
 
     c = user_handler(ev, c);
     assert(c != NULL);
+		/*printf("m=%x 0=%x 1=%x 2=%x 3=%x r=%x\n",c->mcause,c->GPR1,c->GPR2,c->GPR3,c->GPR4,c->GPRx);*/
   }
 
 	c->mepc+=4;
+	/*printf("mepc=%x\n",c->mepc);*/
   return c;
 }
 

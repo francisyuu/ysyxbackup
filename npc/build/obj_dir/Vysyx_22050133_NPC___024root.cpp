@@ -105,6 +105,7 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024root___sequent__TOP__3(Vysyx_22050133
     CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__F7RXX1;
     CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__F7RXX2;
     CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__F7RXX3;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__FMRET;
     CData/*1:0*/ __Vfunc_CSRi__21__Vfuncout;
     CData/*1:0*/ __Vfunc_CSRi__22__Vfuncout;
     CData/*1:0*/ __Vfunc_CSRi__23__Vfuncout;
@@ -508,6 +509,15 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024root___sequent__TOP__3(Vysyx_22050133
                                              | (((IData)(ysyx_22050133_NPC__DOT__funct3) 
                                                  << 5U) 
                                                 | (IData)(vlSelf->ysyx_22050133_NPC__DOT__rd))))));
+    ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__FMRET 
+        = (0x604000U == (((IData)(ysyx_22050133_NPC__DOT__funct7) 
+                          << 0x12U) | (((IData)(ysyx_22050133_NPC__DOT__rs2) 
+                                        << 0xdU) | 
+                                       (((IData)(ysyx_22050133_NPC__DOT__rs1) 
+                                         << 8U) | (
+                                                   ((IData)(ysyx_22050133_NPC__DOT__funct3) 
+                                                    << 5U) 
+                                                   | (IData)(vlSelf->ysyx_22050133_NPC__DOT__rd))))));
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__F3ADDI 
         = (0U == (IData)(ysyx_22050133_NPC__DOT__funct3));
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__F3SLTI 
@@ -913,7 +923,12 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024root___sequent__TOP__3(Vysyx_22050133
                                                     ? 
                                                    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__csr
                                                    [1U]
-                                                    : 0ULL)
+                                                    : 
+                                                   ((IData)(ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__FMRET)
+                                                     ? 
+                                                    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__csr
+                                                    [2U]
+                                                     : 0ULL))
                                                    : 0ULL))));
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rslt 
         = (QData)((IData)((1U & (IData)((ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rsub 

@@ -26,16 +26,17 @@
 //#include "verilated_vcd_c.h" 
 
 
-//#define CONFIG_DEBUGINFO
+#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
-#define CONFIG_ITRACE 1
+//#define CONFIG_ITRACE 1
 //#define CONFIG_IRINGBUF 1
 //#define CONFIG_FTRACE 1
 //#define CONFIG_MTRACE 1
-#define CONFIG_DTRACE 1
-#define CONFIG_ETRACE 1
-#define CONFIG_WATCHPOINT 1
-//#define CONFIG_DIFFTEST 1
+//#define CONFIG_DTRACE 1
+//#define CONFIG_ETRACE 1
+//#define CONFIG_WATCHPOINT 1
+#define CONFIG_DIFFTEST 1
+//#define CONFIG_DIFFTEST_DEVICE 1
 #endif
 
 #define CONFIG_DEVICE 1
@@ -102,7 +103,7 @@ void etrace_write(char * str);
 void mtrace_write(char * str);
 void dtrace_write(char * str);
 void iring_write(char * str);
-void ftrace_init(const char* elfname);
+void ftrace_init(const char* elfname,const char* label);
 void ftrace_free();
 void ftrace_write(word_t pc,word_t dnpc);
 

@@ -55,7 +55,7 @@ int fs_open(const char *pathname, int flags, int mode)
 			return i;
 		}
 	}
-	printf("no such file %s",pathname);
+	printf("no such file %s!",pathname);
 	assert(0);
 	return -1;
 }
@@ -65,8 +65,8 @@ size_t fs_read(int fd, void *buf, size_t len)
 	int reallen=file_table[fd].open_offset+len>file_table[fd].size?file_table[fd].size-file_table[fd].open_offset:len;
 	if(reallen<0)return 0;
 	ramdisk_read(buf,file_table[fd].disk_offset+file_table[fd].open_offset,reallen);
+	printf("%s fread:%d %d\n",file_table[fd].name,file_table[fd].open_offset,reallen);
 	file_table[fd].open_offset+=reallen;
-	/*printf("%d %d\n",file_table[fd].open_offset,reallen);*/
 	return reallen;
 }
 
@@ -76,8 +76,8 @@ size_t fs_write(int fd, const void *buf, size_t len)
 	int reallen=file_table[fd].open_offset+len>file_table[fd].size?file_table[fd].size-file_table[fd].open_offset:len;
 	if(reallen<0)return -1;
 	ramdisk_write(buf,file_table[fd].disk_offset+file_table[fd].open_offset,reallen);
+	printf("%s fwrite:%d %d\n",file_table[fd].name,file_table[fd].open_offset,reallen);
 	file_table[fd].open_offset+=reallen;
-	/*printf("%d %d\n",file_table[fd].open_offset,reallen);*/
 	return reallen;
 }
 size_t fs_lseek(int fd, size_t offset, int whence)
@@ -90,13 +90,10 @@ size_t fs_lseek(int fd, size_t offset, int whence)
 		case SEEK_END:new=offset+file_table[fd].size;break;
 		default:return -1;
 	}
-	/*printf("off=%d",new);*/
-	/*if(new<=file_table[fd].size)*/
-	{
 		file_table[fd].open_offset=new;
+		printf("%s set openoff=%d\n",file_table[fd].name,file_table[fd].open_offset);
 		return new;
-	}
-	return -1;
+	/*return -1;*/
 }
 int fs_close(int fd)
 {

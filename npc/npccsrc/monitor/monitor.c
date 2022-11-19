@@ -44,6 +44,7 @@ void sdb_set_batch_mode();
 
 static char *log_file = NULL;
 static char *elf_file = NULL;
+static char *disk_file = NULL;
 static char *diff_so_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
@@ -94,13 +95,15 @@ static int parse_args(int argc, char *argv[]) {
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-bhl:k:d:p:", table, NULL)) != -1) {
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
+      case 'k': disk_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
 			case 1: {
+								elf_file=disk_file;
 #ifdef CONFIG_FTRACE
 								elf_file=(char*)malloc(strlen(optarg)+1);
                 strcpy(elf_file,optarg);
@@ -138,7 +141,8 @@ void init_monitor(int argc, char *argv[]) {
   /* Open the log file. */
   init_log(log_file);
 #ifdef CONFIG_FTRACE
-	ftrace_init(elf_file);
+	ftrace_init(elf_file,"os_elf");
+	if(disk_file!=NULL)ftrace_init(disk_file,"disk_elf:");
 #endif
 
   /* Initialize memory. */

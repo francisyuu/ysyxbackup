@@ -29,8 +29,10 @@ void difftest_regcpy(void *dut, bool direction) {
 	if(direction==DIFFTEST_TO_REF)memcpy(&cpu,dut,sizeof(cpu));
 	else if(direction==DIFFTEST_TO_DUT)memcpy(dut,&cpu,sizeof(cpu));
   else Assert(0,"Wrong direction\n");
+	/*printf("%d a5=%lx,%lx\n",direction,((CPU_state *)dut)->gpr[15],cpu.gpr[15]);*/
 }
 
+void vga_update_screen();
 void difftest_exec(uint64_t n) {
   Decode s={};
   for (;n > 0; n --) {
@@ -39,17 +41,20 @@ void difftest_exec(uint64_t n) {
 		isa_exec_once(&s);
 		cpu.pc = s.dnpc;
   }
+  IFDEF(CONFIG_REF_DEVICE,IFDEF(CONFIG_HAS_VGA, vga_update_screen()));
 }
 
 void difftest_raise_intr(word_t NO) {
-	isa_raise_intr(NO,cpu.pc);
-	cpu.pc=csrR(csrindex("mtvec"));
-  /*assert(0);*/
+	/*isa_raise_intr(NO,cpu.pc);*/
+	/*cpu.pc=csrR(csrindex("mtvec"));*/
+	assert(0);
 }
 
 void init_mem();
+void init_device();
 void difftest_init(int port) {
   /* Perform ISA dependent initialization. */
 	init_mem();
+  IFDEF(CONFIG_REF_DEVICE,IFDEF(CONFIG_DEVICE, init_device()));
   init_isa();
 }

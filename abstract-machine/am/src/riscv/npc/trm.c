@@ -1,6 +1,7 @@
 #include <am.h>
 #include <klib-macros.h>
 #include "npc.h"
+#include "stdio.h"
 
 extern char _heap_start;
 int main(const char *args);
@@ -20,7 +21,9 @@ void putch(char ch) {
 }
 
 void halt(int code) {
+	printf("ebreak\n");
 	__asm__("ebreak");
+	printf("end\n");
   while (1);
 }
 

@@ -92,7 +92,8 @@ static int cmd_x(char *args) {
       if(exprsuccess==false)return false;
       for(int i=0;i<n;i++)
       {
-          printf("addr:0x%08lx  data:0x%08lx %lu\n",address,vaddr_read(address,4),vaddr_read(address,4));
+				word_t data=vaddr_read(address,4);
+          printf("addr:0x%08lx  data:0x%08lx %lu\n",address,data,data);
           address+=4;
       }
   }

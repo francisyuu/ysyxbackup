@@ -51,9 +51,9 @@ void NDL_OpenCanvas(int *w, int *h) {
     }
     close(fbctl);
   }
-	char info[64];
+	char info[64]={0};
 	read(dp_vgainfo,info,64);
-	char strw[10],strh[10];
+	char strw[10]={0},strh[10]={0};
 	int i=0,j=0;
 	printf("%s\n",info);
 	while(info[i]!=':')i++;
@@ -111,7 +111,7 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
 	/*printf("x=%d y=%d w=%d h=%d\n",x,y,w,h);*/
 	for(int i=0;i<h;i++)
 	{
-		int offsetp=i*w;
+		int offsetp=(y+i)*screen_w+x;
 		int offsets=(h_offset+y+i)*w_max+w_offset+x;
 		lseek(dp_vgafb,offsets*4,SEEK_SET);
 		write(dp_vgafb,pixels+offsetp,w*4);

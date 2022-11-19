@@ -41,7 +41,7 @@ word_t vaddr_read(word_t addr,int n)
 {
   word_t data;
   word_t mask=0xffffffffffffffff;
-  if(((addr&0x7ull)+n)>8)printf("warning:read over%lx:%dbytes",addr,n);
+  if(((addr&0x7ull)+n)>8)printf("warning:read over%lx:%dbytes\n",addr,n);
   if(addr>PMEM_RIGHT)
     {
       printf("access device, may cause dtrace\n");

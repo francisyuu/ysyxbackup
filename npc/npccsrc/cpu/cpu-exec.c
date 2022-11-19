@@ -148,6 +148,22 @@ void (*ref_difftest_memcpy)(word_t addr, void *buf, size_t n, bool direction) = 
 void (*ref_difftest_regcpy)(void *dut, bool direction) = NULL;
 void (*ref_difftest_exec)(uint64_t n) = NULL;
 void (*ref_difftest_raise_intr)(uint64_t NO) = NULL;
+static bool is_skip_ref[2] = {false,false};
+static int skip_dut_nr_inst = 0;
+
+// this is used to let ref skip instructions which
+// can not produce consistent behavior with NEMU
+void difftest_skip_ref() {
+  is_skip_ref[1] = true;
+  // If such an instruction is one of the instruction packing in QEMU
+  // (see below), we end the process of catching up with QEMU's pc to
+  // keep the consistent behavior in our best.
+  // Note that this is still not perfect: if the packed instructions
+  // already write some memory, and the incoming instruction in NEMU
+  // will load that memory, we will encounter false negative. But such
+  // situation is infrequent.
+  skip_dut_nr_inst = 0;
+}
 
 void init_difftest(char *ref_so_file, long img_size, int port) {
   printf("init difftest... \n");
@@ -229,15 +245,20 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
     //return;
   //}
 
-  //if (is_skip_ref) {
-    //// to skip the checking of an instruction, just copy the reg state to reference design
-    //ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
-    //is_skip_ref = false;
-    //return;
-  //}
+	/*printf("duta5=%lx\n",cpu.gpr[15]);*/
+	if (is_skip_ref[0]) {
+		// to skip the checking of an instruction, just copy the reg state to reference design
+    /*ref_difftest_exec(1);*/
+		/*printf("skip\n");*/
+			IFDEF(CONFIG_DIFFTEST_DEVICE,ref_difftest_exec(1));
+			ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+			is_skip_ref[0] = is_skip_ref[1];
+		return;
+	}
 
   ref_difftest_exec(1);
   ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
   checkregs(&ref_r, pc);
+	is_skip_ref[0] = is_skip_ref[1];
 }

@@ -50,6 +50,7 @@ ifneq ($(ISA), native)
 LIBS += libc libos
 CFLAGS += -U_FORTIFY_SOURCE  # fix compile error in Newlib on ubuntu
 else
+CFLAGS += -ggdb  # fix compile error in Newlib on ubuntu
 WL = -Wl,
 endif
 

@@ -5,10 +5,13 @@
 #include <stdlib.h>
 
 void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_Rect *dstrect) {
-	/*printf("sdl");printf("blitsurface");*/
+	/*printf("sdl ");printf("blitsurface\n");*/
   assert(dst && src);
   assert(dst->format->BitsPerPixel == src->format->BitsPerPixel);
 	int x,y,w,h;
+	int dx,dy,dw,dh;
+	int w0=src->w;
+	int h0=src->h;
 	if(srcrect==NULL)
 	{
 		x=0;
@@ -16,21 +19,57 @@ void SDL_BlitSurface(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst, SDL_
 		w=src->w;
 		h=src->h;
 	}
-	/*printf("%d %d %d %d\n",x,y,w,h);*/
-	int psize=dst->format->BytesPerPixel;
+	else
+	{
+		x=srcrect->x;
+		y=srcrect->y;
+		w=srcrect->w;
+		h=srcrect->h;
+	}
+	if(dstrect==NULL)
+	{
+		dx=0;
+		dy=0;
+		dw=w;
+		dh=h;
+	}
+	else
+	{
+		dx=dstrect->x;
+		dy=dstrect->y;
+		dw=dstrect->w;
+		dh=dstrect->h;
+	}
+	/*printf("x%d %d %d %d\n",x,y,w,h);*/
+	/*printf("dx%d %d %d %d\n",dx,dy,dw,dh);*/
+	int psize=src->format->BytesPerPixel;
 	int rectlsize=w*psize;
+	/*printf("formatp=%dBytes\n",psize);*/
 	for(int i=0;i<h;i++)
 	{
-		memcpy(dst->pixels+((dstrect->y+i)*dst->w+dstrect->x)*psize,
-					src->pixels+((y+i)*w+x)*psize,
+	/*printf("x");*/
+		memcpy(dst->pixels+((dy+i)*dst->w+dx)*psize,
+					src->pixels+((y+i)*w0+x)*psize,
 					rectlsize
 				);
 		/*for(int a=0;a<100000;a++)printf("");*/
-  /*SDL_UpdateRect(dst,0,0,400,300);*/
+	/*SDL_UpdateRect(dst,dx,dy,dw,dh);*/
 	}
+	/*SDL_UpdateRect(src,x,y,w,h);*/
+	/*SDL_UpdateRect(src,0,0,320,200);*/
+	/*printf("src\n");*/
+		/*if(x!=0)for(int a=0;a<10000000;a++)printf("");*/
+	/*SDL_UpdateRect(dst,dx,dy,dw,dh);*/
+	/*SDL_UpdateRect(dst,0,0,320,200);*/
+	/*printf("dst\n");*/
+		/*if(x!=0)for(int a=0;a<10000000;a++)printf("");*/
 }
 
 void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
+	/*printf("sdl ");printf("fillRect\n");*/
+	/*printf("color=%x %d\n",color,color);*/
+	int w0=dst->w;
+	int h0=dst->h;
 	int x,y,w,h;
 	if(dstrect==NULL)
 	{
@@ -46,41 +85,75 @@ void SDL_FillRect(SDL_Surface *dst, SDL_Rect *dstrect, uint32_t color) {
 		w=dstrect->w;
 		h=dstrect->h;
 	}
-	/*printf("%d %d %d %d\n",x,y,w,h);*/
-	/*uint32_t p[120000];*/
-	for(int i=0;i<h;i++)
+	if(dst->format->BitsPerPixel==32)
 	{
-		for(int j=0;j<w;j++)
+		/*printf("fmt 32\n");*/
+		if(color&DEFAULT_AMASK!=DEFAULT_AMASK)color=color&DEFAULT_AMASK;
+		for(int i=0;i<h;i++)
 		{
-			*((uint32_t *)dst->pixels+(y+i)*w+x+j)=color;
+			for(int j=0;j<w;j++)
+			{
+				*((uint32_t *)dst->pixels+(y+i)*w0+x+j)=color;
+			}
 		}
 	}
+	else if(dst->format->BitsPerPixel==8)
+	{
+		/*printf("fmt 8\n");*/
+		for(int i=0;i<h;i++)
+		{
+			for(int j=0;j<w;j++)
+			{
+				*(dst->pixels+(y+i)*w0+x+j)=color;
+			}
+		}
+	}
+	/*printf("%d %d %d %d\n",x,y,w,h);*/
+	/*uint32_t p[120000];*/
 	/*printf("%x",p);*/
 }
 
 void SDL_UpdateRect(SDL_Surface *s, int x, int y, int w, int h) {
+	/*printf("sdl ");printf("updateRect\n");*/
 	/*uint32_t *p=(uint32_t *)malloc(w*h);*/
 	/*for(int i=0;i<w*h;i++)*/
 	/*{*/
 		/**(p+i)=s->format->palette->colors[s->pixels[i]].val;*/
 	/*}*/
+	/*printf("update%d %d %d %d %d %d\n",s->w,s->h,x,y,w,h);*/
 	if(s->format->BitsPerPixel==32)NDL_DrawRect((uint32_t*)s->pixels, x, y, w, h); 
 	else if(s->format->BitsPerPixel==8)
 	{
+		/*printf("fmt 8\n");*/
 		uint32_t *p=malloc(s->w*s->h*4);
+		/*uint32_t *p=malloc(320*200*4);*/
+		if(w==0&&h==0)
+		{
+			w=s->w;
+			h=s->h;
+		}
 		int offset;
 		for(int i=0;i<h;i++)
 		{
-			offset=(y+i)*w+x;
+			offset=(y+i)*s->w+x;
+			/*offset=(y+i)*320+x;*/
 			for(int j=0;j<w;j++)
 			{
-				*(p+offset+j)=s->format->palette->colors[s->pixels[offset+j]].val;
+				uint8_t r=s->format->palette->colors[s->pixels[offset+j]].r;
+				uint8_t g=s->format->palette->colors[s->pixels[offset+j]].g;
+				uint8_t b=s->format->palette->colors[s->pixels[offset+j]].b;
+				uint8_t a=s->format->palette->colors[s->pixels[offset+j]].a;
+
+				uint32_t color=a<<24|r<<16|g<<8|b;
+				*(p+offset+j)=color;
 			}
 		}
 		NDL_DrawRect(p, x, y, w, h); 
+		/*NDL_DrawRect(p, 0, 0, 320, 200); */
 		free(p);
 	}
 	/*else printf("sdl");printf("updaterect");*/
+	/*printf("fre\n");*/
 }
 
 // APIs below are already implemented.

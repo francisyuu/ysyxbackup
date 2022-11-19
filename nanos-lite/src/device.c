@@ -32,7 +32,8 @@ size_t events_read(void *buf, size_t offset, size_t len) {
 	if(ev.keycode==AM_KEY_NONE)return 0;
 	/**((uint8_t*)buf)=ev.keydown?SDL_KEYDOWN:SDL_KEYUP;*/
 	/**((uint8_t*)buf+1)=ev.keycode;*/
-	snprintf(buf,len,"k%c %s\n",ev.keydown?'d':'u',keyname[ev.keycode],ev.keycode,ev.keydown ? "DOWN" : "UP");
+	sprintf(buf,"k%c %s\n",ev.keydown?'d':'u',keyname[ev.keycode],ev.keycode,ev.keydown ? "DOWN" : "UP");
+	/*snprintf(buf,len,"k%c %s\n",ev.keydown?'d':'u',keyname[ev.keycode],ev.keycode,ev.keydown ? "DOWN" : "UP");*/
 	/*printf("Got  (kbd): %s (%d) %s\n", keyname[ev.keycode], ev.keycode, ev.keydown ? "DOWN" : "UP");*/
 	return 1;
 	/*return snprintf(buf,len,"Got  (kbd): %s (%d) %s\n", keyname[ev.keycode], ev.keycode, ev.keydown ? "DOWN" : "UP");*/

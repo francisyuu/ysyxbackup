@@ -12,6 +12,7 @@ SECTIONS {
   .rodata : {
     *(.rodata*)
   }
+	. = ALIGN(8); /* img data align*/
   .data : {
     *(.data)
   }

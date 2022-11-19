@@ -125,36 +125,48 @@ typedef	__uint128_t fixedptud;
  * Putting them only in macros will effectively make them optional. */
 #define fixedpt_tofloat(T) ((float) ((T)*((float)(1)/(float)(1L << FIXEDPT_FBITS))))
 
+
 /* Multiplies a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_muli(fixedpt A, int B) {
-	return (A*fixedpt_fromint(B))>>FIXEDPT_FBITS;
+	fixedpt r=A*B;
+	//printf("fxedpt_muli %d %d %d\n",A,B,r);
+	return r;
 }
 
 /* Divides a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_divi(fixedpt A, int B) {
-	return (A/fixedpt_fromint(B))<<FIXEDPT_FBITS;
+	fixedpt r=A/B;
+	//printf("fxedpt_divi %d %d %d\n",A,B,r);
+	return r;
 }
 
 /* Multiplies two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_mul(fixedpt A, fixedpt B) {
-	return (A*B)>>FIXEDPT_FBITS;
+	fixedpt r=A*B/FIXEDPT_ONE;
+	//printf("fxedpt_mul %d %d %d\n",A,B,r);
+	return r;
 }
 
 
 /* Divides two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
-	return (A/B)<<FIXEDPT_FBITS;
+	fixedpt r=A*FIXEDPT_ONE/B;
+	//printf("fxedpt_div %d %d %d\n",A,B,r);
+	return r;
 }
 
 static inline fixedpt fixedpt_abs(fixedpt A) {
+	//printf("fxedpt_abs %d \n",fixedpt_toint(A));
 	return (A>>31)?(fixedpt_sub(0,A)):A;
 }
 
 static inline fixedpt fixedpt_floor(fixedpt A) {
+	//printf("fxedpt_floor %d \n",fixedpt_toint(A));
 	return A&(~FIXEDPT_FMASK);
 }
 
 static inline fixedpt fixedpt_ceil(fixedpt A) {
+	//printf("fxedpt_ceil %d \n",fixedpt_toint(A));
 	if((A&FIXEDPT_FMASK)==0)return A;
 	return fixedpt_add(A,FIXEDPT_ONE)&(~FIXEDPT_FMASK);
 	//return (A>>31==0)?(A&(~FIXEDPT_FMASK)):(fixedpt_sub(A,FIXEDPT_ONE)&(~FIXEDPT_FMASK));
