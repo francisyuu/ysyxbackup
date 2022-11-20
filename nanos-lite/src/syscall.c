@@ -31,16 +31,16 @@ void do_syscall(Context *c) {
   a[1] = c->GPR2;
   a[2] = c->GPR3;
   a[3] = c->GPR4;
-	if(a[0]==SYS_read||a[0]==SYS_write||a[0]==SYS_lseek||a[0]==SYS_close)printf("%s:",fs_name(a[1]));
-	printf("%s:a0=0x%x a1=0x%x a2=0x%x \n",syscallname[a[0]],a[1],a[2],a[3]);
+	/*if(a[0]==SYS_read||a[0]==SYS_write||a[0]==SYS_lseek||a[0]==SYS_close)printf("%s:",fs_name(a[1]));*/
+	/*printf("%s:a0=0x%x a1=0x%x a2=0x%x \n",syscallname[a[0]],a[1],a[2],a[3]);*/
 
   switch (a[0]) {
 		case SYS_exit:
 			{
 				/*halt(a[1]);*/
-				printf("exit %d\n",a[1]);
-				if(a[1]==SYS_exit)halt(a[1]);
-				/*naive_uload(NULL,"/bin/nterm");*/
+				/*printf("exit %d\n",a[1]);*/
+				/*if(a[1]==SYS_exit)halt(a[1]);*/
+				naive_uload(NULL,"/bin/nterm");
 				break;
 			}
 		case SYS_yield:yield();break;

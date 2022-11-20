@@ -350,18 +350,24 @@ wire FEBREAK =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_EBREAK;
 wire FMRET   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_MRET; 
 
 
-wire signed [63:0]rs1datas=rs1data;
-wire signed [63:0]rs2datas=rs2data;
-wire signed [63:0]immdatas=immI;
+wire [63:0] rs2datan=~rs2data;
+wire [63:0] immIn=~immI;
 
 wire[63:0] Radd  =  rs1data+rs2data;
-wire[63:0] Rsub  =  rs1data-rs2data;
+wire[64:0] Rsub65=  rs1data+rs2datan+1;
+wire[63:0] Rsub  =  Rsub65[63:0];
+wire       Rsubc =  Rsub65[64];
+wire       Rsubo =  (rs1data[63]==rs2datan[63])&&(Rsub[63]^rs1data[63]);
 wire[63:0] Rsll  =  rs1data<<rs2data;
-wire[63:0] Rslt  =  {63'd0,Rsub[63]};
-wire[63:0] Rsltu =  {63'd0,rs1data[63]^Rsub[63]};
+wire       Rblt  =	Rsub[63]^Rsubo;
+wire       Rbge  =	!Rblt;
+wire			 Rbltu =  !Rsubc;
+wire       Rbgeu =	Rsubc;
+wire[63:0] Rslt  =  {63'd0,Rblt};
+wire[63:0] Rsltu =  {63'd0,Rbltu};
 wire[63:0] Rxor  =  rs1data^rs2data;
 wire[63:0] Rsrl  =  rs1data>>rs2data;
-wire[63:0] Rsra  =  rs1datas>>>rs2data; 
+wire[63:0] Rsra  =  signed'(rs1data)>>>rs2data; 
 wire[63:0] Ror   =  rs1data|rs2data;
 wire[63:0] Rand  =  rs1data&rs2data;
 
@@ -375,27 +381,34 @@ wire[63:0] Rmul   =  rs1data*rs2data;
 wire[63:0] Rmulh  =  0;
 wire[63:0] Rmulhsu=  0;
 wire[63:0] Rmulhu =  0;
-wire[63:0] Rdiv   =  rs1datas/rs2datas;
+wire[63:0] Rdiv   =  signed'(rs1data)/signed'(rs2data);
 wire[63:0] Rdivu  =  rs1data/rs2data;
-wire[63:0] Rrem   =  rs1datas%rs2datas;
+wire[63:0] Rrem   =  signed'(rs1data)%signed'(rs2data);
 wire[63:0] Rremu  =  rs1data%rs2data;
 
 wire[63:0] Rmulw  =  SEXT(Rmul,3);
-wire[63:0] Rdivw  =  SEXT({32'd0,rs1datas[31:0]/rs2datas[31:0]},3);
+wire[63:0] Rdivw  =  SEXT({32'd0,signed'(rs1data[31:0])/signed'(rs2data[31:0])},3);
 wire[63:0] Rdivuw =  SEXT({32'd0,rs1data[31:0]/rs2data[31:0]},3);
-wire[63:0] Rremw  =  SEXT({32'd0,rs1datas[31:0]%rs2datas[31:0]},3);
+wire[63:0] Rremw  =  SEXT({32'd0,signed'(rs1data[31:0])%signed'(rs2data[31:0])},3);
 wire[63:0] Rremuw =  SEXT({32'd0,rs1data[31:0]%rs2data[31:0]},3);
 
 wire[63:0] Raddi  =  rs1data+immI;
-wire[63:0] Rsubi  =  rs1data-immI;
-wire[63:0] Rslti  =  {63'd0,Rsubi[63]};
-wire[63:0] Rsltiu =  {63'd0,rs1data[63]^Rsubi[63]};
+wire[64:0] Rsubi65=  rs1data+immIn+1;
+wire[63:0] Rsubi  =  Rsubi65[63:0];
+wire       Rsubic =  Rsubi65[64];
+wire       Rsubio =  (rs1data[63]==immIn[63])&&(Rsubi[63]^rs1data[63]);
+wire       Rblti  =	Rsubi[63]^Rsubio;
+wire       Rbgei  =	!Rblti;
+wire			 Rbltiu = !Rsubic;
+wire       Rbgeiu =	Rsubic;
+wire[63:0] Rslti  =  {63'd0,Rblti};
+wire[63:0] Rsltiu =  {63'd0,Rbltiu};
 wire[63:0] Rxori  =  rs1data^immI;
 wire[63:0] Rori   =  rs1data|immI;
 wire[63:0] Randi  =  rs1data&immI;
 wire[63:0] Rslli  =  rs1data<<immI[5:0];
-wire[63:0] Rsrli  =  rs1datas>>immI[5:0];
-wire[63:0] Rsrai  =  rs1datas>>>immI[5:0];
+wire[63:0] Rsrli  =  rs1data>>immI[5:0];
+wire[63:0] Rsrai  =  signed'(rs1data)>>>immI[5:0];
 wire[63:0] Raddiw =  SEXT(Raddi,3);
 wire[63:0] Rslliw =  SEXT(rs1data<<immI[4:0],3);
 wire[63:0] Rsrliw =  SEXT({32'd0,rs1data[31:0]>>immI[4:0]},3);
@@ -424,10 +437,12 @@ assign dnpc=
   :OPBXX ? 
     F3BEQ ? rs1data==rs2data ? pc+immB:0
     :F3BNE ? rs1data!=rs2data ? pc+immB:0
-    :F3BLT ? Rsub[63] ? pc+immB:0
-    :F3BGE ? !Rsub[63] ? pc+immB:0
-    :F3BLTU ? Rsub[63]^rs1data[63] ? pc+immB:0
-    :F3BGEU ? !(Rsub[63]^rs1data[63]) ? pc+immB:0
+    :F3BLT ? Rblt ? pc+immB:0
+    :F3BGE ? Rbge ? pc+immB:0
+    //:F3BLTU ? rs1data<rs2data ? pc+immB:0
+    //:F3BGEU ? rs1data>=rs2data ? pc+immB:0
+		:F3BLTU ? Rbltu ? pc+immB:0
+		:F3BGEU ? Rbgeu ? pc+immB:0
     :0
 	:OPSYS ?
 		FECALL ? csr[1]

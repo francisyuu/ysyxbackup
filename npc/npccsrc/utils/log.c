@@ -28,10 +28,10 @@ typedef struct
   fpos_t pos;
 }tracepack_t;
 tracepack_t iring,mtrace,ftrace,dtrace,etrace;
-#define iring_buf_max 20
-#define mtrace_buf_max 20
+#define iring_buf_max 1000
+#define mtrace_buf_max 1000
 #define dtrace_buf_max 200
-#define etrace_buf_max 20
+#define etrace_buf_max 200
 
 void init_log(const char *log_file) {
   log_fp = stdout;

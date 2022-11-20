@@ -21,9 +21,10 @@ void putch(char ch) {
 }
 
 void halt(int code) {
-	printf("ebreak\n");
-	__asm__("ebreak");
-	printf("end\n");
+	printf("ebreak %d\n",code);
+  asm volatile("mv a0, %0; ebreak" : :"r"(code));
+	/*__asm__("ebreak");*/
+	/*printf("end\n");*/
   while (1);
 }
 

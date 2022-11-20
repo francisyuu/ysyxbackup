@@ -59,6 +59,24 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   IFDEF(CONFIG_WATCHPOINT, wp_update(&nemu_state.state));
   IFDEF(CONFIG_FTRACE, ftrace_write(_this->pc,dnpc));
   if (nemu_state.state == NEMU_RUNNING)IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+	if (nemu_state.state == NEMU_ABORT)
+	{
+	char *p = _this->logbuf;
+	p += snprintf(p, sizeof(_this->logbuf), FMT_WORD ":", _this->pc);
+	int i;
+	uint8_t *inst = (uint8_t *)&_this->inst;
+	for (i = 3; i >= 0; i --) {
+		p += snprintf(p, 4, " %02x", inst[i]);
+	}
+	memset(p, ' ', 1);
+	p += 1;
+
+	disassemble(p, _this->logbuf + sizeof(_this->logbuf) - p,
+			 _this->pc, (uint8_t *)&_this->inst, 4);
+  printf("%s\n",_this->logbuf);
+		/*IFDEF(CONFIG_ITRACE, {puts(_this->logbuf);return;}); */
+		/*printf("inst:%016x\n",_this->inst);*/
+	}
 }
 #endif
 
@@ -252,13 +270,14 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 		/*printf("skip\n");*/
 			IFDEF(CONFIG_DIFFTEST_DEVICE,ref_difftest_exec(1));
 			ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
-			is_skip_ref[0] = is_skip_ref[1];
-		return;
 	}
-
-  ref_difftest_exec(1);
-  ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-
-  checkregs(&ref_r, pc);
+	else
+	{
+		ref_difftest_exec(1);
+		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+		checkregs(&ref_r, pc);
+	}
 	is_skip_ref[0] = is_skip_ref[1];
+	is_skip_ref[1] = false;
+	return;
 }

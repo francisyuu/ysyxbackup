@@ -166,9 +166,9 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize the simple debugger. */
   init_sdb();
 
-#ifdef CONFIG_ITRACE
+/*#ifdef CONFIG_ITRACE*/
   init_disasm("riscv64-pc-linux-gnu");
-#endif
+/*#endif*/
   printf("init all finished! \n");
 
   /* Display welcome message. */
