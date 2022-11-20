@@ -373,9 +373,9 @@ wire[63:0] Rand  =  rs1data&rs2data;
 
 wire[63:0] Raddw  =  SEXT(Radd,3);
 wire[63:0] Rsubw  =  SEXT(Rsub,3);
-wire[63:0] Rsllw  =  SEXT(rs1data<<rs2data,3);
-wire[63:0] Rsrlw  =  SEXT({32'd0,rs1data[31:0]>>rs2data},3);
-wire[63:0] Rsraw  =  SEXT({32'd0,signed'(rs1data[31:0])>>>rs2data},3);
+wire[63:0] Rsllw  =  SEXT(rs1data<<rs2data[4:0],3);
+wire[63:0] Rsrlw  =  SEXT({32'd0,rs1data[31:0]>>rs2data[4:0]},3);
+wire[63:0] Rsraw  =  SEXT({32'd0,signed'(rs1data[31:0])>>>rs2data[4:0]},3);
 
 wire[63:0] Rmul   =  rs1data*rs2data;
 wire[63:0] Rmulh  =  0;

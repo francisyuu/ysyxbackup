@@ -33,6 +33,7 @@ static bool g_print_step = true;
 
 void device_update();
 
+void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
@@ -48,6 +49,24 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_FTRACE
   ftrace_write(_this->pc,dnpc);
 #endif
+	if (nemu_state.state == NEMU_ABORT)
+	{
+	char *p = _this->logbuf;
+	p += snprintf(p, sizeof(_this->logbuf), FMT_WORD ":", _this->pc);
+	int i;
+	uint8_t *inst = (uint8_t *)&_this->isa.inst.val;
+	for (i = 3; i >= 0; i --) {
+		p += snprintf(p, 4, " %02x", inst[i]);
+	}
+	memset(p, ' ', 1);
+	p += 1;
+
+	disassemble(p, _this->logbuf + sizeof(_this->logbuf) - p,
+			 _this->pc, (uint8_t *)&_this->isa.inst.val, 4);
+  printf("%s\n",_this->logbuf);
+		/*IFDEF(CONFIG_ITRACE, {puts(_this->logbuf);return;}); */
+		/*printf("inst:%016x\n",_this->inst);*/
+	}
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
@@ -71,7 +90,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   memset(p, ' ', space_len);
   p += space_len;
 
-  void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+  /*void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);*/
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
 #endif

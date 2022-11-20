@@ -58,7 +58,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   IFDEF(CONFIG_IRINGBUF, iring_write(_this->logbuf));
   IFDEF(CONFIG_WATCHPOINT, wp_update(&nemu_state.state));
   IFDEF(CONFIG_FTRACE, ftrace_write(_this->pc,dnpc));
-  if (nemu_state.state == NEMU_RUNNING)IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+  /*if (nemu_state.state == NEMU_RUNNING)IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));*/
+  IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+
 	if (nemu_state.state == NEMU_ABORT)
 	{
 	char *p = _this->logbuf;
@@ -240,11 +242,19 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
 }
 
 static void checkregs(CPU_state *ref, vaddr_t pc) {
+		static CPU_state laststate;
   if (!isa_difftest_checkregs(ref, pc)) {
     nemu_state.state = NEMU_ABORT;
     nemu_state.halt_pc = pc;
-    isa_reg_display();
+    /*isa_reg_display();*/
+    for(int i=0;i<32;i++)
+    {
+        printf("last %-3s:0x%016lx ",*(regs+i),laststate.gpr[i]); 
+        printf("dut %-3s:0x%016lx  ",*(regs+i),cpu.gpr[i]); 
+        printf("ref %-3s:0x%016lx\n",*(regs+i),ref->gpr[i]); 
+    }
   }
+		laststate=cpu;
 }
 
 void difftest_step(vaddr_t pc, vaddr_t npc) {
@@ -266,13 +276,13 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 	/*printf("duta5=%lx\n",cpu.gpr[15]);*/
 	if (is_skip_ref[0]) {
 		// to skip the checking of an instruction, just copy the reg state to reference design
-    /*ref_difftest_exec(1);*/
 		/*printf("skip\n");*/
 			IFDEF(CONFIG_DIFFTEST_DEVICE,ref_difftest_exec(1));
 			ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 	}
 	else
 	{
+		/*printf("test\n");*/
 		ref_difftest_exec(1);
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 		checkregs(&ref_r, pc);

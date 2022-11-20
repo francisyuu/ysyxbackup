@@ -580,7 +580,8 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rsrai 
         = VL_SHIFTRS_QQI(64,64,6, vlSelf->ysyx_22050133_NPC__DOT__rs1data, 
                          (0x3fU & (IData)(vlSelf->ysyx_22050133_NPC__DOT__immI)));
-    __Vfunc_SEXT__7__din = VL_SHIFTL_QQQ(64,64,64, vlSelf->ysyx_22050133_NPC__DOT__rs1data, ysyx_22050133_NPC__DOT__rs2data);
+    __Vfunc_SEXT__7__din = (vlSelf->ysyx_22050133_NPC__DOT__rs1data 
+                            << (0x1fU & (IData)(ysyx_22050133_NPC__DOT__rs2data)));
     __Vfunc_SEXT__7__Vfuncout = (((QData)((IData)((- (IData)(
                                                              (1U 
                                                               & (IData)(
@@ -589,7 +590,9 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                   << 0x20U) | (QData)((IData)(__Vfunc_SEXT__7__din)));
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rsllw 
         = __Vfunc_SEXT__7__Vfuncout;
-    __Vfunc_SEXT__8__din = (QData)((IData)(VL_SHIFTR_IIQ(32,32,64, (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs1data), ysyx_22050133_NPC__DOT__rs2data)));
+    __Vfunc_SEXT__8__din = (QData)((IData)(((IData)(vlSelf->ysyx_22050133_NPC__DOT__rs1data) 
+                                            >> (0x1fU 
+                                                & (IData)(ysyx_22050133_NPC__DOT__rs2data)))));
     __Vfunc_SEXT__8__Vfuncout = (((QData)((IData)((- (IData)(
                                                              (1U 
                                                               & (IData)(
@@ -598,7 +601,9 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                   << 0x20U) | (QData)((IData)(__Vfunc_SEXT__8__din)));
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rsrlw 
         = __Vfunc_SEXT__8__Vfuncout;
-    __Vfunc_SEXT__9__din = (QData)((IData)(VL_SHIFTRS_IIQ(32,32,64, (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs1data), ysyx_22050133_NPC__DOT__rs2data)));
+    __Vfunc_SEXT__9__din = (QData)((IData)(VL_SHIFTRS_III(32,32,5, (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs1data), 
+                                                          (0x1fU 
+                                                           & (IData)(ysyx_22050133_NPC__DOT__rs2data)))));
     __Vfunc_SEXT__9__Vfuncout = (((QData)((IData)((- (IData)(
                                                              (1U 
                                                               & (IData)(

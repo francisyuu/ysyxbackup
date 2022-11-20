@@ -92,11 +92,19 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 }
 
 static void checkregs(CPU_state *ref, vaddr_t pc) {
+		static CPU_state laststate;
   if (!isa_difftest_checkregs(ref, pc)) {
     nemu_state.state = NEMU_ABORT;
     nemu_state.halt_pc = pc;
-    isa_reg_display();
+    /*isa_reg_display();*/
+    for(int i=0;i<32;i++)
+    {
+        printf("last %-3s:0x%016lx ",*(regs+i),laststate.gpr[i]); 
+        printf("dut %-3s:0x%016lx  ",*(regs+i),cpu.gpr[i]); 
+        printf("ref %-3s:0x%016lx\n",*(regs+i),ref->gpr[i]); 
+    }
   }
+		laststate=cpu;
 }
 
 void difftest_step(vaddr_t pc, vaddr_t npc) {
