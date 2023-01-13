@@ -41,6 +41,7 @@ reg[1:0]  MEMREG_ctrl_mem ;
 reg[1:0]  MEMREG_ctrl_wb  ;
 reg[63:0] MEMREG_dnpc      ;
 reg[63:0] MEMREG_result    ;
+reg[63:0] MEMREG_data    ;
 reg[63:0] MEMREG_rd    ;
 
 wire [63:0]addr;
@@ -51,11 +52,38 @@ wire [63:0]douts;
 reg WBREG_en;
 reg [1:0]WBREG_ctrl_wb;
 reg [63:0]WBREG_memdata;
-reg [63:0]WBREG_rddata;
+reg [63:0]WBREG_result;
 reg [63:0]WBREG_rd;
+
+always@(posedge clk)
+begin
+  if(rst)begin
+    IDREG_en<=1;
+    EXREG_en<=0;
+    MEMREG_en<=0;
+    WBREG_en<=0;
+  end
+  else if(IDREG_en==1)begin
+    IDREG_en<=0;
+    EXREG_en<=1;
+  end
+  else if(EXREG_en==1)begin
+    EXREG_en<=0;
+    MEMREG_en<=1;
+  end
+  else if(MEMREG_en==1)begin
+    MEMREG_en<=0;
+    WBREG_en<=1;
+  end
+  else if(WBREG_en==1)begin
+    WBREG_en<=0;
+    IDREG_en<=1;
+  end
+end
 
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .clk(clk),
+  .IFU_en(IDREG_en),
   .rst(rst),
   .dnpc(MEMREG_dnpc),
   .PCsrc(PCsrc),
@@ -65,13 +93,19 @@ ysyx_22050133_IFU ysyx_22050133_IFU_dut(
 
 always@(posedge clk)
 begin
+  if(rst)begin
+    IDREG_pc<=0;
+    IDREG_inst<=0;
+  end
   if(IDREG_en)begin
     IDREG_pc<=pc;
     IDREG_inst<=inst;
+  end
 end
 
 
 ysyx_22050133_IDU ysyx_22050133_IDU_dut(
+  .clk      (clk),
   .inst     (IDREG_inst     ),
   .rdwen    (WBREG_ctrl_wb    ),
   .rdin     (WBREG_rd     ),
@@ -87,7 +121,17 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
 
 always@(posedge clk)
 begin
-  if(EXREG_en)begin
+  if(rst)begin
+    EXREG_ctrl_wb <=0;
+    EXREG_ctrl_mem<=0;
+    EXREG_ctrl_ex <=0;
+    EXREG_pc      <=0;
+    EXREG_rs1data <=0;
+    EXREG_rs2data <=0;
+    EXREG_imm     <=0;
+    EXREG_rd      <=0;
+  end
+  else if(EXREG_en)begin
     EXREG_ctrl_wb <=ctrl_wb ;
     EXREG_ctrl_mem<=ctrl_mem;
     EXREG_ctrl_ex <=ctrl_ex ;
@@ -114,19 +158,30 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
 
 always@(posedge clk)
 begin
+  if(rst)begin
+    MEMREG_ctrl_mem<=0;
+    MEMREG_ctrl_wb <=0;
+    MEMREG_dnpc    <=0;
+    MEMREG_result  <=0;
+    MEMREG_data    <=0;
+    MEMREG_rd      <=0;
+  end 
   if(MEMREG_en)begin
-    MEMREG_ctrl_mem<=EXREG_ctrl_mem;
-    MEMREG_ctrl_wb <=EXREG_ctrl_wb ;
-    MEMREG_dnpc <=dnpc;
-    MEMREG_result <= result;
-    MEMREG_rd <= EXREG_rd;
+    MEMREG_ctrl_mem<= EXREG_ctrl_mem;
+    MEMREG_ctrl_wb <= EXREG_ctrl_wb ;
+    MEMREG_dnpc    <= dnpc;
+    MEMREG_result  <= result;
+    MEMREG_data    <= EXREG_rs2data;
+    MEMREG_rd      <= EXREG_rd;
   end
 end
+assign PCsrc=MEMREG_ctrl_mem[1]&MEMREG_result;
 
 always @(*) begin
     vmem_read(addr, dinA, wmask);
 		//$monitor("addr=%x dinA=%x din=%x",addr,dinA,din);
 end
+
 assign din=addr[2] ? 
             addr[1] ? 
               addr[0] ? {56'd0,dinA[63:56]}:{48'd0,dinA[63:48]}
@@ -150,10 +205,18 @@ end
 
 always@(posedge clk)
 begin
+  if(rst)begin
+    WBREG_ctrl_wb <=0 ;
+    WBREG_memdata<=0;
+    WBREG_result<=0;
+    WBREG_rd<=0;
+  end
   if(WBREG_en)begin
     WBREG_ctrl_wb <=MEMREG_ctrl_wb ;
-    WBREG_rddata<=MEMREG_result;
+    WBREG_memdata<=dout;
+    WBREG_result<=MEMREG_result;
     WBREG_rd<=MEMREG_rd;
   end
 end
+
 endmodule

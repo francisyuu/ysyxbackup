@@ -2,6 +2,7 @@
 module ysyx_22050133_IFU(
   input clk          ,
   input rst          ,
+  input IFU_en          ,
   input     [63:0] dnpc,
   input            PCsrc,
   output reg[63:0] pc,
@@ -15,7 +16,7 @@ begin
   if(rst)begin
     pc<=64'h8000_0000;
   end
-  else begin
+  else if(IFU_en)begin
     pc<=npc;
   end
 end
