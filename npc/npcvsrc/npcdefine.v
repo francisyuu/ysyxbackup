@@ -137,6 +137,72 @@
 `define ysyx_22050133_F_EBREAK  25'b0000_0000_0001_00000_000_00000 
 `define ysyx_22050133_F_MRET    25'b0011_0000_0010_00000_000_00000
 
+`define ysyx_22050133_pcSrc_snpc    0
+`define ysyx_22050133_pcSrc_dnpc    1
+`define ysyx_22050133_addSrc_pc     0
+`define ysyx_22050133_addSrc_rs1    1
+`define ysyx_22050133_ALUSrc1_pc    0
+`define ysyx_22050133_ALUSrc1_rs1   1
+`define ysyx_22050133_ALUSrc2_rs2   0
+`define ysyx_22050133_ALUSrc2_imm   1
+`define ysyx_22050133_ALUSrc2_4     2
+`define ysyx_22050133_wmask_b     0
+`define ysyx_22050133_wmask_h     0
+`define ysyx_22050133_wmask_w     0
+`define ysyx_22050133_wmask_d     0
+`define ysyx_22050133_rdSrc_alu     0
+`define ysyx_22050133_rdSrc_mem     0
+`define ysyx_22050133_rdSrc_imm     0
+`define ysyx_22050133_rdSEXT_b     0
+`define ysyx_22050133_rdSEXT_h     0
+`define ysyx_22050133_rdSEXT_w     0
+`define ysyx_22050133_rdSEXT_d     0
+`define ysyx_22050133_rdSEXT_bu    0
+`define ysyx_22050133_rdSEXT_hu    0
+`define ysyx_22050133_rdSEXT_wu    0
+
+`define ysyx_22050133_ALUop_NOP     0
+`define ysyx_22050133_ALUop_BEQ     0
+`define ysyx_22050133_ALUop_BNE     0
+`define ysyx_22050133_ALUop_BLT     0
+`define ysyx_22050133_ALUop_BGE     0
+`define ysyx_22050133_ALUop_BLTU    0
+`define ysyx_22050133_ALUop_BGEU    0
+`define ysyx_22050133_ALUop_ADD     0
+`define ysyx_22050133_ALUop_SUB     0
+`define ysyx_22050133_ALUop_SLT     0
+`define ysyx_22050133_ALUop_SLTU    0
+`define ysyx_22050133_ALUop_XOR     0
+`define ysyx_22050133_ALUop_OR      0
+`define ysyx_22050133_ALUop_AND     0
+`define ysyx_22050133_ALUop_SLL     0
+`define ysyx_22050133_ALUop_SRL     0
+`define ysyx_22050133_ALUop_SRA     0
+`define ysyx_22050133_ALUop_MUL     0
+`define ysyx_22050133_ALUop_MULH    0
+`define ysyx_22050133_ALUop_MULHSU  0
+`define ysyx_22050133_ALUop_MULHU   0
+`define ysyx_22050133_ALUop_DIV     0
+`define ysyx_22050133_ALUop_DIVU    0
+`define ysyx_22050133_ALUop_REM     0
+`define ysyx_22050133_ALUop_REMU    0
+//`define ysyx_22050133_ALUop_ADDW    0
+//`define ysyx_22050133_ALUop_SUBW    0
+//`define ysyx_22050133_ALUop_SLLW    0
+//`define ysyx_22050133_ALUop_SRLW    0
+//`define ysyx_22050133_ALUop_SRAW    0
+//`define ysyx_22050133_ALUop_MULW    0
+//`define ysyx_22050133_ALUop_DIVW    0
+//`define ysyx_22050133_ALUop_DIVUW   0
+//`define ysyx_22050133_ALUop_REMW    0
+//`define ysyx_22050133_ALUop_REMUW   0
+
+
+`define ysyx_22050133_ctrl_wb_len   12
+`define ysyx_22050133_ctrl_mem_len  12
+`define ysyx_22050133_ctrl_ex_len   12
+
+
 function [63:0] SEXT;
   input[63:0] din;
   input[1:0] len;

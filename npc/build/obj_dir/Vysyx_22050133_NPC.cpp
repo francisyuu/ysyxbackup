@@ -12,8 +12,6 @@ Vysyx_22050133_NPC::Vysyx_22050133_NPC(VerilatedContext* _vcontextp__, const cha
     : vlSymsp{new Vysyx_22050133_NPC__Syms(_vcontextp__, _vcname__, this)}
     , clk{vlSymsp->TOP.clk}
     , rst{vlSymsp->TOP.rst}
-    , pc{vlSymsp->TOP.pc}
-    , npc{vlSymsp->TOP.npc}
     , __PVT____024unit{vlSymsp->TOP.__PVT____024unit}
     , rootp{&(vlSymsp->TOP)}
 {

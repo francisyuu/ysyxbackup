@@ -1,30 +1,31 @@
 module ysyx_22050133_IDU(
   input             clk    ,
+  input             rst    ,
   input     [31:0]  inst     ,
   input             rdwen,
   input     [4:0]   rdin,
   input     [63:0]  rddata,
-  output    [1:0]   ctrl_wb,
-  output    [1:0]   ctrl_mem,
-  output    [1:0]   ctrl_ex,
+  output    [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb,
+  output    [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem,
+  output    [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex,
   output    [63:0]  rs1data  ,
   output    [63:0]  rs2data  ,
   output    [63:0]  imm   ,
   output    [4:0]   rdout
 );
-assign rs1=inst[19:15];
-assign rs2=inst[24:20];
+wire[4:0] rs1=inst[19:15];
+wire[4:0] rs2=inst[24:20];
 assign rdout=inst[11:7];
 
-assign funct7=inst[31:25];
-assign funct3=inst[14:12];
-assign opcode=inst[6:0];
+wire[6:0] funct7=inst[31:25];
+wire[2:0] funct3=inst[14:12];
+wire[6:0] opcode=inst[6:0];
 
-assign immI={{52{inst[31]}},inst[31:20]};
-assign immS={{52{inst[31]}},inst[31:25],inst[11:7]};
-assign immB={{51{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
-assign immU={{32{inst[31]}},inst[31:12],12'd0};
-assign immJ={{43{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0};
+wire[63:0]  immI={{52{inst[31]}},inst[31:20]};
+wire[63:0]  immS={{52{inst[31]}},inst[31:25],inst[11:7]};
+wire[63:0]  immB={{51{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
+wire[63:0]  immU={{32{inst[31]}},inst[31:12],12'd0};
+wire[63:0]  immJ={{43{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0};
 
 wire OPLUI    =  opcode==`ysyx_22050133_OP_LUI   ; 
 wire OPAUIPC  =  opcode==`ysyx_22050133_OP_AUIPC ; 
@@ -157,11 +158,11 @@ wire F7REMUW   =  funct7==`ysyx_22050133_F7_REMUW   ;
 
 wire F7RXX3    =  funct7==`ysyx_22050133_F7_RXX3    ; 
 
-wire FFENCE  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_FENCE;
-wire FPAUSE  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_PAUSE;
-wire FECALL  =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_ECALL; 
-wire FEBREAK =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_EBREAK;
-wire FMRET   =  {funct7,rs2,rs1,funct3,rd}==`ysyx_22050133_F_MRET; 
+wire FFENCE  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_FENCE;
+wire FPAUSE  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_PAUSE;
+wire FECALL  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_ECALL; 
+wire FEBREAK =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_EBREAK;
+wire FMRET   =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_MRET; 
 
 
 assign imm=
@@ -170,6 +171,101 @@ assign imm=
   :(OPBXX)?immB
   :(OPLUI|OPAUIPC)?immU
   :(OPJAL)?immJ:0;
+
+assign ctrl_ex[9]=(OPRWX|OPXXIW) ? 1:0;
+assign ctrl_ex[8]=OPJALR ? 1:0;
+assign ctrl_ex[7]=(OPAUIPC|OPJAL|OPJALR) ? 1:0;
+assign ctrl_ex[6:5]=(OPAUIPC|OPLXX|OPSXX|OPXXI|OPXXIW) ? 1
+                    :(OPJAL|OPJALR) ? 2
+                    :0;
+assign ctrl_ex[4:0]=OPBXX ?
+                      F3BEQ ? `ysyx_22050133_ALUop_BEQ
+                      :F3BNE ? `ysyx_22050133_ALUop_BNE
+                      :F3BLT ? `ysyx_22050133_ALUop_BLT
+                      :F3BGE ? `ysyx_22050133_ALUop_BGE
+                      :F3BLTU ? `ysyx_22050133_ALUop_BLTU
+                      :F3BGEU ? `ysyx_22050133_ALUop_BGEU
+                      :`ysyx_22050133_ALUop_NOP
+                    :(OPXXI|OPXXIW)?
+                      F3ADDI ? `ysyx_22050133_ALUop_ADD
+                      :F3SLTI ? `ysyx_22050133_ALUop_SLT
+                      :F3SLTIU ? `ysyx_22050133_ALUop_SLTU
+                      :F3XORI ? `ysyx_22050133_ALUop_XOR
+                      :F3ORI  ? `ysyx_22050133_ALUop_OR
+                      :F3ANDI ? `ysyx_22050133_ALUop_AND
+                      :F3SLLI ? `ysyx_22050133_ALUop_SLL
+                      :F3SRLI ? 
+                        F6SRLI ? `ysyx_22050133_ALUop_SRL
+                                :`ysyx_22050133_ALUop_SRA
+                      :`ysyx_22050133_ALUop_NOP
+                    :(OPRXX|OPRWX)?
+                      F7MUL ? 
+                        F3MUL ? `ysyx_22050133_ALUop_MUL
+                        :F3MULH ? `ysyx_22050133_ALUop_MULH
+                        :F3MULHSU ? `ysyx_22050133_ALUop_MULHSU
+                        :F3MULHU ? `ysyx_22050133_ALUop_MULHU
+                        :F3DIV ? `ysyx_22050133_ALUop_DIV
+                        :F3DIVU ? `ysyx_22050133_ALUop_DIVU
+                        :F3REM ? `ysyx_22050133_ALUop_REM
+                        :F3REMU ? `ysyx_22050133_ALUop_REMU
+                        :`ysyx_22050133_ALUop_NOP
+                      :F3ADD ?
+                        F7ADD ? `ysyx_22050133_ALUop_ADD
+                                :`ysyx_22050133_ALUop_SUB
+                      :F3SLL ? `ysyx_22050133_ALUop_SLL
+                      :F3SLT ? `ysyx_22050133_ALUop_SLT
+                      :F3SLTU ? `ysyx_22050133_ALUop_SLTU
+                      :F3XOR ? `ysyx_22050133_ALUop_XOR
+                      :F3SRL ? 
+                        F7SRL ? `ysyx_22050133_ALUop_SRL
+                                :`ysyx_22050133_ALUop_SRA
+                      :F3OR ? `ysyx_22050133_ALUop_OR
+                      :F3AND ? `ysyx_22050133_ALUop_AND
+                      :`ysyx_22050133_ALUop_NOP
+                    :`ysyx_22050133_ALUop_NOP;
+assign ctrl_mem[11]=(OPJAL|OPJALR) ? 1:0;
+assign ctrl_mem[10]=OPBXX ? 1:0;
+assign ctrl_mem[9]=OPLXX ? 1:0;
+assign ctrl_mem[8]=OPSXX ? 1:0;
+assign ctrl_mem[7:0]=OPSXX ?
+                      F3SB ? 1
+                      :F3SH ? 2
+                      :F3SW ? 3
+                      :F3SD ? 4
+                      :0
+                    :0;
+assign ctrl_wb[7:6]=OPLUI ? 3
+                    :OPLXX ? 2
+                    :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?1
+                    :0;
+assign ctrl_wb[5]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX)? 1:0;
+assign ctrl_wb[4:0]=OPLXX ?
+                      F3LB ? 1
+                      :F3LH ? 2
+                      :F3LW ? 3
+                      :F3LBU ? 4
+                      :F3LHU ? 5
+                      :F3LWU ? 6
+                      :7
+                    :(OPXXIW|OPRWX)? 3
+                    :7;
+
+//reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
+reg[63:0] csr[3:0];
+always@(posedge clk)begin
+	if(rst)csr[0]<=64'ha00001800;
+	else if(OPSYS)begin
+    if(FEBREAK)stopsim();
+    //else if(FECALL)begin
+			////$monitor("hello\n");
+			//npc_etrace(pc,64'hb);
+			//csr[2]<=pc;
+			//csr[3]<=64'hb;
+		//end
+		//else if(F3CSRRW)csr[CSRi(immI)]<=rs1data;
+		//else if(F3CSRRS)csr[CSRi(immI)]<=csr[CSRi(immI)]|rs1data;
+  end
+end
 
 ysyx_22050133_RegisterFile ysyx_22050133_RegisterFile_dut(
   .clk    (clk    ),

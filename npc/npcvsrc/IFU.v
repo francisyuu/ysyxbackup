@@ -4,12 +4,12 @@ module ysyx_22050133_IFU(
   input rst          ,
   input IFU_en          ,
   input     [63:0] dnpc,
-  input            PCsrc,
+  input            pcSrc,
   output reg[63:0] pc,
   output reg[31:0] inst
 );
 
-wire[63:0] npc=PCsrc?dnpc:pc+4;
+wire[63:0] npc=pcSrc?dnpc:pc+4;
 
 always@(posedge clk)
 begin
