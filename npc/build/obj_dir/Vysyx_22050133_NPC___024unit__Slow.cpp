@@ -31,4 +31,7 @@ void Vysyx_22050133_NPC___024unit___ctor_var_reset(Vysyx_22050133_NPC___024unit*
     if (false && vlSelf) {}  // Prevent unused
     Vysyx_22050133_NPC__Syms* const __restrict vlSymsp VL_ATTR_UNUSED = vlSelf->vlSymsp;
     VL_DEBUG_IF(VL_DBG_MSGF("+        Vysyx_22050133_NPC___024unit___ctor_var_reset\n"); );
+    // Body
+    vlSelf->__VmonitorNum = 0;
+    vlSelf->__VmonitorOff = 0;
 }

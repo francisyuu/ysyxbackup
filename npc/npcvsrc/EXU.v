@@ -18,7 +18,7 @@ wire[63:0] ALUdata2=ctrl_ex[6]?4
                     :rs2data;
 wire[63:0] ALUdata2n=~ALUdata2;
 wire[63:0] Radd  =  ALUdata1+ALUdata2;
-wire[64:0] Rsub65=  ALUdata2+ALUdata2n+1;
+wire[64:0] Rsub65=  ALUdata1+ALUdata2n+1;
 wire[63:0] Rsub  =  Rsub65[63:0];
 wire       Rsubc =  Rsub65[64];
 wire       Rsubo =  (ALUdata1[63]==ALUdata2n[63])&&(Rsub[63]^ALUdata1[63]);
@@ -34,9 +34,12 @@ wire[63:0] Rsltu =  Rbltu;
 wire[63:0] Rxor  =  ALUdata1^ALUdata2;
 wire[63:0] Ror   =  ALUdata1|ALUdata2;
 wire[63:0] Rand  =  ALUdata1&ALUdata2;
-wire[63:0] Rsll  =  ALUdata1<<ALUdata2;
-wire[63:0] Rsrl  =  ALUdata1>>ALUdata2;
-wire[63:0] Rsra  =  signed'(ALUdata1)>>>ALUdata2; 
+wire[63:0] Rsll  =  ALUdata1<<ALUdata2[5:0];
+wire[63:0] Rsrl  =  ALUdata1>>ALUdata2[5:0];
+wire[63:0] Rsra  =  signed'(ALUdata1)>>>ALUdata2[5:0]; 
+//always@(*)begin
+  //$display("Rsltu=%d %d %d %d",Rsltu,Rbltu, Rsubc, Rsub65);
+//end
 
 wire[63:0] Raddw  =  SEXT(Radd,3);
 wire[63:0] Rsubw  =  SEXT(Rsub,3);
@@ -74,7 +77,7 @@ assign result=  ctrl_ex[9]?
                   :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU?Rremuw
                   :0
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD ?Radd
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB ?Radd
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB ?Rsub
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BEQ ?Rbeq 
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BNE ?Rbne 
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BLT ?Rblt 
@@ -89,6 +92,11 @@ assign result=  ctrl_ex[9]?
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLL ?Rsll 
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRL ?Rsrl 
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRA ?Rsra 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MUL?Rmul
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIV?Rdiv
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIVU?Rdivu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REM?Rrem
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU?Rremu
                 :0;
  
 //assign wmask=

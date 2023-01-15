@@ -59,19 +59,21 @@ VL_MODULE(Vysyx_22050133_NPC___024root) {
     QData/*63:0*/ ysyx_22050133_NPC__DOT__result;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_dnpc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_result;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_wdata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_imm;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__din;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_result;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_rdata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_imm;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__rddata;
-    QData/*63:0*/ ysyx_22050133_NPC__DOT__dout;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__npc;
     VlUnpacked<QData/*63:0*/, 32> ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ysyx_22050133_RegisterFile_dut__DOT__rf;
 
     // LOCAL VARIABLES
     CData/*0:0*/ ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__rdwen;
     CData/*0:0*/ __Vclklast__TOP__clk;
-    QData/*63:0*/ __Vtask_inst_read__3__rdata;
+    QData/*63:0*/ __Vtask_vmem_read__0__rdata;
+    QData/*63:0*/ __Vtask_inst_read__6__rdata;
 
     // INTERNAL VARIABLES
     Vysyx_22050133_NPC__Syms* vlSymsp;  // Symbol table

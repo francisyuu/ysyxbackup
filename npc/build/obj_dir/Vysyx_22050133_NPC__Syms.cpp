@@ -27,6 +27,8 @@ Vysyx_22050133_NPC__Syms::Vysyx_22050133_NPC__Syms(VerilatedContext* contextp, c
     // Setup each module's pointer back to symbol table (for public functions)
     TOP.__Vconfigure(this, true);
     TOP____024unit.__Vconfigure(this, true);
+    // Setup scopes
+    __Vscope_ysyx_22050133_NPC.configure(this, name(), "ysyx_22050133_NPC", "ysyx_22050133_NPC", -9, VerilatedScope::SCOPE_OTHER);
     // Setup export functions
     for (int __Vfinal=0; __Vfinal<2; __Vfinal++) {
     }

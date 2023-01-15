@@ -16,6 +16,10 @@ class Vysyx_22050133_NPC__Syms;
 VL_MODULE(Vysyx_22050133_NPC___024unit) {
   public:
 
+    // LOCAL VARIABLES
+    CData/*0:0*/ __VmonitorOff;
+    QData/*63:0*/ __VmonitorNum;
+
     // INTERNAL VARIABLES
     Vysyx_22050133_NPC__Syms* vlSymsp;  // Symbol table
 

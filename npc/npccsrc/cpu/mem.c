@@ -20,17 +20,15 @@ extern "C" void inst_read(long long raddr, long long *rdata) {
   _vmem_read(raddr,rdata);
 }
 
-extern "C" void vmem_read(long long raddr, long long *rdata, char wmask) {
-  if(raddr==0)return;
+extern "C" void vmem_read(long long raddr, long long *rdata, char read) {
+  if(read==0)return;
   else if(raddr>PMEM_RIGHT)
     {
-      if(wmask!=0)return;
       *rdata=mmio_read((paddr_t)(raddr&~0x7ull),8);
       return;
     }
   _vmem_read(raddr,rdata);
 #ifdef CONFIG_MTRACE
-  if(wmask!=0)return;
   char str[64];
   sprintf(str,"%08lx:R:addr=%08llx,data=%016llx",cpu.pc,raddr,*rdata);
   mtrace_write(str);
@@ -79,7 +77,8 @@ extern "C" void vmem_write(long long waddr, long long wdata, char wmask,long lon
       Assert(waddr>=PMEM_LEFT&&waddr<=PMEM_RIGHT,"can not access Waddress %lx",(uint64_t)waddr);
 #endif
 			//printf("W:0x%08llx,0x%016llx,%dbyte\n",paddr,wdata,wlen);
-      memcpy(pmem+paddr,&wdata,8);
+      /*memcpy(pmem+paddr,&wdata,8);*/
+      memcpy(pmem+waddr-PMEM_LEFT,&wdataraw,wlen);
 #ifdef CONFIG_MTRACE
   char str[64];
   sprintf(str,"%08lx:W:addr=%08llx,data=%016llx,len=%d",cpu.pc,waddr,wdata,wlen);

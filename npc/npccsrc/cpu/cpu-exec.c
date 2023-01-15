@@ -27,6 +27,12 @@ void cpu_single_cycle() {
         //if(top->rst!=1)printf("pc = %08lx, inst = %08x\n", top->pc, top->inst);
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
+  top->clk = 1; top->eval();
+  top->clk = 0; top->eval();
+  top->clk = 1; top->eval();
+  top->clk = 0; top->eval();
+  top->clk = 1; top->eval();
+  top->clk = 0; top->eval();
        // printf("pc = %08x, inst = %08x rd=%08x\n", top->pc, top->inst,top->rddata);
 }
 
@@ -38,6 +44,8 @@ void cpu_reset(int n) {
 		top->clk = 1; top->eval();
 		top->clk = 0; top->eval();
 		top->rst = 0;
+  top->clk = 1; top->eval();
+  top->clk = 0; top->eval();
 		printf("cpu reset:pc=%08lx,inst=%08x\n",cpu.pc,cpu.inst);
 	}
 }
@@ -47,7 +55,7 @@ void cpu_reset(int n) {
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
-static bool g_print_step = false;
+static bool g_print_step = true;
 static bool g_print_always = false;
 
 
@@ -249,9 +257,14 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
     /*isa_reg_display();*/
     for(int i=0;i<32;i++)
     {
+			if((laststate.inst&0xF80)>>7==i)printf( C_RED "rd  ");
+			else if((laststate.inst&0xF8000)>>15==i)printf( C_RED "rs1 ");
+			else if((laststate.inst&0x1F00000)>>20==i)printf( C_RED "rs2 ");
+			else printf("    ");
         printf("last %-3s:0x%016lx ",*(regs+i),laststate.gpr[i]); 
         printf("dut %-3s:0x%016lx  ",*(regs+i),cpu.gpr[i]); 
         printf("ref %-3s:0x%016lx\n",*(regs+i),ref->gpr[i]); 
+			printf( C_END );
     }
   }
 		laststate=cpu;

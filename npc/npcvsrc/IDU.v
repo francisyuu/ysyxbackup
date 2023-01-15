@@ -222,33 +222,34 @@ assign ctrl_ex[4:0]=OPBXX ?
                       :F3OR ? `ysyx_22050133_ALUop_OR
                       :F3AND ? `ysyx_22050133_ALUop_AND
                       :`ysyx_22050133_ALUop_NOP
+                    :(OPAUIPC|OPJAL|OPJALR|OPLXX|OPSXX)?`ysyx_22050133_ALUop_ADD
                     :`ysyx_22050133_ALUop_NOP;
 assign ctrl_mem[11]=(OPJAL|OPJALR) ? 1:0;
 assign ctrl_mem[10]=OPBXX ? 1:0;
 assign ctrl_mem[9]=OPLXX ? 1:0;
 assign ctrl_mem[8]=OPSXX ? 1:0;
 assign ctrl_mem[7:0]=OPSXX ?
-                      F3SB ? 1
-                      :F3SH ? 2
-                      :F3SW ? 3
-                      :F3SD ? 4
+                      F3SB ? `ysyx_22050133_wmask_b     
+                      :F3SH ? `ysyx_22050133_wmask_h     
+                      :F3SW ? `ysyx_22050133_wmask_w     
+                      :F3SD ? `ysyx_22050133_wmask_d     
                       :0
                     :0;
-assign ctrl_wb[7:6]=OPLUI ? 3
-                    :OPLXX ? 2
-                    :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?1
+assign ctrl_wb[7:6]=OPLUI ? `ysyx_22050133_rdSrc_imm
+                    :OPLXX ? `ysyx_22050133_rdSrc_mem
+                    :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu
                     :0;
 assign ctrl_wb[5]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX)? 1:0;
 assign ctrl_wb[4:0]=OPLXX ?
-                      F3LB ? 1
-                      :F3LH ? 2
-                      :F3LW ? 3
-                      :F3LBU ? 4
-                      :F3LHU ? 5
-                      :F3LWU ? 6
-                      :7
-                    :(OPXXIW|OPRWX)? 3
-                    :7;
+                      F3LB ? `ysyx_22050133_rdSEXT_b
+                      :F3LH ? `ysyx_22050133_rdSEXT_h
+                      :F3LW ? `ysyx_22050133_rdSEXT_w
+                      :F3LBU ? `ysyx_22050133_rdSEXT_bu
+                      :F3LHU ? `ysyx_22050133_rdSEXT_hu
+                      :F3LWU ? `ysyx_22050133_rdSEXT_wu
+                      : `ysyx_22050133_rdSEXT_d
+                    :(OPXXIW|OPRWX)? `ysyx_22050133_rdSEXT_w
+                    :`ysyx_22050133_rdSEXT_d;
 
 //reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
 reg[63:0] csr[3:0];
