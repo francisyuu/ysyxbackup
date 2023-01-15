@@ -7,6 +7,7 @@ module ysyx_22050133_EXU(
   input   [63:0]   pc      ,
   input   [63:0]   rs1data ,
   input   [63:0]   rs2data ,
+  input   [63:0]   csrdata ,
   input   [63:0]   imm     ,
   output  [63:0]   dnpc,
   output  [63:0]   result
@@ -63,7 +64,7 @@ wire[63:0] Rremw  =  SEXT({32'd0,signed'(ALUdata1[31:0])%signed'(ALUdata2[31:0])
 wire[63:0] Rremuw =  SEXT({32'd0,ALUdata1[31:0]%ALUdata2[31:0]},3);
 
 
-assign dnpc=imm+(ctrl_ex[8]?rs1data:pc);
+assign dnpc=ctrl_ex[10]?csrdata:imm+(ctrl_ex[8]?rs1data:pc);
 assign result=  ctrl_ex[9]?
                   ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD?Raddw
                   :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB?Rsubw

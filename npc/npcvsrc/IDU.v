@@ -1,6 +1,7 @@
 module ysyx_22050133_IDU(
   input             clk    ,
   input             rst    ,
+  input     [63:0]  pc     ,
   input     [31:0]  inst     ,
   input             rdwen,
   input     [4:0]   rdin,
@@ -10,6 +11,7 @@ module ysyx_22050133_IDU(
   output    [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex,
   output    [63:0]  rs1data  ,
   output    [63:0]  rs2data  ,
+  output    [63:0]  csrdata  ,
   output    [63:0]  imm   ,
   output    [4:0]   rdout
 );
@@ -172,6 +174,7 @@ assign imm=
   :(OPLUI|OPAUIPC)?immU
   :(OPJAL)?immJ:0;
 
+assign ctrl_ex[10]=(OPSYS&(FECALL|FMRET)) ? 1:0;
 assign ctrl_ex[9]=(OPRWX|OPXXIW) ? 1:0;
 assign ctrl_ex[8]=OPJALR ? 1:0;
 assign ctrl_ex[7]=(OPAUIPC|OPJAL|OPJALR) ? 1:0;
@@ -224,7 +227,7 @@ assign ctrl_ex[4:0]=OPBXX ?
                       :`ysyx_22050133_ALUop_NOP
                     :(OPAUIPC|OPJAL|OPJALR|OPLXX|OPSXX)?`ysyx_22050133_ALUop_ADD
                     :`ysyx_22050133_ALUop_NOP;
-assign ctrl_mem[11]=(OPJAL|OPJALR) ? 1:0;
+assign ctrl_mem[11]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))) ? 1:0;
 assign ctrl_mem[10]=OPBXX ? 1:0;
 assign ctrl_mem[9]=OPLXX ? 1:0;
 assign ctrl_mem[8]=OPSXX ? 1:0;
@@ -238,8 +241,9 @@ assign ctrl_mem[7:0]=OPSXX ?
 assign ctrl_wb[7:6]=OPLUI ? `ysyx_22050133_rdSrc_imm
                     :OPLXX ? `ysyx_22050133_rdSrc_mem
                     :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu
+                    :OPSYS&(F3CSRRW|F3CSRRS)? `ysyx_22050133_rdSrc_csr
                     :0;
-assign ctrl_wb[5]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX)? 1:0;
+assign ctrl_wb[5]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX|OPSYS)? 1:0;
 assign ctrl_wb[4:0]=OPLXX ?
                       F3LB ? `ysyx_22050133_rdSEXT_b
                       :F3LH ? `ysyx_22050133_rdSEXT_h
@@ -253,18 +257,26 @@ assign ctrl_wb[4:0]=OPLXX ?
 
 //reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
 reg[63:0] csr[3:0];
+assign csrdata=OPSYS ?
+                FECALL ? csr[1]
+                :FMRET ? csr[2]
+                :F3CSRRW ? csr[CSRi(immI)]
+                :F3CSRRS ? csr[CSRi(immI)]
+                :0
+              :0;
+
 always@(posedge clk)begin
 	if(rst)csr[0]<=64'ha00001800;
 	else if(OPSYS)begin
     if(FEBREAK)stopsim();
-    //else if(FECALL)begin
+    else if(FECALL)begin
 			////$monitor("hello\n");
-			//npc_etrace(pc,64'hb);
-			//csr[2]<=pc;
-			//csr[3]<=64'hb;
-		//end
-		//else if(F3CSRRW)csr[CSRi(immI)]<=rs1data;
-		//else if(F3CSRRS)csr[CSRi(immI)]<=csr[CSRi(immI)]|rs1data;
+      npc_etrace(pc,64'hb);
+      csr[2]<=pc;
+      csr[3]<=64'hb;
+    end
+    else if(F3CSRRW)csr[CSRi(immI)]<=rs1data;
+    else if(F3CSRRS)csr[CSRi(immI)]<=csr[CSRi(immI)]|rs1data;
   end
 end
 

@@ -20,6 +20,7 @@ wire  [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
 wire  [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex ;
 wire  [63:0]  rs1data ;
 wire  [63:0]  rs2data ;
+wire  [63:0]  csrdata ;
 wire  [63:0]  imm     ;
 wire  [4:0]   rdout   ;
 
@@ -30,6 +31,7 @@ reg[`ysyx_22050133_ctrl_ex_len :0] EXREG_ctrl_ex  ;
 reg[63:0] EXREG_pc       ;
 reg[63:0] EXREG_rs1data  ;
 reg[63:0] EXREG_rs2data  ;
+reg[63:0] EXREG_csrdata  ;
 reg[63:0] EXREG_imm      ;
 reg[4:0]  EXREG_rd       ;
 
@@ -42,6 +44,7 @@ reg[`ysyx_22050133_ctrl_mem_len:0]  MEMREG_ctrl_wb  ;
 reg[63:0] MEMREG_dnpc      ;
 reg[63:0] MEMREG_result    ;
 reg[63:0] MEMREG_wdata    ;
+reg[63:0] MEMREG_csrdata    ;
 reg[63:0] MEMREG_imm    ;
 reg[4:0]  MEMREG_rd     ;
 
@@ -55,6 +58,7 @@ reg WBREG_en;
 reg [`ysyx_22050133_ctrl_wb_len:0]WBREG_ctrl_wb;
 reg [63:0]WBREG_result;
 reg [63:0]WBREG_rdata ;
+reg [63:0]WBREG_csrdata ;
 reg [63:0]WBREG_imm   ;
 reg [4:0] WBREG_rd    ;
 wire[63:0]rddata      ;
@@ -117,8 +121,10 @@ begin
             EXREG_pc     =%h,  \
             EXREG_rs1data=%h,  \
             EXREG_rs2data=%h,  \
+            EXREG_csrdata=%h,  \
             EXREG_imm    =%h,  \
             EXREG_rd     =%h,  \
+            EXREG_npcSrc =%d,  \
             EXREG_ALUSEXT=%d,  \
             EXREG_addSrc =%d,  \
             EXREG_ALUSrc1=%d,  \
@@ -130,6 +136,7 @@ begin
             MEMREG_dnpc  =%h,  \
             MEMREG_result=%h,  \
             MEMREG_wdata =%h,  \
+            MEMREG_csrdata =%h,  \
             MEMREG_imm   =%h,  \
             MEMREG_rd    =%h,  \
             MEMREG_pcSrcJ=%d,  \
@@ -141,6 +148,7 @@ begin
             WBREG_ctrl_wb=%h,  \
             WBREG_result=%h,   \
             WBREG_rdata =%h,   \
+            WBREG_csrdata =%h,   \
             WBREG_imm   =%h,   \
             WBREG_rd    =%h,   \
             WBREG_rdSrc    =%d,   \
@@ -157,8 +165,10 @@ begin
          ,EXREG_pc     
          ,EXREG_rs1data
          ,EXREG_rs2data
+         ,EXREG_csrdata
          ,EXREG_imm    
          ,EXREG_rd     
+         ,EXREG_ctrl_ex[10]
          ,EXREG_ctrl_ex[9]
          ,EXREG_ctrl_ex[8]
          ,EXREG_ctrl_ex[7]
@@ -170,6 +180,7 @@ begin
          ,MEMREG_dnpc  
          ,MEMREG_result
          ,MEMREG_wdata 
+         ,MEMREG_csrdata 
          ,MEMREG_imm   
          ,MEMREG_rd    
          ,MEMREG_ctrl_mem[11]
@@ -181,6 +192,7 @@ begin
          ,WBREG_ctrl_wb
          ,WBREG_result
          ,WBREG_rdata 
+         ,WBREG_csrdata 
          ,WBREG_imm   
          ,WBREG_rd    
          ,WBREG_ctrl_wb[7:6]
@@ -194,6 +206,7 @@ end
 ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .clk      (clk),
   .rst      (rst),
+  .pc       (IDREG_pc     ),
   .inst     (IDREG_inst     ),
   .rdwen    (WBREG_ctrl_wb[5]    ),
   .rdin     (WBREG_rd     ),
@@ -203,6 +216,7 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .ctrl_ex  (ctrl_ex  ),
   .rs1data  (rs1data  ),
   .rs2data  (rs2data  ),
+  .csrdata  (csrdata  ),
   .imm      (imm      ),
   .rdout    (rdout    )
 );
@@ -216,6 +230,7 @@ begin
     EXREG_pc      <=0;
     EXREG_rs1data <=0;
     EXREG_rs2data <=0;
+    EXREG_csrdata <=0;
     EXREG_imm     <=0;
     EXREG_rd      <=0;
   end
@@ -226,6 +241,7 @@ begin
     EXREG_pc <=IDREG_pc ;
     EXREG_rs1data <=rs1data ;
     EXREG_rs2data <=rs2data ;
+    EXREG_csrdata <=csrdata ;
     EXREG_imm     <=imm     ;
     EXREG_rd   <=rdout   ;
   end
@@ -239,6 +255,7 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .pc     (EXREG_pc) ,
   .rs1data(EXREG_rs1data) ,
   .rs2data(EXREG_rs2data) ,
+  .csrdata(EXREG_csrdata) ,
   .imm    (EXREG_imm    ) ,
   .dnpc   (dnpc   ) ,
   .result (result ) 
@@ -252,6 +269,7 @@ begin
     MEMREG_dnpc    <=0;
     MEMREG_result  <=0;
     MEMREG_wdata    <=0;
+    MEMREG_csrdata    <=0;
     MEMREG_imm    <=0;
     MEMREG_rd      <=0;
   end 
@@ -261,6 +279,7 @@ begin
     MEMREG_dnpc    <= dnpc;
     MEMREG_result  <= result;
     MEMREG_wdata    <= EXREG_rs2data;
+    MEMREG_csrdata    <= EXREG_csrdata;
     MEMREG_imm     <= EXREG_imm;
     MEMREG_rd      <= EXREG_rd;
   end
@@ -290,7 +309,8 @@ assign doutA=(dinA&(~wmask1))|(douts&wmask1);
 assign douts=dout<<{addr[2:0],3'd0};
 
 always @(*) begin
-    vmem_write(addr, doutA, wmask,dout);
+    if(WBREG_en==1)vmem_write(addr, doutA, wmask,dout);
+    //vmem_write(addr, doutA, wmask,dout);
 end
 
 always @(*)begin
@@ -304,6 +324,7 @@ begin
     WBREG_ctrl_wb <=0 ;
     WBREG_result<=0;
     WBREG_rdata<=0;
+    WBREG_csrdata<=0;
     WBREG_imm<=0;
     WBREG_rd<=0;
   end
@@ -311,6 +332,7 @@ begin
     WBREG_ctrl_wb <=MEMREG_ctrl_wb ;
     WBREG_result<=MEMREG_result;
     WBREG_rdata<=din;
+    WBREG_csrdata<=MEMREG_csrdata;
     WBREG_imm<=MEMREG_imm;
     WBREG_rd<=MEMREG_rd;
   end
@@ -319,6 +341,7 @@ wire[63:0] rddata_raw=
         WBREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_alu?WBREG_result
         :WBREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_mem?WBREG_rdata
         :WBREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_imm?WBREG_imm
+        :WBREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_csr?WBREG_csrdata
         :0;
 assign rddata=
     WBREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_b?SEXT(rddata_raw,0)

@@ -150,9 +150,10 @@
 `define ysyx_22050133_wmask_h     3
 `define ysyx_22050133_wmask_w     15
 `define ysyx_22050133_wmask_d     255
-`define ysyx_22050133_rdSrc_alu     1
-`define ysyx_22050133_rdSrc_mem     2
-`define ysyx_22050133_rdSrc_imm     3
+`define ysyx_22050133_rdSrc_alu     0
+`define ysyx_22050133_rdSrc_mem     1
+`define ysyx_22050133_rdSrc_imm     2
+`define ysyx_22050133_rdSrc_csr     3
 `define ysyx_22050133_rdSEXT_b     1
 `define ysyx_22050133_rdSEXT_h     2
 `define ysyx_22050133_rdSEXT_w     3

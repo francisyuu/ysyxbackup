@@ -34,6 +34,9 @@ VL_MODULE(Vysyx_22050133_NPC___024root) {
     CData/*0:0*/ ysyx_22050133_NPC__DOT__WBREG_en;
     CData/*4:0*/ ysyx_22050133_NPC__DOT__WBREG_rd;
     CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__OPSYS;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__F3CSRRW;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__F3CSRRS;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__FECALL;
     CData/*0:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__FEBREAK;
     SData/*12:0*/ ysyx_22050133_NPC__DOT__ctrl_wb;
     SData/*12:0*/ ysyx_22050133_NPC__DOT__ctrl_mem;
@@ -50,23 +53,29 @@ VL_MODULE(Vysyx_22050133_NPC___024root) {
     QData/*63:0*/ ysyx_22050133_NPC__DOT__IDREG_pc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__rs1data;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__rs2data;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__csrdata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__imm;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__EXREG_pc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__EXREG_rs1data;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__EXREG_rs2data;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__EXREG_csrdata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__EXREG_imm;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__dnpc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__result;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_dnpc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_result;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_wdata;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_csrdata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__MEMREG_imm;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__din;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_result;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_rdata;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_csrdata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__WBREG_imm;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__rddata;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__npc;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__immI;
+    VlUnpacked<QData/*63:0*/, 4> ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__csr;
     VlUnpacked<QData/*63:0*/, 32> ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ysyx_22050133_RegisterFile_dut__DOT__rf;
 
     // LOCAL VARIABLES

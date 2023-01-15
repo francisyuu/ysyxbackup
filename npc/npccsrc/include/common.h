@@ -26,16 +26,16 @@
 //#include "verilated_vcd_c.h" 
 
 
-#define CONFIG_DEBUGINFO
+//#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
-#define CONFIG_ITRACE 1
+//#define CONFIG_ITRACE 1
 //#define CONFIG_IRINGBUF 1
 //#define CONFIG_FTRACE 1
 //#define CONFIG_MTRACE 1
 //#define CONFIG_DTRACE 1
 //#define CONFIG_ETRACE 1
-#define CONFIG_WATCHPOINT 1
-#define CONFIG_DIFFTEST 1
+//#define CONFIG_WATCHPOINT 1
+//#define CONFIG_DIFFTEST 1
 //#define CONFIG_DIFFTEST_DEVICE 1
 #endif
 

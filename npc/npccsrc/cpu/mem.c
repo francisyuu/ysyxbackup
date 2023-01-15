@@ -11,7 +11,7 @@ void _vmem_read(long long raddr, long long *rdata) {
       uint64_t data;
       long long paddr=(raddr-PMEM_LEFT)&~0x7ull;
       memcpy(&data,pmem+paddr,8);
-			//printf("R:0x%08llx,0x%016lx\n",paddr,data);
+      /*printf("R:0x%08llx,0x%016lx\n",paddr,data);*/
       *rdata=data;
   }
 
