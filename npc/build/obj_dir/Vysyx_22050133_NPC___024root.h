@@ -47,6 +47,9 @@ VL_MODULE(Vysyx_22050133_NPC___024root) {
     SData/*12:0*/ ysyx_22050133_NPC__DOT__MEMREG_ctrl_mem;
     SData/*12:0*/ ysyx_22050133_NPC__DOT__MEMREG_ctrl_wb;
     SData/*12:0*/ ysyx_22050133_NPC__DOT__WBREG_ctrl_wb;
+    SData/*12:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_wb;
+    SData/*12:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_mem;
+    SData/*12:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_ex;
     IData/*31:0*/ ysyx_22050133_NPC__DOT__inst;
     IData/*31:0*/ ysyx_22050133_NPC__DOT__IDREG_inst;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__pc;

@@ -6,17 +6,25 @@ module ysyx_22050133_IDU(
   input             rdwen,
   input     [4:0]   rdin,
   input     [63:0]  rddata,
-  output    [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb,
-  output    [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem,
-  output    [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex,
+  input             hazard_detect_mem_read,
+  input     [4:0]   hazard_detect_rd,
+  output    [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb_out,
+  output    [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem_out,
+  output    [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex_out,
+  output    [4:0]   rs1,
+  output    [4:0]   rs2,
   output    [63:0]  rs1data  ,
   output    [63:0]  rs2data  ,
   output    [63:0]  csrdata  ,
   output    [63:0]  imm   ,
   output    [4:0]   rdout
 );
-wire[4:0] rs1=inst[19:15];
-wire[4:0] rs2=inst[24:20];
+wire [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb;
+wire [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
+wire [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex;
+
+assign rs1=inst[19:15];
+assign rs2=inst[24:20];
 assign rdout=inst[11:7];
 
 wire[6:0] funct7=inst[31:25];
@@ -166,13 +174,20 @@ wire FECALL  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_ECALL;
 wire FEBREAK =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_EBREAK;
 wire FMRET   =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_MRET; 
 
-
 assign imm=
   (OPJALR|OPLXX|OPXXI|OPXXIW)?immI
   :(OPSXX)?immS
   :(OPBXX)?immB
   :(OPLUI|OPAUIPC)?immU
   :(OPJAL)?immJ:0;
+
+//wire has_hazard=hazard_detect_mem_read&
+                //((hazard_detect_rd==rs1)|(hazard_detect_rd==rs2));
+
+wire has_hazard=0;
+assign ctrl_wb_out=has_hazard?0:ctrl_wb;
+assign ctrl_mem_out=has_hazard?0:ctrl_mem;
+assign ctrl_ex_out=has_hazard?0:ctrl_ex;
 
 assign ctrl_ex[10]=(OPSYS&(FECALL|FMRET)) ? 1:0;
 assign ctrl_ex[9]=(OPRWX|OPXXIW) ? 1:0;

@@ -18,6 +18,8 @@ reg[31:0] IDREG_inst;
 wire  [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb ;
 wire  [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
 wire  [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex ;
+wire  [4:0]   rs1   ;
+wire  [4:0]   rs2   ;
 wire  [63:0]  rs1data ;
 wire  [63:0]  rs2data ;
 wire  [63:0]  csrdata ;
@@ -29,6 +31,8 @@ reg[`ysyx_22050133_ctrl_wb_len :0] EXREG_ctrl_wb  ;
 reg[`ysyx_22050133_ctrl_mem_len:0] EXREG_ctrl_mem ;
 reg[`ysyx_22050133_ctrl_ex_len :0] EXREG_ctrl_ex  ;
 reg[63:0] EXREG_pc       ;
+reg[4:0]  EXREG_rs1      ;
+reg[4:0]  EXREG_rs2      ;
 reg[63:0] EXREG_rs1data  ;
 reg[63:0] EXREG_rs2data  ;
 reg[63:0] EXREG_csrdata  ;
@@ -37,6 +41,8 @@ reg[4:0]  EXREG_rd       ;
 
 wire  [63:0]   dnpc;
 wire  [63:0]   result;
+wire  [1:0]    forward_ALUSrc1;
+wire  [1:0]    forward_ALUSrc2;
 
 reg       MEMREG_en;
 reg[`ysyx_22050133_ctrl_wb_len :0]  MEMREG_ctrl_mem ;
@@ -211,9 +217,13 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .rdwen    (WBREG_ctrl_wb[5]    ),
   .rdin     (WBREG_rd     ),
   .rddata   (rddata   ),
-  .ctrl_wb  (ctrl_wb  ),
-  .ctrl_mem (ctrl_mem ),
-  .ctrl_ex  (ctrl_ex  ),
+  .hazard_detect_mem_read(EXREG_ctrl_mem[9]),
+  .hazard_detect_rd(EXREG_rd),
+  .ctrl_wb_out  (ctrl_wb  ),
+  .ctrl_mem_out (ctrl_mem ),
+  .ctrl_ex_out  (ctrl_ex  ),
+  .rs1      (rs1),
+  .rs2      (rs2),
   .rs1data  (rs1data  ),
   .rs2data  (rs2data  ),
   .csrdata  (csrdata  ),
@@ -228,6 +238,8 @@ begin
     EXREG_ctrl_mem<=0;
     EXREG_ctrl_ex <=0;
     EXREG_pc      <=0;
+    EXREG_rs1     <=0;
+    EXREG_rs2     <=0;
     EXREG_rs1data <=0;
     EXREG_rs2data <=0;
     EXREG_csrdata <=0;
@@ -239,6 +251,8 @@ begin
     EXREG_ctrl_mem<=ctrl_mem;
     EXREG_ctrl_ex <=ctrl_ex ;
     EXREG_pc <=IDREG_pc ;
+    EXREG_rs1     <=rs1     ;
+    EXREG_rs2     <=rs2     ;
     EXREG_rs1data <=rs1data ;
     EXREG_rs2data <=rs2data ;
     EXREG_csrdata <=csrdata ;
@@ -257,9 +271,21 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .rs2data(EXREG_rs2data) ,
   .csrdata(EXREG_csrdata) ,
   .imm    (EXREG_imm    ) ,
+  .forward_ALUSrc1(forward_ALUSrc1),
+  .forward_ALUSrc2(forward_ALUSrc2),
+  .forward_data_mem(MEMREG_result),
+  .forward_data_wb(rddata),
   .dnpc   (dnpc   ) ,
   .result (result ) 
 );
+//assign forward_ALUSrc1=MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs1)?2
+                       //:WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs1)?1
+                       //:0;
+//assign forward_ALUSrc2=MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?2
+                       //:WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?1
+                       //:0;
+assign forward_ALUSrc1=0;
+assign forward_ALUSrc2=0;
 
 always@(posedge clk)
 begin
