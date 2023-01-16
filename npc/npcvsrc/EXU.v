@@ -20,20 +20,20 @@ module ysyx_22050133_EXU(
   output  [63:0]   result,
   output  [63:0]   wdata
 );
-wire[63:0] ALUdata1_noforward=ctrl_ex[7]?pc:rs1data;
-wire[63:0] ALUdata2_noforward=ctrl_ex[6]?4
-                              :ctrl_ex[5]?imm
-                              :rs2data;
-
-wire[63:0] ALUdata1=forward_ALUSrc1==0?ALUdata1_noforward
+wire[63:0] rs1data_forward=forward_ALUSrc1==0?rs1data
                     :forward_ALUSrc1==1?forward_data_wb
                     :forward_ALUSrc1==2?forward_data_mem
                     :0;
                     
-wire[63:0] ALUdata2=forward_ALUSrc2==0?ALUdata2_noforward
+wire[63:0] rs2data_forward=forward_ALUSrc2==0?rs2data
                     :forward_ALUSrc2==1?forward_data_wb
                     :forward_ALUSrc2==2?forward_data_mem
                     :0;
+wire[63:0] ALUdata1=ctrl_ex[7]?pc:rs1data_forward;
+wire[63:0] ALUdata2=ctrl_ex[6]?4
+                              :ctrl_ex[5]?imm
+                              :rs2data_forward;
+
 assign wdata=forward_wdataSrc==0?rs2data
                  :forward_wdataSrc==1?forward_data_wb
                  :forward_wdataSrc==2?forward_data_mem
@@ -86,7 +86,7 @@ wire[63:0] Rremw  =  SEXT({32'd0,signed'(ALUdata1[31:0])%signed'(ALUdata2[31:0])
 wire[63:0] Rremuw =  SEXT({32'd0,ALUdata1[31:0]%ALUdata2[31:0]},3);
 
 
-assign dnpc=ctrl_ex[10]?csrdata:imm+(ctrl_ex[8]?rs1data:pc);
+assign dnpc=ctrl_ex[10]?csrdata:imm+(ctrl_ex[8]?rs1data_forward:pc);
 assign result=  ctrl_ex[9]?
                   ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD?Raddw
                   :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB?Rsubw

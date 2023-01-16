@@ -144,7 +144,7 @@ begin
   end
 end
 
-wire displayinfo=0;
+wire displayinfo=1;
 `ifdef MULTICYCLE 
 always@(posedge clk)
   if(IDREG_en)begin
