@@ -10,9 +10,13 @@ module ysyx_22050133_RegisterFile #(ADDR_WIDTH = 32, DATA_WIDTH = 64) (
 );
 always@(*)set_gpr_ptr(rf);
 
-reg [DATA_WIDTH-1:0] rf [ADDR_WIDTH-1:0];///* verilator public */;
-assign rs1data = rs1==0 ? 0:rf[rs1];
-assign rs2data = rs2==0 ? 0:rf[rs2];
+reg [DATA_WIDTH-1:0] rf [ADDR_WIDTH-1:0];
+assign rs1data = rs1==0 ? 0
+                      :(rd==rs1&wen==1)?rddata
+                      :rf[rs1];
+assign rs2data = rs2==0 ? 0
+                      :(rd==rs2&wen==1)?rddata
+                      :rf[rs2];
 always @(posedge clk) begin
   if (wen) rf[rd] <= rddata;
   //reg_info(rs1,rs1data,rs2,rs2data,rd,rddata);

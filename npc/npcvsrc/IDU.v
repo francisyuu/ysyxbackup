@@ -8,6 +8,7 @@ module ysyx_22050133_IDU(
   input     [63:0]  rddata,
   input             hazard_detect_mem_read,
   input     [4:0]   hazard_detect_rd,
+  output            has_hazard,
   output    [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb_out,
   output    [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem_out,
   output    [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex_out,
@@ -181,10 +182,14 @@ assign imm=
   :(OPLUI|OPAUIPC)?immU
   :(OPJAL)?immJ:0;
 
-//wire has_hazard=hazard_detect_mem_read&
-                //((hazard_detect_rd==rs1)|(hazard_detect_rd==rs2));
 
-wire has_hazard=0;
+`ifdef MULTICYCLE 
+assign has_hazard=0;
+`else
+assign has_hazard=hazard_detect_mem_read&
+                ((hazard_detect_rd==rs1)|(hazard_detect_rd==rs2));
+`endif
+
 assign ctrl_wb_out=has_hazard?0:ctrl_wb;
 assign ctrl_mem_out=has_hazard?0:ctrl_mem;
 assign ctrl_ex_out=has_hazard?0:ctrl_ex;
@@ -253,6 +258,7 @@ assign ctrl_mem[7:0]=OPSXX ?
                       :F3SD ? `ysyx_22050133_wmask_d     
                       :0
                     :0;
+assign ctrl_wb[8]=OPSYS&FEBREAK;
 assign ctrl_wb[7:6]=OPLUI ? `ysyx_22050133_rdSrc_imm
                     :OPLXX ? `ysyx_22050133_rdSrc_mem
                     :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu
@@ -283,8 +289,8 @@ assign csrdata=OPSYS ?
 always@(posedge clk)begin
 	if(rst)csr[0]<=64'ha00001800;
 	else if(OPSYS)begin
-    if(FEBREAK)stopsim();
-    else if(FECALL)begin
+    //if(FEBREAK)stopsim();
+    if(FECALL)begin
 			////$monitor("hello\n");
       npc_etrace(pc,64'hb);
       csr[2]<=pc;

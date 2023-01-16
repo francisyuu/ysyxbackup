@@ -27,12 +27,14 @@ void cpu_single_cycle() {
         //if(top->rst!=1)printf("pc = %08lx, inst = %08x\n", top->pc, top->inst);
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
+#ifdef CONFIG_DIFFTEST
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
+#endif
        // printf("pc = %08x, inst = %08x rd=%08x\n", top->pc, top->inst,top->rddata);
 }
 
@@ -44,8 +46,10 @@ void cpu_reset(int n) {
 		top->clk = 1; top->eval();
 		top->clk = 0; top->eval();
 		top->rst = 0;
+#ifdef CONFIG_DIFFTEST
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
+#endif
 		printf("cpu reset:pc=%08lx,inst=%08x\n",cpu.pc,cpu.inst);
 	}
 }
@@ -182,7 +186,7 @@ static int skip_dut_nr_inst = 0;
 // this is used to let ref skip instructions which
 // can not produce consistent behavior with NEMU
 void difftest_skip_ref() {
-  is_skip_ref[1] = true;
+  is_skip_ref[0] = true;
   // If such an instruction is one of the instruction packing in QEMU
   // (see below), we end the process of catching up with QEMU's pc to
   // keep the consistent behavior in our best.
@@ -300,7 +304,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 		checkregs(&ref_r, pc);
 	}
-	is_skip_ref[0] = is_skip_ref[1];
-	is_skip_ref[1] = false;
+	/*is_skip_ref[0] = is_skip_ref[1];*/
+	/*is_skip_ref[1] = false;*/
 	return;
 }

@@ -13,8 +13,12 @@ module ysyx_22050133_EXU(
   input   [1:0]    forward_ALUSrc2,
   input   [63:0]   forward_data_mem,
   input   [63:0]   forward_data_wb,
+  input   [1:0]    forward_wdataSrc,
+  input   [63:0]   forward_wdata_mem,
+  input   [63:0]   forward_wdata_wb,
   output  [63:0]   dnpc,
-  output  [63:0]   result
+  output  [63:0]   result,
+  output  [63:0]   wdata
 );
 wire[63:0] ALUdata1_noforward=ctrl_ex[7]?pc:rs1data;
 wire[63:0] ALUdata2_noforward=ctrl_ex[6]?4
@@ -30,6 +34,10 @@ wire[63:0] ALUdata2=forward_ALUSrc2==0?ALUdata2_noforward
                     :forward_ALUSrc2==1?forward_data_wb
                     :forward_ALUSrc2==2?forward_data_mem
                     :0;
+assign wdata=forward_wdataSrc==0?rs2data
+                 :forward_wdataSrc==1?forward_data_wb
+                 :forward_wdataSrc==2?forward_data_mem
+                 :0;
 
 wire[63:0] ALUdata2n=~ALUdata2;
 wire[63:0] Radd  =  ALUdata1+ALUdata2;

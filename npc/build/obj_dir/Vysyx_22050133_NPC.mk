@@ -40,7 +40,6 @@ VM_USER_CFLAGS = \
 	-Og \
 	-MMD \
 	-Wall \
-	-Werror \
 	-Og \
 	-ggdb3 \
 	-I/usr/lib/llvm-14/include \

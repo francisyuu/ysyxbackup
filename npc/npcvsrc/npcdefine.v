@@ -1,5 +1,8 @@
 `ifndef NPCDEFINE_V
 `define NPCDEFINE_V
+
+//`define MULTICYCLE 1
+
 `define ysyx_22050133_OP_LUI    7'b0110111
 `define ysyx_22050133_OP_AUIPC  7'b0010111
 `define ysyx_22050133_OP_JAL    7'b1101111

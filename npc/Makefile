@@ -31,7 +31,8 @@ CSRCS += $(shell find $(abspath ./npccsrc) -name "*.cc")
 # rules for verilator
 CONFIG_CC_DEBUG = 1
 INCFLAGS = $(addprefix -I, $(INC_PATH))
-CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\"" -Og -MMD -Wall -Werror 
+CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\"" -Og -MMD -Wall 
+#CFLAGS += $(INCFLAGS) -Werror 
 CFLAGS += $(if $(CONFIG_CC_DEBUG),-Og -ggdb3,)
 CFLAGS += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
 #CFLAGS += $(shell llvm-config --cxxflags) -fPIE
