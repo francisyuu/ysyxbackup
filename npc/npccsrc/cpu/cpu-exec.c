@@ -27,7 +27,7 @@ void cpu_single_cycle() {
         //if(top->rst!=1)printf("pc = %08lx, inst = %08x\n", top->pc, top->inst);
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
-#ifdef CONFIG_DIFFTEST
+#ifdef MULTICYCLE
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
   top->clk = 1; top->eval();
@@ -46,10 +46,8 @@ void cpu_reset(int n) {
 		top->clk = 1; top->eval();
 		top->clk = 0; top->eval();
 		top->rst = 0;
-#ifdef CONFIG_DIFFTEST
-  top->clk = 1; top->eval();
-  top->clk = 0; top->eval();
-#endif
+		top->clk = 1; top->eval();
+		top->clk = 0; top->eval();
 		printf("cpu reset:pc=%08lx,inst=%08x\n",cpu.pc,cpu.inst);
 	}
 }
@@ -60,7 +58,8 @@ CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
-static bool g_print_always = true;
+/*static bool g_print_always = true;*/
+static bool g_print_always = false;
 
 
 #ifdef CONFIG_DEBUGINFO
@@ -274,6 +273,7 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
 		laststate=cpu;
 }
 
+#ifdef MULTICYCLE
 void difftest_step(vaddr_t pc, vaddr_t npc) {
   CPU_state ref_r;
 
@@ -308,3 +308,63 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 	/*is_skip_ref[1] = false;*/
 	return;
 }
+#else
+void difftest_step(vaddr_t pc, vaddr_t npc) {
+	static CPU_state gpr_laststate;
+  CPU_state ref_r;
+	static CPU_state refgpr_laststate;
+	/*printf("duta5=%lx\n",cpu.gpr[15]);*/
+	if (is_skip_ref[0]) {
+		// to skip the checking of an instruction, just copy the reg state to reference design
+		/*printf("skip\n");*/
+			IFDEF(CONFIG_DIFFTEST_DEVICE,ref_difftest_exec(1));
+			ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+	}
+	else
+	{
+		int run=0;
+	  for(int i=0;i<32;i++){
+			if(gpr_laststate.gpr[i]!=cpu.gpr[i])
+			{
+			  run=1;
+				break;
+			}
+		}
+		if(run==0)return;
+		while(run)
+		{
+			ref_difftest_exec(1);
+		  ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+			for(int i=0;i<32;i++){
+				if(refgpr_laststate.gpr[i]!=ref_r.gpr[i])
+				{
+					run=0;
+				}
+			}
+		}
+    for(int i=0;i<32;i++)
+    {
+			if(ref_r.gpr[i]!=cpu.gpr[i])
+			{
+				nemu_state.state = NEMU_ABORT;
+				nemu_state.halt_pc = pc;
+			}
+    }
+    if(nemu_state.state==NEMU_ABORT)
+		{
+			for(int i=0;i<32;i++)
+			{
+				if(ref_r.gpr[i]!=cpu.gpr[i])printf( C_RED );
+				printf("last %-3s:0x%016lx ",*(regs+i),gpr_laststate.gpr[i]); 
+				printf("dut %-3s:0x%016lx  ",*(regs+i),cpu.gpr[i]); 
+				printf("ref %-3s:0x%016lx\n",*(regs+i),ref_r.gpr[i]); 
+				printf( C_END );
+			}
+		}
+		/*checkregs(&ref_r, pc);*/
+		gpr_laststate=cpu;
+		ref_difftest_regcpy(&refgpr_laststate, DIFFTEST_TO_DUT);
+	}
+	return;
+}
+#endif

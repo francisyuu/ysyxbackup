@@ -7,7 +7,6 @@ module ysyx_22050133_EXU(
   input   [63:0]   pc      ,
   input   [63:0]   rs1data ,
   input   [63:0]   rs2data ,
-  input   [63:0]   csrdata ,
   input   [63:0]   imm     ,
   input   [1:0]    forward_ALUSrc1,
   input   [1:0]    forward_ALUSrc2,
@@ -18,6 +17,7 @@ module ysyx_22050133_EXU(
   input   [63:0]   forward_wdata_wb,
   output  [63:0]   dnpc,
   output  [63:0]   result,
+  output  [63:0]   csrdata ,
   output  [63:0]   wdata
 );
 wire[63:0] rs1data_forward=forward_ALUSrc1==0?rs1data
@@ -122,6 +122,29 @@ assign result=  ctrl_ex[9]?
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU?Rremu
                 :0;
  
+//reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
+reg[63:0] csr[3:0];
+assign csrdata=
+  ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mtvec?csr[1]
+  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc?csr[2]
+  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm?csr[CSRi(imm)]
+  :0;
+
+always@(posedge clk)begin
+	if(rst)csr[0]<=64'ha00001800;
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_ecall)begin
+			////$monitor("hello\n");
+      npc_etrace(pc,64'hb);
+      csr[2]<=pc;
+      csr[3]<=64'hb;
+  end
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrw)begin
+    csr[CSRi(imm)]<=rs1data_forward;
+  end
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrs)begin
+    csr[CSRi(imm)]<=csr[CSRi(imm)]|rs1data_forward;
+  end
+end
 //assign wmask=
   //OPSXX ? 
     //F3SB ? 8'h01

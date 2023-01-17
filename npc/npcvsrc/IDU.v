@@ -16,7 +16,6 @@ module ysyx_22050133_IDU(
   output    [4:0]   rs2,
   output    [63:0]  rs1data  ,
   output    [63:0]  rs2data  ,
-  output    [63:0]  csrdata  ,
   output    [63:0]  imm   ,
   output    [4:0]   rdout
 );
@@ -24,19 +23,9 @@ wire [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb;
 wire [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
 wire [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex;
 
-assign rs1=inst[19:15];
-assign rs2=inst[24:20];
-assign rdout=inst[11:7];
-
 wire[6:0] funct7=inst[31:25];
 wire[2:0] funct3=inst[14:12];
 wire[6:0] opcode=inst[6:0];
-
-wire[63:0]  immI={{52{inst[31]}},inst[31:20]};
-wire[63:0]  immS={{52{inst[31]}},inst[31:25],inst[11:7]};
-wire[63:0]  immB={{51{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
-wire[63:0]  immU={{32{inst[31]}},inst[31:12],12'd0};
-wire[63:0]  immJ={{43{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0};
 
 wire OPLUI    =  opcode==`ysyx_22050133_OP_LUI   ; 
 wire OPAUIPC  =  opcode==`ysyx_22050133_OP_AUIPC ; 
@@ -169,14 +158,29 @@ wire F7REMUW   =  funct7==`ysyx_22050133_F7_REMUW   ;
 
 wire F7RXX3    =  funct7==`ysyx_22050133_F7_RXX3    ; 
 
-wire FFENCE  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_FENCE;
-wire FPAUSE  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_PAUSE;
-wire FECALL  =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_ECALL; 
-wire FEBREAK =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_EBREAK;
-wire FMRET   =  {funct7,rs2,rs1,funct3,rdout}==`ysyx_22050133_F_MRET; 
+wire FFENCE  =  inst[31:7]==`ysyx_22050133_F_FENCE;
+wire FPAUSE  =  inst[31:7]==`ysyx_22050133_F_PAUSE;
+wire FECALL  =  inst[31:7]==`ysyx_22050133_F_ECALL; 
+wire FEBREAK =  inst[31:7]==`ysyx_22050133_F_EBREAK;
+wire FMRET   =  inst[31:7]==`ysyx_22050133_F_MRET; 
+
+assign rs1=(OPLUI|OPAUIPC|OPJAL)?0:inst[19:15];
+assign rs2=(OPBXX|OPSXX|OPRXX|OPRWX)?inst[24:20]:0;
+assign rdout=(OPBXX|OPSXX)?0:inst[11:7];
+//assign rs1=inst[19:15];
+assign rs2=inst[24:20];
+assign rdout=inst[11:7];
+
+
+wire[63:0]  immI={{52{inst[31]}},inst[31:20]};
+wire[63:0]  immS={{52{inst[31]}},inst[31:25],inst[11:7]};
+wire[63:0]  immB={{51{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
+wire[63:0]  immU={{32{inst[31]}},inst[31:12],12'd0};
+wire[63:0]  immJ={{43{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0};
+
 
 assign imm=
-  (OPJALR|OPLXX|OPXXI|OPXXIW)?immI
+  (OPJALR|OPLXX|OPXXI|OPXXIW|(OPSYS&(F3CSRRW|F3CSRRS)))?immI
   :(OPSXX)?immS
   :(OPBXX)?immB
   :(OPLUI|OPAUIPC)?immU
@@ -194,6 +198,18 @@ assign ctrl_wb_out=has_hazard?0:ctrl_wb;
 assign ctrl_mem_out=has_hazard?0:ctrl_mem;
 assign ctrl_ex_out=has_hazard?0:ctrl_ex;
 
+assign ctrl_ex[15:13]=OPSYS ?
+                       FECALL ?`ysyx_22050133_CSRop_ecall
+                       :F3CSRRW ?`ysyx_22050133_CSRop_csrrw
+                       :F3CSRRS ?`ysyx_22050133_CSRop_csrrs
+                       :0
+                      :0;
+assign ctrl_ex[12:11]=OPSYS ?
+                       FECALL ?`ysyx_22050133_CSRSrc_mtvec
+                       :FMRET ?`ysyx_22050133_CSRSrc_mepc
+                       :(F3CSRRW|F3CSRRS) ?`ysyx_22050133_CSRSrc_imm
+                       :0
+                      :0;
 assign ctrl_ex[10]=(OPSYS&(FECALL|FMRET)) ? 1:0;
 assign ctrl_ex[9]=(OPRWX|OPXXIW) ? 1:0;
 assign ctrl_ex[8]=OPJALR ? 1:0;
@@ -276,30 +292,6 @@ assign ctrl_wb[4:0]=OPLXX ?
                     :(OPXXIW|OPRWX)? `ysyx_22050133_rdSEXT_w
                     :`ysyx_22050133_rdSEXT_d;
 
-//reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
-reg[63:0] csr[3:0];
-assign csrdata=OPSYS ?
-                FECALL ? csr[1]
-                :FMRET ? csr[2]
-                :F3CSRRW ? csr[CSRi(immI)]
-                :F3CSRRS ? csr[CSRi(immI)]
-                :0
-              :0;
-
-always@(posedge clk)begin
-	if(rst)csr[0]<=64'ha00001800;
-	else if(OPSYS)begin
-    //if(FEBREAK)stopsim();
-    if(FECALL)begin
-			////$monitor("hello\n");
-      npc_etrace(pc,64'hb);
-      csr[2]<=pc;
-      csr[3]<=64'hb;
-    end
-    else if(F3CSRRW)csr[CSRi(immI)]<=rs1data;
-    else if(F3CSRRS)csr[CSRi(immI)]<=csr[CSRi(immI)]|rs1data;
-  end
-end
 
 ysyx_22050133_RegisterFile ysyx_22050133_RegisterFile_dut(
   .clk    (clk    ),

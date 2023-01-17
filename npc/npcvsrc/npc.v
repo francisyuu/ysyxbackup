@@ -6,6 +6,7 @@ module ysyx_22050133_NPC(
   input               rst     
   );
 
+wire displayinfo=0;
 
 wire pcSrc;
 wire[63:0] pc;
@@ -23,7 +24,6 @@ wire  [4:0]   rs1   ;
 wire  [4:0]   rs2   ;
 wire  [63:0]  rs1data ;
 wire  [63:0]  rs2data ;
-wire  [63:0]  csrdata ;
 wire  [63:0]  imm     ;
 wire  [4:0]   rdout   ;
 
@@ -43,6 +43,7 @@ reg[4:0]  EXREG_rd       ;
 wire  [63:0]   dnpc;
 wire  [63:0]   result;
 wire  [63:0]   wdata;
+wire  [63:0]  csrdata ;
 wire  [1:0]    forward_ALUSrc1;
 wire  [1:0]    forward_ALUSrc2;
 wire  [1:0]    forward_wdataSrc;
@@ -120,7 +121,7 @@ end
 
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .clk(clk),
-  .IFU_en(~has_hazard),
+  .IFU_en(~has_hazard|pcSrc),
   .rst(rst),
   .dnpc(MEMREG_dnpc),
   .pcSrc(pcSrc),
@@ -144,7 +145,6 @@ begin
   end
 end
 
-wire displayinfo=1;
 `ifdef MULTICYCLE 
 always@(posedge clk)
   if(IDREG_en)begin
@@ -163,13 +163,12 @@ always@(*)
             EXREG_ctrl_ex =%h, \
             has_hazard=%d,     \
             EXREG_pc     =%h,  \
-            EXREG_rs1    =%h,  \
-            EXREG_rs2    =%h,  \
+            EXREG_rs1    =%d,  \
+            EXREG_rs2    =%d,  \
             EXREG_rs1data=%h,  \
             EXREG_rs2data=%h,  \
-            EXREG_csrdata=%h,  \
             EXREG_imm    =%h,  \
-            EXREG_rd     =%h,  \
+            EXREG_rd     =%d,  \
             EXREG_npcSrc =%d,  \
             EXREG_ALUSEXT=%d,  \
             EXREG_addSrc =%d,  \
@@ -188,8 +187,8 @@ always@(*)
             MEMREG_wdata =%h,  \
             MEMREG_csrdata =%h,  \
             MEMREG_imm   =%h,  \
-            MEMREG_rs2    =%h,  \
-            MEMREG_rd    =%h,  \
+            MEMREG_rs2    =%d,  \
+            MEMREG_rd    =%d,  \
             MEMREG_pcSrcJ=%d,  \
             MEMREG_pcSrcB=%d,  \
             MEMREG_read=%d,  \
@@ -202,7 +201,7 @@ always@(*)
             WBREG_en  =%h,     \
             WBREG_ctrl_wb=%h,  \
             WBREG_rddata =%h,   \
-            WBREG_rd    =%h,   \
+            WBREG_rd    =%d,   \
             WBREG_ebreak    =%d,   \
             WBREG_rdWen    =%d,   \
                   "   
@@ -220,7 +219,6 @@ always@(*)
          ,EXREG_rs2
          ,EXREG_rs1data
          ,EXREG_rs2data
-         ,EXREG_csrdata
          ,EXREG_imm    
          ,EXREG_rd     
          ,EXREG_ctrl_ex[10]
@@ -280,7 +278,6 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .rs2      (rs2),
   .rs1data  (rs1data  ),
   .rs2data  (rs2data  ),
-  .csrdata  (csrdata  ),
   .imm      (imm      ),
   .rdout    (rdout    )
 );
@@ -296,7 +293,6 @@ begin
     EXREG_rs2     <=0;
     EXREG_rs1data <=0;
     EXREG_rs2data <=0;
-    EXREG_csrdata <=0;
     EXREG_imm     <=0;
     EXREG_rd      <=0;
   end
@@ -309,7 +305,6 @@ begin
     EXREG_rs2     <=rs2     ;
     EXREG_rs1data <=rs1data ;
     EXREG_rs2data <=rs2data ;
-    EXREG_csrdata <=csrdata ;
     EXREG_imm     <=imm     ;
     EXREG_rd   <=rdout   ;
   end
@@ -323,7 +318,6 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .pc     (EXREG_pc) ,
   .rs1data(EXREG_rs1data) ,
   .rs2data(EXREG_rs2data) ,
-  .csrdata(EXREG_csrdata) ,
   .imm    (EXREG_imm    ) ,
   .forward_ALUSrc1(forward_ALUSrc1),
   .forward_ALUSrc2(forward_ALUSrc2),
@@ -334,6 +328,7 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .forward_wdata_wb(WBREG_rddata),
   .dnpc   (dnpc   ) ,
   .result (result ) ,
+  .csrdata(csrdata) ,
   .wdata (wdata ) 
 );
 `ifdef MULTICYCLE 
@@ -341,13 +336,16 @@ assign forward_ALUSrc1=0;
 assign forward_ALUSrc2=0;
 assign forward_wdataSrc=0;
 `else
-assign forward_ALUSrc1=MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs1)?2
+assign forward_ALUSrc1= EXREG_rs1==0?0
+                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs1)?2
                        :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs1)?1
                        :0;
-assign forward_ALUSrc2=MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)&(~EXREG_ctrl_mem[8])?2
-                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)&(~EXREG_ctrl_mem[8])?1
+assign forward_ALUSrc2= EXREG_rs2==0?0
+                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?2
+                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?1
                        :0;
-assign forward_wdataSrc=EXREG_ctrl_mem[8]&(MEMREG_rd==EXREG_rs2)?2
+assign forward_wdataSrc= EXREG_rs2==0?0
+                       :EXREG_ctrl_mem[8]&(MEMREG_rd==EXREG_rs2)?2
                        :EXREG_ctrl_mem[8]&(WBREG_rd==EXREG_rs2)?1
                        :0;
 `endif
@@ -371,7 +369,7 @@ begin
     MEMREG_dnpc    <= dnpc;
     MEMREG_result  <= result;
     MEMREG_wdata    <= wdata;
-    MEMREG_csrdata    <= EXREG_csrdata;
+    MEMREG_csrdata    <= csrdata;
     MEMREG_imm     <= EXREG_imm;
     MEMREG_rs2      <= EXREG_rs2;
     MEMREG_rd      <= EXREG_rd;

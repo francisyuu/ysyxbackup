@@ -165,6 +165,13 @@
 `define ysyx_22050133_rdSEXT_hu    6
 `define ysyx_22050133_rdSEXT_wu    7
 
+`define ysyx_22050133_CSRSrc_mtvec 1
+`define ysyx_22050133_CSRSrc_mepc  2
+`define ysyx_22050133_CSRSrc_imm   3
+`define ysyx_22050133_CSRop_ecall  1
+`define ysyx_22050133_CSRop_csrrw  2
+`define ysyx_22050133_CSRop_csrrs  3
+
 `define ysyx_22050133_ALUop_NOP     0
 `define ysyx_22050133_ALUop_BEQ     1
 `define ysyx_22050133_ALUop_BNE     2
@@ -204,7 +211,7 @@
 
 `define ysyx_22050133_ctrl_wb_len   12
 `define ysyx_22050133_ctrl_mem_len  12
-`define ysyx_22050133_ctrl_ex_len   12
+`define ysyx_22050133_ctrl_ex_len   16
 
 
 function [63:0] SEXT;
