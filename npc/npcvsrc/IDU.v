@@ -8,6 +8,7 @@ module ysyx_22050133_IDU(
   input     [63:0]  rddata,
   input             hazard_detect_mem_read,
   input     [4:0]   hazard_detect_rd,
+  input             block,
   output            has_hazard,
   output    [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb_out,
   output    [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem_out,
@@ -194,9 +195,9 @@ assign has_hazard=hazard_detect_mem_read&
                 ((hazard_detect_rd==rs1)|(hazard_detect_rd==rs2));
 `endif
 
-assign ctrl_wb_out=has_hazard?0:ctrl_wb;
-assign ctrl_mem_out=has_hazard?0:ctrl_mem;
-assign ctrl_ex_out=has_hazard?0:ctrl_ex;
+assign ctrl_wb_out=block?0:ctrl_wb;
+assign ctrl_mem_out=block?0:ctrl_mem;
+assign ctrl_ex_out=block?0:ctrl_ex;
 
 assign ctrl_ex[15:13]=OPSYS ?
                        FECALL ?`ysyx_22050133_CSRop_ecall

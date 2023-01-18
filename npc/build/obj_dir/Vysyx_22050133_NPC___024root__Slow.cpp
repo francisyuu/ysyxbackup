@@ -39,9 +39,12 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
     VL_DEBUG_IF(VL_DBG_MSGF("+    Vysyx_22050133_NPC___024root___settle__TOP__1\n"); );
     // Variables
     CData/*0:0*/ ysyx_22050133_NPC__DOT__clk;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__pcSrc;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__has_hazard;
     CData/*1:0*/ ysyx_22050133_NPC__DOT__forward_ALUSrc1;
     CData/*1:0*/ ysyx_22050133_NPC__DOT__forward_ALUSrc2;
     CData/*1:0*/ ysyx_22050133_NPC__DOT__forward_wdataSrc;
+    CData/*0:0*/ ysyx_22050133_NPC__DOT__block_axi_ifu;
     CData/*0:0*/ ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__hazard_detect_mem_read;
     CData/*7:0*/ ysyx_22050133_NPC__DOT__wmask;
     CData/*7:0*/ ysyx_22050133_NPC__DOT__wmasks;
@@ -118,6 +121,7 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
     VlWide<3>/*95:0*/ __Vtemp4;
     VlWide<3>/*95:0*/ __Vtemp5;
     VlWide<3>/*95:0*/ __Vtemp6;
+    QData/*63:0*/ ysyx_22050133_NPC__DOT__dnpc;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__addr;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__din;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__dinA;
@@ -126,7 +130,6 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
     QData/*63:0*/ ysyx_22050133_NPC__DOT__dout;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__wmask1;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__rddata_raw;
-    QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__inst64;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__immI;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__immS;
     QData/*63:0*/ ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__immB;
@@ -200,6 +203,9 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
     ysyx_22050133_NPC__DOT__dout = vlSelf->ysyx_22050133_NPC__DOT__MEMREG_wdata;
     ysyx_22050133_NPC__DOT__wmask = (0xffU & (IData)(vlSelf->ysyx_22050133_NPC__DOT__MEMREG_ctrl_mem));
     ysyx_22050133_NPC__DOT__addr = vlSelf->ysyx_22050133_NPC__DOT__MEMREG_result;
+    Vysyx_22050133_NPC___024unit____Vdpiimwrap_inst_read_TOP____024unit((QData)((IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__ar_addr)), vlSelf->__Vtask_inst_read__8__rdata);
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__inst64 
+        = vlSelf->__Vtask_inst_read__8__rdata;
     __Vfunc_CSRi__20__csr = vlSelf->ysyx_22050133_NPC__DOT__EXREG_imm;
     __Vfunc_CSRi__20__Vfuncout = ((0x300U == (0xfffU 
                                               & (IData)(__Vfunc_CSRi__20__csr)))
@@ -241,9 +247,33 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                                     vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__csr
                                                     [__Vfunc_CSRi__20__Vfuncout]
                                                      : 0ULL)));
+    ysyx_22050133_NPC__DOT__block_axi_ifu = (1U & (~ 
+                                                   ((~ (IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_rw_valid_i)) 
+                                                    & (IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_rw_ready_o))));
     ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__hazard_detect_mem_read 
         = (1U & ((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_mem) 
                  >> 9U));
+    if (vlSelf->rst) {
+        vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__next_rstate = 1U;
+        vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__next_rstate = 1U;
+    } else {
+        vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__next_rstate 
+            = ((1U == (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__rstate))
+                ? ((IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_rw_valid_i)
+                    ? 2U : 1U) : ((2U == (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__rstate))
+                                   ? ((IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_ar_ready_i)
+                                       ? 3U : 2U) : 
+                                  ((3U == (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__rstate))
+                                    ? ((IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_valid_i)
+                                        ? 1U : 3U) : 1U)));
+        vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__next_rstate 
+            = ((1U == (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__rstate))
+                ? ((IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_ar_valid_o)
+                    ? 2U : 1U) : ((2U == (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__rstate))
+                                   ? (((IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_ready_o) 
+                                       & (IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_valid_i))
+                                       ? 1U : 2U) : 1U));
+    }
     ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__immI 
         = (((- (QData)((IData)((vlSelf->ysyx_22050133_NPC__DOT__IDREG_inst 
                                 >> 0x1fU)))) << 0xcU) 
@@ -315,9 +345,13 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                  >> 0xcU));
     ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__opcode 
         = (0x7fU & vlSelf->ysyx_22050133_NPC__DOT__IDREG_inst);
-    Vysyx_22050133_NPC___024unit____Vdpiimwrap_inst_read_TOP____024unit(vlSelf->ysyx_22050133_NPC__DOT__pc, vlSelf->__Vtask_inst_read__8__rdata);
-    ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__inst64 
-        = vlSelf->__Vtask_inst_read__8__rdata;
+    vlSelf->ysyx_22050133_NPC__DOT__inst = ((1U & (IData)(
+                                                          (vlSelf->ysyx_22050133_NPC__DOT__pc 
+                                                           >> 2U)))
+                                             ? (IData)(
+                                                       (vlSelf->ysyx_22050133_NPC__DOT__ifu_data_read_o 
+                                                        >> 0x20U))
+                                             : (IData)(vlSelf->ysyx_22050133_NPC__DOT__ifu_data_read_o));
     vlSelf->ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__rdwen 
         = (1U & ((IData)(vlSelf->ysyx_22050133_NPC__DOT__WBREG_ctrl_wb) 
                  >> 5U));
@@ -353,12 +387,6 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                                         == (IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_rs2)))
                                                      ? 1U
                                                      : 0U)));
-    vlSelf->ysyx_22050133_NPC__DOT__pcSrc = (1U & (
-                                                   ((IData)(vlSelf->ysyx_22050133_NPC__DOT__MEMREG_ctrl_mem) 
-                                                    >> 0xbU) 
-                                                   | (((IData)(vlSelf->ysyx_22050133_NPC__DOT__MEMREG_ctrl_mem) 
-                                                       >> 0xaU) 
-                                                      & (IData)(vlSelf->ysyx_22050133_NPC__DOT__MEMREG_result))));
     ysyx_22050133_NPC__DOT__douts = (ysyx_22050133_NPC__DOT__dout 
                                      << (0x38U & ((IData)(ysyx_22050133_NPC__DOT__addr) 
                                                   << 3U)));
@@ -487,17 +515,6 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
         = (0x17U == (IData)(ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__opcode));
     ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__OPJAL 
         = (0x6fU == (IData)(ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__opcode));
-    vlSelf->ysyx_22050133_NPC__DOT__inst = ((1U & (IData)(
-                                                          (vlSelf->ysyx_22050133_NPC__DOT__pc 
-                                                           >> 2U)))
-                                             ? (IData)(
-                                                       (ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__inst64 
-                                                        >> 0x20U))
-                                             : (IData)(ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__inst64));
-    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__npc 
-        = ((IData)(vlSelf->ysyx_22050133_NPC__DOT__pcSrc)
-            ? vlSelf->ysyx_22050133_NPC__DOT__MEMREG_dnpc
-            : (4ULL + vlSelf->ysyx_22050133_NPC__DOT__pc));
     ysyx_22050133_NPC__DOT__wmask1 = (((QData)((IData)(
                                                        (((- (IData)(
                                                                     (1U 
@@ -893,11 +910,11 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                                     : 
                                                    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ysyx_22050133_RegisterFile_dut__DOT__rf
                                                    [vlSelf->ysyx_22050133_NPC__DOT__rs1]));
-    vlSelf->ysyx_22050133_NPC__DOT__has_hazard = ((IData)(ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__hazard_detect_mem_read) 
-                                                  & (((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_rd) 
-                                                      == (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs1)) 
-                                                     | ((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_rd) 
-                                                        == (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs2))));
+    ysyx_22050133_NPC__DOT__has_hazard = ((IData)(ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__hazard_detect_mem_read) 
+                                          & (((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_rd) 
+                                              == (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs1)) 
+                                             | ((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_rd) 
+                                                == (IData)(vlSelf->ysyx_22050133_NPC__DOT__rs2))));
     if (vlSelf->ysyx_22050133_NPC__DOT__WBREG_en) {
         Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit(ysyx_22050133_NPC__DOT__addr, ysyx_22050133_NPC__DOT__doutA, (IData)(ysyx_22050133_NPC__DOT__wmask), ysyx_22050133_NPC__DOT__dout);
     }
@@ -970,21 +987,8 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                                          & (IData)(vlSelf->ysyx_22050133_NPC__DOT__MEMREG_ctrl_wb)))
                                                         ? ysyx_22050133_NPC__DOT__rddata_raw
                                                         : 0ULL)))))));
-    if (vlSelf->ysyx_22050133_NPC__DOT__has_hazard) {
-        vlSelf->ysyx_22050133_NPC__DOT__ctrl_mem = 0U;
-        vlSelf->ysyx_22050133_NPC__DOT__ctrl_ex = 0U;
-        vlSelf->ysyx_22050133_NPC__DOT__ctrl_wb = 0U;
-    } else {
-        vlSelf->ysyx_22050133_NPC__DOT__ctrl_mem = 
-            (0x1fffU & (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_mem));
-        vlSelf->ysyx_22050133_NPC__DOT__ctrl_ex = (0x1ffffU 
-                                                   & vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_ex);
-        vlSelf->ysyx_22050133_NPC__DOT__ctrl_wb = (0x1fffU 
-                                                   & (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_wb));
-    }
-    vlSelf->ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IFU_dut__IFU_en 
-        = (1U & ((~ (IData)(vlSelf->ysyx_22050133_NPC__DOT__has_hazard)) 
-                 | (IData)(vlSelf->ysyx_22050133_NPC__DOT__pcSrc)));
+    vlSelf->ysyx_22050133_NPC__DOT__block = ((IData)(ysyx_22050133_NPC__DOT__block_axi_ifu) 
+                                             | (IData)(ysyx_22050133_NPC__DOT__has_hazard));
     vlSelf->ysyx_22050133_NPC__DOT__wdata = ((0U == (IData)(ysyx_22050133_NPC__DOT__forward_wdataSrc))
                                               ? vlSelf->ysyx_22050133_NPC__DOT__EXREG_rs2data
                                               : ((1U 
@@ -1021,7 +1025,7 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                   13,vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_wb,
                   13,(IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_mem),
                   17,vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex,
-                  1,(IData)(vlSelf->ysyx_22050133_NPC__DOT__has_hazard),
+                  1,(IData)(ysyx_22050133_NPC__DOT__has_hazard),
                   64,vlSelf->ysyx_22050133_NPC__DOT__EXREG_pc,
                   5,(IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_rs1),
                   5,vlSelf->ysyx_22050133_NPC__DOT__EXREG_rs2,
@@ -1068,15 +1072,27 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                            >> 8U)),1,(1U & ((IData)(vlSelf->ysyx_22050133_NPC__DOT__WBREG_ctrl_wb) 
                                             >> 5U)));
     }
-    vlSelf->ysyx_22050133_NPC__DOT__dnpc = ((0x400U 
-                                             & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex)
-                                             ? vlSelf->ysyx_22050133_NPC__DOT__csrdata
-                                             : (vlSelf->ysyx_22050133_NPC__DOT__EXREG_imm 
-                                                + (
-                                                   (0x100U 
-                                                    & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex)
-                                                    ? vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__rs1data_forward
-                                                    : vlSelf->ysyx_22050133_NPC__DOT__EXREG_pc)));
+    vlSelf->ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IFU_dut__IFU_en 
+        = (1U & (~ (IData)(vlSelf->ysyx_22050133_NPC__DOT__block)));
+    if (vlSelf->ysyx_22050133_NPC__DOT__block) {
+        vlSelf->ysyx_22050133_NPC__DOT__ctrl_wb = 0U;
+        vlSelf->ysyx_22050133_NPC__DOT__ctrl_mem = 0U;
+        vlSelf->ysyx_22050133_NPC__DOT__ctrl_ex = 0U;
+    } else {
+        vlSelf->ysyx_22050133_NPC__DOT__ctrl_wb = (0x1fffU 
+                                                   & (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_wb));
+        vlSelf->ysyx_22050133_NPC__DOT__ctrl_mem = 
+            (0x1fffU & (IData)(vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_mem));
+        vlSelf->ysyx_22050133_NPC__DOT__ctrl_ex = (0x1ffffU 
+                                                   & vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_ex);
+    }
+    ysyx_22050133_NPC__DOT__dnpc = ((0x400U & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex)
+                                     ? vlSelf->ysyx_22050133_NPC__DOT__csrdata
+                                     : (vlSelf->ysyx_22050133_NPC__DOT__EXREG_imm 
+                                        + ((0x100U 
+                                            & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex)
+                                            ? vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__rs1data_forward
+                                            : vlSelf->ysyx_22050133_NPC__DOT__EXREG_pc)));
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__ALUdata1 
         = ((0x80U & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex)
             ? vlSelf->ysyx_22050133_NPC__DOT__EXREG_pc
@@ -1086,7 +1102,7 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
             ? 4ULL : ((0x20U & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex)
                        ? vlSelf->ysyx_22050133_NPC__DOT__EXREG_imm
                        : ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__rs2data_forward));
-    Vysyx_22050133_NPC___024unit____Vdpiimwrap_set_pc_TOP____024unit(vlSelf->ysyx_22050133_NPC__DOT__IDREG_pc, vlSelf->ysyx_22050133_NPC__DOT__dnpc, vlSelf->ysyx_22050133_NPC__DOT__IDREG_inst);
+    Vysyx_22050133_NPC___024unit____Vdpiimwrap_set_pc_TOP____024unit(vlSelf->ysyx_22050133_NPC__DOT__IDREG_pc, ysyx_22050133_NPC__DOT__dnpc, vlSelf->ysyx_22050133_NPC__DOT__IDREG_inst);
     ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rbeq 
         = ((ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__ALUdata1 
             == ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__ALUdata2)
@@ -1462,6 +1478,15 @@ void Vysyx_22050133_NPC___024root___settle__TOP__1(Vysyx_22050133_NPC___024root*
                                                                         & vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_ex))
                                                                        ? ysyx_22050133_NPC__DOT__ysyx_22050133_EXU_dut__DOT__Rremu
                                                                        : 0ULL))))))))))))))))))))));
+    ysyx_22050133_NPC__DOT__pcSrc = (1U & (((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_mem) 
+                                            >> 0xbU) 
+                                           | (((IData)(vlSelf->ysyx_22050133_NPC__DOT__EXREG_ctrl_mem) 
+                                               >> 0xaU) 
+                                              & (IData)(vlSelf->ysyx_22050133_NPC__DOT__result))));
+    vlSelf->ysyx_22050133_NPC__DOT__flush = ysyx_22050133_NPC__DOT__pcSrc;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__npc 
+        = ((IData)(ysyx_22050133_NPC__DOT__pcSrc) ? ysyx_22050133_NPC__DOT__dnpc
+            : (4ULL + vlSelf->ysyx_22050133_NPC__DOT__pc));
 }
 
 void Vysyx_22050133_NPC___024root___eval_initial(Vysyx_22050133_NPC___024root* vlSelf) {
@@ -1493,7 +1518,8 @@ void Vysyx_22050133_NPC___024root___ctor_var_reset(Vysyx_22050133_NPC___024root*
     // Body
     vlSelf->clk = 0;
     vlSelf->rst = 0;
-    vlSelf->ysyx_22050133_NPC__DOT__pcSrc = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__flush = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__block = 0;
     vlSelf->ysyx_22050133_NPC__DOT__pc = 0;
     vlSelf->ysyx_22050133_NPC__DOT__inst = 0;
     vlSelf->ysyx_22050133_NPC__DOT__IDREG_en = 0;
@@ -1502,7 +1528,6 @@ void Vysyx_22050133_NPC___024root___ctor_var_reset(Vysyx_22050133_NPC___024root*
     vlSelf->ysyx_22050133_NPC__DOT__ctrl_wb = 0;
     vlSelf->ysyx_22050133_NPC__DOT__ctrl_mem = 0;
     vlSelf->ysyx_22050133_NPC__DOT__ctrl_ex = 0;
-    vlSelf->ysyx_22050133_NPC__DOT__has_hazard = 0;
     vlSelf->ysyx_22050133_NPC__DOT__rs1 = 0;
     vlSelf->ysyx_22050133_NPC__DOT__rs2 = 0;
     vlSelf->ysyx_22050133_NPC__DOT__rs1data = 0;
@@ -1520,7 +1545,6 @@ void Vysyx_22050133_NPC___024root___ctor_var_reset(Vysyx_22050133_NPC___024root*
     vlSelf->ysyx_22050133_NPC__DOT__EXREG_rs2data = 0;
     vlSelf->ysyx_22050133_NPC__DOT__EXREG_imm = 0;
     vlSelf->ysyx_22050133_NPC__DOT__EXREG_rd = 0;
-    vlSelf->ysyx_22050133_NPC__DOT__dnpc = 0;
     vlSelf->ysyx_22050133_NPC__DOT__result = 0;
     vlSelf->ysyx_22050133_NPC__DOT__wdata = 0;
     vlSelf->ysyx_22050133_NPC__DOT__csrdata = 0;
@@ -1540,8 +1564,24 @@ void Vysyx_22050133_NPC___024root___ctor_var_reset(Vysyx_22050133_NPC___024root*
     vlSelf->ysyx_22050133_NPC__DOT__WBREG_rd = 0;
     vlSelf->ysyx_22050133_NPC__DOT__rddata = 0;
     vlSelf->ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IFU_dut__IFU_en = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_rw_valid_i = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_rw_ready_o = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_data_read_o = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_ar_ready_i = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_ar_valid_o = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_ar_addr_o = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_ready_o = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_valid_i = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_resp_i = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ifu_axi_r_data_i = 0;
     vlSelf->ysyx_22050133_NPC__DOT____Vcellinp__ysyx_22050133_IDU_dut__rdwen = 0;
     vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IFU_dut__DOT__npc = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__rstate = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_master_ifu__DOT__next_rstate = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__ar_addr = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__rstate = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__next_rstate = 0;
+    vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_axi_slave_ifu__DOT__inst64 = 0;
     vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_wb = 0;
     vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_mem = 0;
     vlSelf->ysyx_22050133_NPC__DOT__ysyx_22050133_IDU_dut__DOT__ctrl_ex = 0;

@@ -41,13 +41,13 @@ void cpu_single_cycle() {
 void cpu_reset(int n) {
 	while(n--)
 	{
-		top->rst = 1;
+		top->rst = 1; top->eval();
 		top->clk = 0; top->eval();
 		top->clk = 1; top->eval();
 		top->clk = 0; top->eval();
-		top->rst = 0;
-		top->clk = 1; top->eval();
-		top->clk = 0; top->eval();
+		top->rst = 0; top->eval();
+		/*top->clk = 1; top->eval();*/
+		/*top->clk = 0; top->eval();*/
 		printf("cpu reset:pc=%08lx,inst=%08x\n",cpu.pc,cpu.inst);
 	}
 }
