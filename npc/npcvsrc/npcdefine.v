@@ -1,7 +1,7 @@
 `ifndef NPCDEFINE_V
 `define NPCDEFINE_V
 
-`define MULTICYCLE 1
+//`define MULTICYCLE 1
 //`define REGINFO 1
 //`define AXIINFO 1
 

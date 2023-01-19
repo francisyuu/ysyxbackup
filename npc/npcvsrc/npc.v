@@ -279,59 +279,206 @@ ysyx_22050133_axi_master ysyx_22050133_axi_master_ifu(
   //.axi_r_id_i       (ifu_axi_r_id_i),
   //.axi_r_user_i     (ifu_axi_r_user_i)           
 );
+// Advanced eXtensible Interface
+wire                               axi_aw_ready_i;             
+wire                               axi_aw_valid_o;
+wire [AXI_ADDR_WIDTH-1:0]          axi_aw_addr_o;
+wire [2:0]                         axi_aw_prot_o;
+//wire [AXI_ID_WIDTH-1:0]          axi_aw_id_o;
+//wire [AXI_USER_WIDTH-1:0]        axi_aw_user_o;
+//wire [7:0]                       axi_aw_len_o;
+//wire [2:0]                       axi_aw_size_o;
+//wire [1:0]                       axi_aw_burst_o;
+//wire                             axi_aw_lock_o;
+//wire [3:0]                       axi_aw_cache_o;
+//wire [3:0]                       axi_aw_qos_o;
+//wire [3:0]                       axi_aw_region_o;
 
-ysyx_22050133_axi_slave ysyx_22050133_axi_slave_ifu(
+wire                               axi_w_ready_i;              
+wire                               axi_w_valid_o;
+wire [AXI_DATA_WIDTH-1:0]          axi_w_data_o;
+wire [AXI_DATA_WIDTH/8-1:0]        axi_w_strb_o;
+//wire                             axi_w_last_o;
+//wire [AXI_USER_WIDTH-1:0]        axi_w_user_o;
+
+wire                               axi_b_ready_o;          
+wire                               axi_b_valid_i;
+wire  [1:0]                        axi_b_resp_i;               
+//wire  [AXI_ID_WIDTH-1:0]         axi_b_id_i;
+//wire  [AXI_USER_WIDTH-1:0]       axi_b_user_i;
+
+wire                               axi_ar_ready_i;             
+wire                               axi_ar_valid_o;
+wire [AXI_ADDR_WIDTH-1:0]          axi_ar_addr_o;
+wire [2:0]                         axi_ar_prot_o;
+//wire [AXI_ID_WIDTH-1:0]          axi_ar_id_o;
+//wire [AXI_USER_WIDTH-1:0]        axi_ar_user_o;
+//wire [7:0]                       axi_ar_len_o;
+//wire [2:0]                       axi_ar_size_o;
+//wire [1:0]                       axi_ar_burst_o;
+//wire                             axi_ar_lock_o;
+//wire [3:0]                       axi_ar_cache_o;
+//wire [3:0]                       axi_ar_qos_o;
+//wire [3:0]                       axi_ar_region_o;
+
+wire                               axi_r_ready_o;          
+wire                               axi_r_valid_i;             
+wire  [1:0]                        axi_r_resp_i;
+wire  [AXI_DATA_WIDTH-1:0]         axi_r_data_i;
+//wire                             axi_r_last_i;
+//wire  [AXI_ID_WIDTH-1:0]         axi_r_id_i;
+//wire  [AXI_USER_WIDTH-1:0]       axi_r_user_i
+
+ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .clk               (clk),               
     .rst               (rst),
                        
-    .axi_aw_ready_o    (ifu_axi_aw_ready_i),                
-    .axi_aw_valid_i    (ifu_axi_aw_valid_o),
-    .axi_aw_addr_i     (ifu_axi_aw_addr_o),
-    .axi_aw_prot_i     (ifu_axi_aw_prot_o),
-    //.axi_aw_id_i       (ifu_axi_aw_id_o),
-    //.axi_aw_user_i     (ifu_axi_aw_user_o),
-    //.axi_aw_len_i      (ifu_axi_aw_len_o),
-    //.axi_aw_size_i     (ifu_axi_aw_size_o),
-    //.axi_aw_burst_i    (ifu_axi_aw_burst_o),
-    //.axi_aw_lock_i     (ifu_axi_aw_lock_o),
-    //.axi_aw_cache_i    (ifu_axi_aw_cache_o),
-    //.axi_aw_qos_i      (ifu_axi_aw_qos_o),
-    //.axi_aw_region_i   (ifu_axi_aw_region_o),
+    .s1_axi_aw_ready_o    (ifu_axi_aw_ready_i),                
+    .s1_axi_aw_valid_i    (ifu_axi_aw_valid_o),
+    .s1_axi_aw_addr_i     (ifu_axi_aw_addr_o),
+    .s1_axi_aw_prot_i     (ifu_axi_aw_prot_o),
+    //.s1_axi_aw_id_i       (ifu_axi_aw_id_o),
+    //.s1_axi_aw_user_i     (ifu_axi_aw_user_o),
+    //.s1_axi_aw_len_i      (ifu_axi_aw_len_o),
+    //.s1_axi_aw_size_i     (ifu_axi_aw_size_o),
+    //.s1_axi_aw_burst_i    (ifu_axi_aw_burst_o),
+    //.s1_axi_aw_lock_i     (ifu_axi_aw_lock_o),
+    //.s1_axi_aw_cache_i    (ifu_axi_aw_cache_o),
+    //.s1_axi_aw_qos_i      (ifu_axi_aw_qos_o),
+    //.s1_axi_aw_region_i   (ifu_axi_aw_region_o),
                                             
-    .axi_w_ready_o     (ifu_axi_w_ready_i),                  
-    .axi_w_valid_i     (ifu_axi_w_valid_o),
-    .axi_w_data_i      (ifu_axi_w_data_o),
-    .axi_w_strb_i      (ifu_axi_w_strb_o),
-    //.axi_w_last_i      (ifu_axi_w_last_o),
-    //.axi_w_user_i      (ifu_axi_w_user_o),
+    .s1_axi_w_ready_o     (ifu_axi_w_ready_i),                  
+    .s1_axi_w_valid_i     (ifu_axi_w_valid_o),
+    .s1_axi_w_data_i      (ifu_axi_w_data_o),
+    .s1_axi_w_strb_i      (ifu_axi_w_strb_o),
+    //.s1_axi_w_last_i      (ifu_axi_w_last_o),
+    //.s1_axi_w_user_i      (ifu_axi_w_user_o),
                        
-    .axi_b_ready_i     (ifu_axi_b_ready_o),                  
-    .axi_b_valid_o     (ifu_axi_b_valid_i),
-    .axi_b_resp_o      (ifu_axi_b_resp_i),                   
-    //.axi_b_id_o        (ifu_axi_b_id_i),
-    //.axi_b_user_o      (ifu_axi_b_user_i),
+    .s1_axi_b_ready_i     (ifu_axi_b_ready_o),                  
+    .s1_axi_b_valid_o     (ifu_axi_b_valid_i),
+    .s1_axi_b_resp_o      (ifu_axi_b_resp_i),                   
+    //.s1_axi_b_id_o        (ifu_axi_b_id_i),
+    //.s1_axi_b_user_o      (ifu_axi_b_user_i),
                                             
-    .axi_ar_ready_o    (ifu_axi_ar_ready_i),                  
-    .axi_ar_valid_i    (ifu_axi_ar_valid_o),
-    .axi_ar_addr_i     (ifu_axi_ar_addr_o),
-    .axi_ar_prot_i     (ifu_axi_ar_prot_o),
-    //.axi_ar_id_i       (ifu_axi_ar_id_o),
-    //.axi_ar_user_i     (ifu_axi_ar_user_o),
-    //.axi_ar_len_i      (ifu_axi_ar_len_o),
-    //.axi_ar_size_i     (ifu_axi_ar_size_o),
-    //.axi_ar_burst_i    (ifu_axi_ar_burst_o),
-    //.axi_ar_lock_i     (ifu_axi_ar_lock_o),
-    //.axi_ar_cache_i    (ifu_axi_ar_cache_o),
-    //.axi_ar_qos_i      (ifu_axi_ar_qos_o),
-    //.axi_ar_region_i   (ifu_axi_ar_region_o),
+    .s1_axi_ar_ready_o    (ifu_axi_ar_ready_i),                  
+    .s1_axi_ar_valid_i    (ifu_axi_ar_valid_o),
+    .s1_axi_ar_addr_i     (ifu_axi_ar_addr_o),
+    .s1_axi_ar_prot_i     (ifu_axi_ar_prot_o),
+    //.s1_axi_ar_id_i       (ifu_axi_ar_id_o),
+    //.s1_axi_ar_user_i     (ifu_axi_ar_user_o),
+    //.s1_axi_ar_len_i      (ifu_axi_ar_len_o),
+    //.s1_axi_ar_size_i     (ifu_axi_ar_size_o),
+    //.s1_axi_ar_burst_i    (ifu_axi_ar_burst_o),
+    //.s1_axi_ar_lock_i     (ifu_axi_ar_lock_o),
+    //.s1_axi_ar_cache_i    (ifu_axi_ar_cache_o),
+    //.s1_axi_ar_qos_i      (ifu_axi_ar_qos_o),
+    //.s1_axi_ar_region_i   (ifu_axi_ar_region_o),
                        
-    .axi_r_ready_i     (ifu_axi_r_ready_o),                   
-    .axi_r_valid_o     (ifu_axi_r_valid_i),                  
-    .axi_r_resp_o      (ifu_axi_r_resp_i),
-    .axi_r_data_o      (ifu_axi_r_data_i)
-    //.axi_r_last_o      (ifu_axi_r_last_i),
-    //.axi_r_id_o        (ifu_axi_r_id_i),
-    //.axi_r_user_o      (ifu_axi_r_user_i)          
+    .s1_axi_r_ready_i     (ifu_axi_r_ready_o),                   
+    .s1_axi_r_valid_o     (ifu_axi_r_valid_i),                  
+    .s1_axi_r_resp_o      (ifu_axi_r_resp_i),
+    .s1_axi_r_data_o      (ifu_axi_r_data_i),
+    //.s1_axi_r_last_o      (ifu_axi_r_last_i),
+    //.s1_axi_r_id_o        (ifu_axi_r_id_i),
+    //.s1_axi_r_user_o      (ifu_axi_r_user_i)          
+
+    .s2_axi_aw_ready_o    (mem_axi_aw_ready_i),                
+    .s2_axi_aw_valid_i    (mem_axi_aw_valid_o),
+    .s2_axi_aw_addr_i     (mem_axi_aw_addr_o),
+    .s2_axi_aw_prot_i     (mem_axi_aw_prot_o),
+    //.s2_axi_aw_id_i       (mem_axi_aw_id_o),
+    //.s2_axi_aw_user_i     (mem_axi_aw_user_o),
+    //.s2_axi_aw_len_i      (mem_axi_aw_len_o),
+    //.s2_axi_aw_size_i     (mem_axi_aw_size_o),
+    //.s2_axi_aw_burst_i    (mem_axi_aw_burst_o),
+    //.s2_axi_aw_lock_i     (mem_axi_aw_lock_o),
+    //.s2_axi_aw_cache_i    (mem_axi_aw_cache_o),
+    //.s2_axi_aw_qos_i      (mem_axi_aw_qos_o),
+    //.s2_axi_aw_region_i   (mem_axi_aw_region_o),
+                                            
+    .s2_axi_w_ready_o     (mem_axi_w_ready_i),                  
+    .s2_axi_w_valid_i     (mem_axi_w_valid_o),
+    .s2_axi_w_data_i      (mem_axi_w_data_o),
+    .s2_axi_w_strb_i      (mem_axi_w_strb_o),
+    //.axi_w_last_i      (mem_axi_w_last_o),
+    //.axi_w_user_i      (mem_axi_w_user_o),
+                       
+    .s2_axi_b_ready_i     (mem_axi_b_ready_o),                  
+    .s2_axi_b_valid_o     (mem_axi_b_valid_i),
+    .s2_axi_b_resp_o      (mem_axi_b_resp_i),                   
+    //.s2_axi_b_id_o        (mem_axi_b_id_i),
+    //.s2_axi_b_user_o      (mem_axi_b_user_i),
+                                            
+    .s2_axi_ar_ready_o    (mem_axi_ar_ready_i),                  
+    .s2_axi_ar_valid_i    (mem_axi_ar_valid_o),
+    .s2_axi_ar_addr_i     (mem_axi_ar_addr_o),
+    .s2_axi_ar_prot_i     (mem_axi_ar_prot_o),
+    //.s2_axi_ar_id_i       (mem_axi_ar_id_o),
+    //.s2_axi_ar_user_i     (mem_axi_ar_user_o),
+    //.s2_axi_ar_len_i      (mem_axi_ar_len_o),
+    //.s2_axi_ar_size_i     (mem_axi_ar_size_o),
+    //.s2_axi_ar_burst_i    (mem_axi_ar_burst_o),
+    //.s2_axi_ar_lock_i     (mem_axi_ar_lock_o),
+    //.s2_axi_ar_cache_i    (mem_axi_ar_cache_o),
+    //.s2_axi_ar_qos_i      (mem_axi_ar_qos_o),
+    //.s2_axi_ar_region_i   (mem_axi_ar_region_o),
+                       
+    .s2_axi_r_ready_i     (mem_axi_r_ready_o),                   
+    .s2_axi_r_valid_o     (mem_axi_r_valid_i),                  
+    .s2_axi_r_resp_o      (mem_axi_r_resp_i),
+    .s2_axi_r_data_o      (mem_axi_r_data_i),
+    //.s2_axi_r_last_o      (mem_axi_r_last_i),
+    //.s2_axi_r_id_o        (mem_axi_r_id_i),
+    //.s2_axi_r_user_o      (mem_axi_r_user_i)          
+    //
+    .axi_aw_ready_i   (axi_aw_ready_i),               
+    .axi_aw_valid_o   (axi_aw_valid_o),
+    .axi_aw_addr_o    (axi_aw_addr_o),
+    .axi_aw_prot_o    (axi_aw_prot_o),
+  //.axi_aw_id_o      (axi_aw_id_o),
+  //.axi_aw_user_o    (axi_aw_user_o),
+  //.axi_aw_len_o     (axi_aw_len_o),
+  //.axi_aw_size_o    (axi_aw_size_o),
+  //.axi_aw_burst_o   (axi_aw_burst_o),
+  //.axi_aw_lock_o    (axi_aw_lock_o),
+  //.axi_aw_cache_o   (axi_aw_cache_o),
+  //.axi_aw_qos_o     (axi_aw_qos_o),
+  //.axi_aw_region_o  (axi_aw_region_o),
+                                       
+    .axi_w_ready_i    (axi_w_ready_i),                
+    .axi_w_valid_o    (axi_w_valid_o),
+    .axi_w_data_o     (axi_w_data_o),
+    .axi_w_strb_o     (axi_w_strb_o),
+    //.axi_w_last_o   (axi_w_last_o),
+    //.axi_w_user_o   (axi_w_user_o),
+                                       
+    .axi_b_ready_o    (axi_b_ready_o),            
+    .axi_b_valid_i    (axi_b_valid_i),
+    .axi_b_resp_i     (axi_b_resp_i),                 
+    //.axi_b_id_i     (axi_b_id_i),
+    //.axi_b_user_i   (axi_b_user_i),
+                                       
+    .axi_ar_ready_i   (axi_ar_ready_i),               
+    .axi_ar_valid_o   (axi_ar_valid_o),
+    .axi_ar_addr_o    (axi_ar_addr_o),
+    .axi_ar_prot_o    (axi_ar_prot_o),
+  //.axi_ar_id_o      (axi_ar_id_o),
+  //.axi_ar_user_o    (axi_ar_user_o),
+  //.axi_ar_len_o     (axi_ar_len_o),
+  //.axi_ar_size_o    (axi_ar_size_o),
+  //.axi_ar_burst_o   (axi_ar_burst_o),
+  //.axi_ar_lock_o    (axi_ar_lock_o),
+  //.axi_ar_cache_o   (axi_ar_cache_o),
+  //.axi_ar_qos_o     (axi_ar_qos_o),
+  //.axi_ar_region_o  (axi_ar_region_o),
+                                       
+    .axi_r_ready_o    (axi_r_ready_o),            
+    .axi_r_valid_i    (axi_r_valid_i),                
+    .axi_r_resp_i     (axi_r_resp_i),
+    .axi_r_data_i     (axi_r_data_i)
+  //.axi_r_last_i     (axi_r_last_i),
+  //.axi_r_id_i       (axi_r_id_i),
+  //.axi_r_user_i     (axi_r_user_i)           
 );
 
 always@(posedge clk)
@@ -689,58 +836,58 @@ ysyx_22050133_axi_master ysyx_22050133_axi_master_mem(
   //.axi_r_user_i     (mem_axi_r_user_i)           
 );
 
-ysyx_22050133_axi_slave ysyx_22050133_axi_slave_mem(
+ysyx_22050133_axi_slave ysyx_22050133_axi_slave(
     .clk               (clk),               
     .rst               (rst),
                        
-    .axi_aw_ready_o    (mem_axi_aw_ready_i),                
-    .axi_aw_valid_i    (mem_axi_aw_valid_o),
-    .axi_aw_addr_i     (mem_axi_aw_addr_o),
-    .axi_aw_prot_i     (mem_axi_aw_prot_o),
-    //.axi_aw_id_i       (mem_axi_aw_id_o),
-    //.axi_aw_user_i     (mem_axi_aw_user_o),
-    //.axi_aw_len_i      (mem_axi_aw_len_o),
-    //.axi_aw_size_i     (mem_axi_aw_size_o),
-    //.axi_aw_burst_i    (mem_axi_aw_burst_o),
-    //.axi_aw_lock_i     (mem_axi_aw_lock_o),
-    //.axi_aw_cache_i    (mem_axi_aw_cache_o),
-    //.axi_aw_qos_i      (mem_axi_aw_qos_o),
-    //.axi_aw_region_i   (mem_axi_aw_region_o),
+    .axi_aw_ready_o    (axi_aw_ready_i),                
+    .axi_aw_valid_i    (axi_aw_valid_o),
+    .axi_aw_addr_i     (axi_aw_addr_o),
+    .axi_aw_prot_i     (axi_aw_prot_o),
+    //.axi_aw_id_i       (axi_aw_id_o),
+    //.axi_aw_user_i     (axi_aw_user_o),
+    //.axi_aw_len_i      (axi_aw_len_o),
+    //.axi_aw_size_i     (axi_aw_size_o),
+    //.axi_aw_burst_i    (axi_aw_burst_o),
+    //.axi_aw_lock_i     (axi_aw_lock_o),
+    //.axi_aw_cache_i    (axi_aw_cache_o),
+    //.axi_aw_qos_i      (axi_aw_qos_o),
+    //.axi_aw_region_i   (axi_aw_region_o),
                                             
-    .axi_w_ready_o     (mem_axi_w_ready_i),                  
-    .axi_w_valid_i     (mem_axi_w_valid_o),
-    .axi_w_data_i      (mem_axi_w_data_o),
-    .axi_w_strb_i      (mem_axi_w_strb_o),
-    //.axi_w_last_i      (mem_axi_w_last_o),
-    //.axi_w_user_i      (mem_axi_w_user_o),
+    .axi_w_ready_o     (axi_w_ready_i),                  
+    .axi_w_valid_i     (axi_w_valid_o),
+    .axi_w_data_i      (axi_w_data_o),
+    .axi_w_strb_i      (axi_w_strb_o),
+    //.axi_w_last_i      (axi_w_last_o),
+    //.axi_w_user_i      (axi_w_user_o),
                        
-    .axi_b_ready_i     (mem_axi_b_ready_o),                  
-    .axi_b_valid_o     (mem_axi_b_valid_i),
-    .axi_b_resp_o      (mem_axi_b_resp_i),                   
-    //.axi_b_id_o        (mem_axi_b_id_i),
-    //.axi_b_user_o      (mem_axi_b_user_i),
+    .axi_b_ready_i     (axi_b_ready_o),                  
+    .axi_b_valid_o     (axi_b_valid_i),
+    .axi_b_resp_o      (axi_b_resp_i),                   
+    //.axi_b_id_o        (axi_b_id_i),
+    //.axi_b_user_o      (axi_b_user_i),
                                             
-    .axi_ar_ready_o    (mem_axi_ar_ready_i),                  
-    .axi_ar_valid_i    (mem_axi_ar_valid_o),
-    .axi_ar_addr_i     (mem_axi_ar_addr_o),
-    .axi_ar_prot_i     (mem_axi_ar_prot_o),
-    //.axi_ar_id_i       (mem_axi_ar_id_o),
-    //.axi_ar_user_i     (mem_axi_ar_user_o),
-    //.axi_ar_len_i      (mem_axi_ar_len_o),
-    //.axi_ar_size_i     (mem_axi_ar_size_o),
-    //.axi_ar_burst_i    (mem_axi_ar_burst_o),
-    //.axi_ar_lock_i     (mem_axi_ar_lock_o),
-    //.axi_ar_cache_i    (mem_axi_ar_cache_o),
-    //.axi_ar_qos_i      (mem_axi_ar_qos_o),
-    //.axi_ar_region_i   (mem_axi_ar_region_o),
+    .axi_ar_ready_o    (axi_ar_ready_i),                  
+    .axi_ar_valid_i    (axi_ar_valid_o),
+    .axi_ar_addr_i     (axi_ar_addr_o),
+    .axi_ar_prot_i     (axi_ar_prot_o),
+    //.axi_ar_id_i       (axi_ar_id_o),
+    //.axi_ar_user_i     (axi_ar_user_o),
+    //.axi_ar_len_i      (axi_ar_len_o),
+    //.axi_ar_size_i     (axi_ar_size_o),
+    //.axi_ar_burst_i    (axi_ar_burst_o),
+    //.axi_ar_lock_i     (axi_ar_lock_o),
+    //.axi_ar_cache_i    (axi_ar_cache_o),
+    //.axi_ar_qos_i      (axi_ar_qos_o),
+    //.axi_ar_region_i   (axi_ar_region_o),
                        
-    .axi_r_ready_i     (mem_axi_r_ready_o),                   
-    .axi_r_valid_o     (mem_axi_r_valid_i),                  
-    .axi_r_resp_o      (mem_axi_r_resp_i),
-    .axi_r_data_o      (mem_axi_r_data_i)
-    //.axi_r_last_o      (mem_axi_r_last_i),
-    //.axi_r_id_o        (mem_axi_r_id_i),
-    //.axi_r_user_o      (mem_axi_r_user_i)          
+    .axi_r_ready_i     (axi_r_ready_o),                   
+    .axi_r_valid_o     (axi_r_valid_i),                  
+    .axi_r_resp_o      (axi_r_resp_i),
+    .axi_r_data_o      (axi_r_data_i)
+    //.axi_r_last_o      (axi_r_last_i),
+    //.axi_r_id_o        (axi_r_id_i),
+    //.axi_r_user_o      (axi_r_user_i)          
 );
 
 
