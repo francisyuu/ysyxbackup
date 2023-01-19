@@ -30,9 +30,6 @@ class Vysyx_22050133_NPC__Syms final : public VerilatedSyms {
     Vysyx_22050133_NPC___024root   TOP;
     Vysyx_22050133_NPC___024unit   TOP____024unit;
 
-    // SCOPE NAMES
-    VerilatedScope __Vscope_ysyx_22050133_NPC;
-
     // CONSTRUCTORS
     Vysyx_22050133_NPC__Syms(VerilatedContext* contextp, const char* namep, Vysyx_22050133_NPC* modelp);
     ~Vysyx_22050133_NPC__Syms();

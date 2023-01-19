@@ -25,13 +25,15 @@ void stopsim()
 }
 void cpu_single_cycle() {
         //if(top->rst!=1)printf("pc = %08lx, inst = %08x\n", top->pc, top->inst);
-  top->clk = 1; top->eval();
-  top->clk = 0; top->eval();
+	static long lastpc= 0x80000000;
 #ifdef MULTICYCLE
-  top->clk = 1; top->eval();
-  top->clk = 0; top->eval();
-  top->clk = 1; top->eval();
-  top->clk = 0; top->eval();
+		while(cpu.pc==lastpc)
+		{
+			top->clk = 1; top->eval();
+			top->clk = 0; top->eval();
+		}
+		lastpc=cpu.pc;
+#else
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
 #endif
@@ -46,8 +48,11 @@ void cpu_reset(int n) {
 		top->clk = 1; top->eval();
 		top->clk = 0; top->eval();
 		top->rst = 0; top->eval();
-		/*top->clk = 1; top->eval();*/
-		/*top->clk = 0; top->eval();*/
+		while(cpu.pc==0)
+		{
+			top->clk = 1; top->eval();
+			top->clk = 0; top->eval();
+		}
 		printf("cpu reset:pc=%08lx,inst=%08x\n",cpu.pc,cpu.inst);
 	}
 }
@@ -59,7 +64,11 @@ uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 /*static bool g_print_always = true;*/
+#ifdef CONFIG_ITRACE
+static bool g_print_always = true;
+#else
 static bool g_print_always = false;
+#endif
 
 
 #ifdef CONFIG_DEBUGINFO

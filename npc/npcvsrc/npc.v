@@ -17,13 +17,18 @@ module ysyx_22050133_NPC # (
 wire displayinfo=0;
 
 wire pcSrc;
+wire pop=has_hazard;
+
 `ifdef MULTICYCLE 
 wire flush=0;
-wire block=block_axi_ifu;
+wire block=block_axi_ifu|block_axi_mem;
+//wire block=block_axi_ifu;
 `else
-wire flush=pcSrc;
-wire block=block_axi_ifu|has_hazard;
+wire flush=pcSrc&(~block);
+//wire block=(block_axi_mem|block_axi_ifu|has_hazard)&(~pcSrc);
+wire block=(block_axi_mem|block_axi_ifu);
 `endif
+
 wire[63:0] pc;
 wire [31:0] inst;
 
@@ -115,9 +120,8 @@ end
 
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .clk(clk),
-  .IFU_en(WBREG_en),
+  .IFU_en(WBREG_en&(~block)),
   .rst(rst),
-  //.dnpc(MEMREG_dnpc),
   .dnpc(dnpc),
   .pcSrc(pcSrc),
   .inst64(ifu_data_read_o),
@@ -141,9 +145,7 @@ end
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .clk(clk),
   .rst(rst),
-  //.IFU_en((~has_hazard|pcSrc)),
-  .IFU_en(~block),
-  //.dnpc(MEMREG_dnpc),
+  .IFU_en(~(block|pop)),
   .dnpc(dnpc),
   .pcSrc(pcSrc),
   .inst64(ifu_data_read_o),
@@ -226,6 +228,7 @@ ysyx_22050133_axi_master ysyx_22050133_axi_master_ifu(
     .rw_w_data_i      (ifu_rw_w_data_i),  
     .rw_addr_i        (pc),    
     .rw_size_i        (0),    
+    .rw_if_i          (1),    
     // Advanced eXtensible Intenterface
     .axi_aw_ready_i   (ifu_axi_aw_ready_i),               
     .axi_aw_valid_o   (ifu_axi_aw_valid_o),
@@ -333,13 +336,12 @@ ysyx_22050133_axi_slave ysyx_22050133_axi_slave_ifu(
 
 always@(posedge clk)
 begin
+  if(WBREG_ctrl_wb[8])stopsim();
   if(rst|flush)begin
     IDREG_pc<=0;
     IDREG_inst<=0;
-    if(WBREG_ctrl_wb[8])stopsim();
   end
-  else if(IDREG_en&(~block))begin
-    if(WBREG_ctrl_wb[8])stopsim();
+  else if(IDREG_en&(~(block|pop)))begin
     IDREG_pc<=pc;
     IDREG_inst<=inst;
   end
@@ -352,111 +354,82 @@ always@(posedge clk)
 always@(*)
   begin
 `endif
-  if(displayinfo==1)$monitor("\
-            IDREG_en  =%h,     \
-            IDREG_pc  =%h,     \
-            IDREG_inst=%h,     \
-            \
-            EXREG_en  =%h,     \
-            EXREG_ctrl_wb =%h, \
-            EXREG_ctrl_mem=%h, \
-            EXREG_ctrl_ex =%h, \
-            has_hazard=%d,     \
-            EXREG_pc     =%h,  \
-            EXREG_rs1    =%d,  \
-            EXREG_rs2    =%d,  \
-            EXREG_rs1data=%h,  \
-            EXREG_rs2data=%h,  \
-            EXREG_imm    =%h,  \
-            EXREG_rd     =%d,  \
-            EXREG_npcSrc =%d,  \
-            EXREG_ALUSEXT=%d,  \
-            EXREG_addSrc =%d,  \
-            EXREG_ALUSrc1=%d,  \
-            EXREG_ALUSrc2=%d,  \
-            EXREG_ALUop  =%d,  \
-            forward_ALUSrc1=%h,\
-            forward_ALUSrc2=%h,\
-            forward_wdataSrc=%h,\
-            \
-            MEMREG_en  =%h,    \
-            MEMREG_ctrl_mem=%h,\
-            MEMREG_ctrl_wb =%h,\
-            MEMREG_dnpc  =%h,  \
-            MEMREG_result=%h,  \
-            MEMREG_wdata =%h,  \
-            MEMREG_csrdata =%h,  \
-            MEMREG_imm   =%h,  \
-            MEMREG_rs2    =%d,  \
-            MEMREG_rd    =%d,  \
-            MEMREG_pcSrcJ=%d,  \
-            MEMREG_pcSrcB=%d,  \
-            MEMREG_read=%d,  \
-            MEMREG_write=%d,  \
-            MEMREG_wmask=%h,  \
-            WBREG_rdSrc    =%d,   \
-            WBREG_rdSEXT   =%d,   \
-            rddata      =%h \
-            \
-            WBREG_en  =%h,     \
-            WBREG_ctrl_wb=%h,  \
-            WBREG_rddata =%h,   \
-            WBREG_rd    =%d,   \
-            WBREG_ebreak    =%d,   \
-            WBREG_rdWen    =%d,   \
-                  "   
-         ,IDREG_en  
-         ,IDREG_pc  
-         ,IDREG_inst
+`ifdef REGINFO
+  $monitor("\
+    pc        =%h,inst      =%h,\
+    IDREG_en  =%h,     IDREG_pc  =%h,     IDREG_inst=%h,     \
+    block_axi_ifu=%d,  block_axi_mem=%d,  block=%d,  \
+EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
+    EXREG_ctrl_ex =%h, has_hazard=%d,     EXREG_pc     =%h,  \
+    EXREG_rs1    =%d,  EXREG_rs2    =%d,  \
+    EXREG_rs1data=%h,  EXREG_rs2data=%h,  \
+    EXREG_imm    =%h,  \
+    EXREG_rd     =%d,  EXREG_npcSrc =%d,  EXREG_ALUSEXT=%d,  \
+    EXREG_addSrc =%d,  EXREG_ALUSrc1=%d,  EXREG_ALUSrc2=%d,  \
+    EXREG_ALUop  =%d,  result       =%h,  dnpc         =%h,  \
+    MEMREG_pcSrcJ=%d,  MEMREG_pcSrcB=%d,  pcSrc        =%d,  \
+    forward_ALUSrc1=%h,forward_ALUSrc2=%h,forward_wdataSrc=%h,\
+MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
+    MEMREG_result=%h,  MEMREG_wdata =%h,  \
+    MEMREG_csrdata =%h,  \
+    MEMREG_imm   =%h,  MEMREG_rs2    =%d, MEMREG_rd    =%d,  \
+    MEMREG_read=%d,    MEMREG_write=%d,   MEMREG_wmask=%h,  \
+    WBREG_rdSrc    =%d,WBREG_rdSEXT   =%d,rddata      =%h \
+WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
+    WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,   \
+ifu_rw_valid_i=%d, rw_ready_o=%d, data_read_o=%h,\
+    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
+    w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
+    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
+    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
+    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
+mem_rw_valid_i=%d, rw_ready_o=%d, data_read_o=%h,\
+    rw_wdata_i=%h, rw_addr_i =%h,  rw_size_i=%h,\
+    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
+    w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
+    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
+    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
+    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
+    "   
+         ,pc,inst
+         ,IDREG_en  ,IDREG_pc  ,IDREG_inst
+         ,block_axi_ifu,block_axi_mem,block
 
-         ,EXREG_en  
-         ,EXREG_ctrl_wb 
-         ,EXREG_ctrl_mem
-         ,EXREG_ctrl_ex 
-         ,has_hazard
-         ,EXREG_pc     
-         ,EXREG_rs1
-         ,EXREG_rs2
-         ,EXREG_rs1data
-         ,EXREG_rs2data
+         ,EXREG_en  ,EXREG_ctrl_wb ,EXREG_ctrl_mem
+         ,EXREG_ctrl_ex ,has_hazard
+         ,EXREG_pc     ,EXREG_rs1,EXREG_rs2
+         ,EXREG_rs1data,EXREG_rs2data
          ,EXREG_imm    
-         ,EXREG_rd     
-         ,EXREG_ctrl_ex[10]
-         ,EXREG_ctrl_ex[9]
-         ,EXREG_ctrl_ex[8]
-         ,EXREG_ctrl_ex[7]
-         ,EXREG_ctrl_ex[6:5]
-         ,EXREG_ctrl_ex[4:0]
-         ,forward_ALUSrc1
-         ,forward_ALUSrc2
-         ,forward_wdataSrc
+         ,EXREG_rd     ,EXREG_ctrl_ex[10],EXREG_ctrl_ex[9]
+         ,EXREG_ctrl_ex[8],EXREG_ctrl_ex[7],EXREG_ctrl_ex[6:5]
+         ,EXREG_ctrl_ex[4:0],result,dnpc
+         ,EXREG_ctrl_mem[11],EXREG_ctrl_mem[10],pcSrc
+         ,forward_ALUSrc1,forward_ALUSrc2,forward_wdataSrc
 
-         ,MEMREG_en  
-         ,MEMREG_ctrl_mem
-         ,MEMREG_ctrl_wb 
-         ,MEMREG_dnpc  
-         ,MEMREG_result
-         ,MEMREG_wdata 
+         ,MEMREG_en  ,MEMREG_ctrl_mem,MEMREG_ctrl_wb 
+         ,MEMREG_result,MEMREG_wdata 
          ,MEMREG_csrdata 
-         ,MEMREG_imm   
-         ,MEMREG_rs2    
-         ,MEMREG_rd    
-         ,MEMREG_ctrl_mem[11]
-         ,MEMREG_ctrl_mem[10]
-         ,MEMREG_ctrl_mem[9]
-         ,MEMREG_ctrl_mem[8]
-         ,MEMREG_ctrl_mem[7:0]
-         ,MEMREG_ctrl_wb[7:6]
-         ,MEMREG_ctrl_wb[4:0]
-         ,rddata
+         ,MEMREG_imm   ,MEMREG_rs2    ,MEMREG_rd    
+         ,MEMREG_ctrl_mem[9],MEMREG_ctrl_mem[8],MEMREG_ctrl_mem[7:0]
+         ,MEMREG_ctrl_wb[7:6],MEMREG_ctrl_wb[4:0],rddata
 
-         ,WBREG_en  
-         ,WBREG_ctrl_wb
-         ,WBREG_rddata 
-         ,WBREG_rd    
-         ,WBREG_ctrl_wb[8]
-         ,WBREG_ctrl_wb[5]
+         ,WBREG_en  ,WBREG_ctrl_wb,WBREG_rddata 
+         ,WBREG_rd    ,WBREG_ctrl_wb[8],WBREG_ctrl_wb[5]
+         ,ifu_rw_valid_i,ifu_rw_ready_o,ifu_data_read_o
+         ,ifu_axi_aw_ready_i,ifu_axi_aw_valid_o,ifu_axi_aw_addr_o,ifu_axi_aw_prot_o
+         ,ifu_axi_w_ready_i, ifu_axi_w_valid_o, ifu_axi_w_data_o, ifu_axi_w_strb_o
+         ,ifu_axi_b_ready_o, ifu_axi_b_valid_i, ifu_axi_b_resp_i
+         ,ifu_axi_ar_ready_i,ifu_axi_ar_valid_o,ifu_axi_ar_addr_o,ifu_axi_ar_prot_o
+         ,ifu_axi_r_ready_o, ifu_axi_r_valid_i, ifu_axi_r_resp_i, ifu_axi_r_data_i
+         ,mem_rw_valid_i,mem_rw_ready_o,din
+         ,MEMREG_wdata,addr,MEMREG_ctrl_mem[7:0]
+         ,mem_axi_aw_ready_i,mem_axi_aw_valid_o,mem_axi_aw_addr_o,mem_axi_aw_prot_o
+         ,mem_axi_w_ready_i, mem_axi_w_valid_o, mem_axi_w_data_o, mem_axi_w_strb_o
+         ,mem_axi_b_ready_o, mem_axi_b_valid_i, mem_axi_b_resp_i
+         ,mem_axi_ar_ready_i,mem_axi_ar_valid_o,mem_axi_ar_addr_o,mem_axi_ar_prot_o
+         ,mem_axi_r_ready_o, mem_axi_r_valid_i, mem_axi_r_resp_i, mem_axi_r_data_i
                );
+`endif
 end
 
 
@@ -465,12 +438,11 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .rst      (rst),
   .pc       (IDREG_pc     ),
   .inst     (IDREG_inst     ),
-  .rdwen    (WBREG_ctrl_wb[5]    ),
+  .rdwen    (WBREG_ctrl_wb[5]&(~block)    ),
   .rdin     (WBREG_rd     ),
   .rddata   (WBREG_rddata   ),
   .hazard_detect_mem_read(EXREG_ctrl_mem[9]),
   .hazard_detect_rd(EXREG_rd),
-  .block(block),
   .has_hazard(has_hazard),
   .ctrl_wb_out  (ctrl_wb  ),
   .ctrl_mem_out (ctrl_mem ),
@@ -497,7 +469,7 @@ begin
     EXREG_imm     <=0;
     EXREG_rd      <=0;
   end
-  else if(EXREG_en)begin
+  else if(EXREG_en&(~block))begin
     EXREG_ctrl_wb <=ctrl_wb ;
     EXREG_ctrl_mem<=ctrl_mem;
     EXREG_ctrl_ex <=ctrl_ex ;
@@ -551,6 +523,7 @@ assign forward_wdataSrc= EXREG_rs2==0?0
                        :0;
 `endif
 
+reg                               mem_rw_valid_i;         
 always@(posedge clk)
 begin
   //if(rst|flush)begin
@@ -564,8 +537,9 @@ begin
     MEMREG_imm    <=0;
     MEMREG_rs2      <=0;
     MEMREG_rd      <=0;
+    mem_rw_valid_i<=0;
   end 
-  else if(MEMREG_en)begin
+  else if(MEMREG_en&(~block))begin
     MEMREG_ctrl_mem<= EXREG_ctrl_mem;
     MEMREG_ctrl_wb <= EXREG_ctrl_wb ;
     //MEMREG_dnpc    <= dnpc;
@@ -575,41 +549,204 @@ begin
     MEMREG_imm     <= EXREG_imm;
     MEMREG_rs2      <= EXREG_rs2;
     MEMREG_rd      <= EXREG_rd;
+//`ifdef MULTICYCLE
+    if(EXREG_ctrl_mem[9]|EXREG_ctrl_mem[8])mem_rw_valid_i<=1;
   end
+  else if(mem_rw_ready_o)mem_rw_valid_i<=0;
+//`else
+    //if(EXREG_ctrl_mem[9]|EXREG_ctrl_mem[8])mem_rw_valid_i<=1;
+    //else if(mem_rw_ready_o)mem_rw_valid_i<=0;
+    //end
+//`endif
 end
 //assign pcSrc=MEMREG_ctrl_mem[11]|(MEMREG_ctrl_mem[10]&MEMREG_result[0]);
 assign pcSrc=EXREG_ctrl_mem[11]|(EXREG_ctrl_mem[10]&result[0]);
 
 assign addr=MEMREG_result;
-wire[7:0] wmask=MEMREG_ctrl_mem[7:0];
+wire[7:0] w_size=MEMREG_ctrl_mem[7:0];
 wire[63:0] dout=MEMREG_wdata;
 
-always @(*) begin
-    vmem_read(addr, dinA, {7'd0,MEMREG_ctrl_mem[9]});
-    //$monitor("addr=%x dinA=%x din=%x",addr,dinA,din);
-end
+wire                               mem_rw_ready_o;     
+wire [RW_DATA_WIDTH-1:0]           mem_data_read_o;  
+wire  [RW_DATA_WIDTH-1:0]          mem_rw_w_data_i;  
+wire  [RW_ADDR_WIDTH-1:0]          mem_rw_addr_i;    
+wire  [7:0]                        mem_rw_size_i;    
 
-assign din=addr[2] ? 
-            addr[1] ? 
-              addr[0] ? {56'd0,dinA[63:56]}:{48'd0,dinA[63:48]}
-              :addr[0] ? {40'd0,dinA[63:40]}:{32'd0,dinA[63:32]}
-            :addr[1] ? 
-              addr[0] ? {24'd0,dinA[63:24]}:{16'd0,dinA[63:16]}
-              :addr[0] ? {8'd0,dinA[63:8]}:dinA;
+// Advanced eXtensible Interface
+wire                               mem_axi_aw_ready_i;             
+wire                               mem_axi_aw_valid_o;
+wire [AXI_ADDR_WIDTH-1:0]          mem_axi_aw_addr_o;
+wire [2:0]                         mem_axi_aw_prot_o;
+//wire [AXI_ID_WIDTH-1:0]           mem_axi_aw_id_o;
+//wire [AXI_USER_WIDTH-1:0]         mem_axi_aw_user_o;
+//wire [7:0]                        mem_axi_aw_len_o;
+//wire [2:0]                        mem_axi_aw_size_o;
+//wire [1:0]                        mem_axi_aw_burst_o;
+//wire                              mem_axi_aw_lock_o;
+//wire [3:0]                        mem_axi_aw_cache_o;
+//wire [3:0]                        mem_axi_aw_qos_o;
+//wire [3:0]                        mem_axi_aw_region_o;
 
-wire[63:0] wmask1={{8{wmasks[7]}},{8{wmasks[6]}},{8{wmasks[5]}},{8{wmasks[4]}},{8{wmasks[3]}},{8{wmasks[2]}},{8{wmasks[1]}},{8{wmasks[0]}}};
-wire [7:0]wmasks=wmask<<addr[2:0];
-assign doutA=(dinA&(~wmask1))|(douts&wmask1);
-assign douts=dout<<{addr[2:0],3'd0};
+wire                               mem_axi_w_ready_i;              
+wire                               mem_axi_w_valid_o;
+wire [AXI_DATA_WIDTH-1:0]          mem_axi_w_data_o;
+wire [AXI_DATA_WIDTH/8-1:0]        mem_axi_w_strb_o;
+//wire                              mem_axi_w_last_o;
+//wire [AXI_USER_WIDTH-1:0]         mem_axi_w_user_o;
 
-always @(*) begin
-    if(WBREG_en==1)vmem_write(addr, doutA, wmask,dout);
-    //vmem_write(addr, doutA, wmask,dout);
-end
+wire                               mem_axi_b_ready_o;          
+wire                               mem_axi_b_valid_i;
+wire  [1:0]                        mem_axi_b_resp_i;               
+//wire  [AXI_ID_WIDTH-1:0]           mem_axi_b_id_i;
+//wire  [AXI_USER_WIDTH-1:0]         mem_axi_b_user_i;
+
+wire                               mem_axi_ar_ready_i;             
+wire                               mem_axi_ar_valid_o;
+wire [AXI_ADDR_WIDTH-1:0]          mem_axi_ar_addr_o;
+wire [2:0]                         mem_axi_ar_prot_o;
+//wire [AXI_ID_WIDTH-1:0]           mem_axi_ar_id_o;
+//wire [AXI_USER_WIDTH-1:0]         mem_axi_ar_user_o;
+//wire [7:0]                        mem_axi_ar_len_o;
+//wire [2:0]                        mem_axi_ar_size_o;
+//wire [1:0]                        mem_axi_ar_burst_o;
+//wire                              mem_axi_ar_lock_o;
+//wire [3:0]                        mem_axi_ar_cache_o;
+//wire [3:0]                        mem_axi_ar_qos_o;
+//wire [3:0]                        mem_axi_ar_region_o;
+
+wire                               mem_axi_r_ready_o;          
+wire                               mem_axi_r_valid_i;             
+wire  [1:0]                        mem_axi_r_resp_i;
+wire  [AXI_DATA_WIDTH-1:0]         mem_axi_r_data_i;
+//wire                               mem_axi_r_last_i;
+//wire  [AXI_ID_WIDTH-1:0]           mem_axi_r_id_i;
+//wire  [AXI_USER_WIDTH-1:0]         mem_axi_r_user_i
+
+wire block_axi_mem=~(~mem_rw_valid_i&mem_rw_ready_o);
+//always@(posedge clk)begin
+  //$display("
+//end
+
+ysyx_22050133_axi_master ysyx_22050133_axi_master_mem(
+    .clk              (clk),
+    .rst              (rst),
+
+    .rw_valid_i       (mem_rw_valid_i),            
+    .rw_ready_o       (mem_rw_ready_o),     
+    .data_read_o      (din),  
+    .rw_w_data_i      (MEMREG_wdata),  
+    .rw_addr_i        (addr),    
+    .rw_size_i        (MEMREG_ctrl_mem[7:0]),    
+    .rw_if_i          (0),    
+    // Advanced eXtensible Intenterface
+    .axi_aw_ready_i   (mem_axi_aw_ready_i),               
+    .axi_aw_valid_o   (mem_axi_aw_valid_o),
+    .axi_aw_addr_o    (mem_axi_aw_addr_o),
+    .axi_aw_prot_o    (mem_axi_aw_prot_o),
+  //.axi_aw_id_o      (mem_axi_aw_id_o),
+  //.axi_aw_user_o    (mem_axi_aw_user_o),
+  //.axi_aw_len_o     (mem_axi_aw_len_o),
+  //.axi_aw_size_o    (mem_axi_aw_size_o),
+  //.axi_aw_burst_o   (mem_axi_aw_burst_o),
+  //.axi_aw_lock_o    (mem_axi_aw_lock_o),
+  //.axi_aw_cache_o   (mem_axi_aw_cache_o),
+  //.axi_aw_qos_o     (mem_axi_aw_qos_o),
+  //.axi_aw_region_o  (mem_axi_aw_region_o),
+                                           
+    .axi_w_ready_i    (mem_axi_w_ready_i),                
+    .axi_w_valid_o    (mem_axi_w_valid_o),
+    .axi_w_data_o     (mem_axi_w_data_o),
+    .axi_w_strb_o     (mem_axi_w_strb_o),
+    //.axi_w_last_o   (mem_axi_w_last_o),
+    //.axi_w_user_o   (mem_axi_w_user_o),
+                                           
+    .axi_b_ready_o    (mem_axi_b_ready_o),            
+    .axi_b_valid_i    (mem_axi_b_valid_i),
+    .axi_b_resp_i     (mem_axi_b_resp_i),                 
+    //.axi_b_id_i     (mem_axi_b_id_i),
+    //.axi_b_user_i   (mem_axi_b_user_i),
+                                           
+    .axi_ar_ready_i   (mem_axi_ar_ready_i),               
+    .axi_ar_valid_o   (mem_axi_ar_valid_o),
+    .axi_ar_addr_o    (mem_axi_ar_addr_o),
+    .axi_ar_prot_o    (mem_axi_ar_prot_o),
+  //.axi_ar_id_o      (mem_axi_ar_id_o),
+  //.axi_ar_user_o    (mem_axi_ar_user_o),
+  //.axi_ar_len_o     (mem_axi_ar_len_o),
+  //.axi_ar_size_o    (mem_axi_ar_size_o),
+  //.axi_ar_burst_o   (mem_axi_ar_burst_o),
+  //.axi_ar_lock_o    (mem_axi_ar_lock_o),
+  //.axi_ar_cache_o   (mem_axi_ar_cache_o),
+  //.axi_ar_qos_o     (mem_axi_ar_qos_o),
+  //.axi_ar_region_o  (mem_axi_ar_region_o),
+                                           
+    .axi_r_ready_o    (mem_axi_r_ready_o),            
+    .axi_r_valid_i    (mem_axi_r_valid_i),                
+    .axi_r_resp_i     (mem_axi_r_resp_i),
+    .axi_r_data_i     (mem_axi_r_data_i)
+  //.axi_r_last_i     (mem_axi_r_last_i),
+  //.axi_r_id_i       (mem_axi_r_id_i),
+  //.axi_r_user_i     (mem_axi_r_user_i)           
+);
+
+ysyx_22050133_axi_slave ysyx_22050133_axi_slave_mem(
+    .clk               (clk),               
+    .rst               (rst),
+                       
+    .axi_aw_ready_o    (mem_axi_aw_ready_i),                
+    .axi_aw_valid_i    (mem_axi_aw_valid_o),
+    .axi_aw_addr_i     (mem_axi_aw_addr_o),
+    .axi_aw_prot_i     (mem_axi_aw_prot_o),
+    //.axi_aw_id_i       (mem_axi_aw_id_o),
+    //.axi_aw_user_i     (mem_axi_aw_user_o),
+    //.axi_aw_len_i      (mem_axi_aw_len_o),
+    //.axi_aw_size_i     (mem_axi_aw_size_o),
+    //.axi_aw_burst_i    (mem_axi_aw_burst_o),
+    //.axi_aw_lock_i     (mem_axi_aw_lock_o),
+    //.axi_aw_cache_i    (mem_axi_aw_cache_o),
+    //.axi_aw_qos_i      (mem_axi_aw_qos_o),
+    //.axi_aw_region_i   (mem_axi_aw_region_o),
+                                            
+    .axi_w_ready_o     (mem_axi_w_ready_i),                  
+    .axi_w_valid_i     (mem_axi_w_valid_o),
+    .axi_w_data_i      (mem_axi_w_data_o),
+    .axi_w_strb_i      (mem_axi_w_strb_o),
+    //.axi_w_last_i      (mem_axi_w_last_o),
+    //.axi_w_user_i      (mem_axi_w_user_o),
+                       
+    .axi_b_ready_i     (mem_axi_b_ready_o),                  
+    .axi_b_valid_o     (mem_axi_b_valid_i),
+    .axi_b_resp_o      (mem_axi_b_resp_i),                   
+    //.axi_b_id_o        (mem_axi_b_id_i),
+    //.axi_b_user_o      (mem_axi_b_user_i),
+                                            
+    .axi_ar_ready_o    (mem_axi_ar_ready_i),                  
+    .axi_ar_valid_i    (mem_axi_ar_valid_o),
+    .axi_ar_addr_i     (mem_axi_ar_addr_o),
+    .axi_ar_prot_i     (mem_axi_ar_prot_o),
+    //.axi_ar_id_i       (mem_axi_ar_id_o),
+    //.axi_ar_user_i     (mem_axi_ar_user_o),
+    //.axi_ar_len_i      (mem_axi_ar_len_o),
+    //.axi_ar_size_i     (mem_axi_ar_size_o),
+    //.axi_ar_burst_i    (mem_axi_ar_burst_o),
+    //.axi_ar_lock_i     (mem_axi_ar_lock_o),
+    //.axi_ar_cache_i    (mem_axi_ar_cache_o),
+    //.axi_ar_qos_i      (mem_axi_ar_qos_o),
+    //.axi_ar_region_i   (mem_axi_ar_region_o),
+                       
+    .axi_r_ready_i     (mem_axi_r_ready_o),                   
+    .axi_r_valid_o     (mem_axi_r_valid_i),                  
+    .axi_r_resp_o      (mem_axi_r_resp_i),
+    .axi_r_data_o      (mem_axi_r_data_i)
+    //.axi_r_last_o      (mem_axi_r_last_i),
+    //.axi_r_id_o        (mem_axi_r_id_i),
+    //.axi_r_user_o      (mem_axi_r_user_i)          
+);
+
 
 `ifdef MULTICYCLE 
 always @(*)begin
-  set_pc(pc,dnpc,inst);
+  set_pc(IDREG_pc,dnpc,IDREG_inst);
 end
 `else
 always @(*)begin
@@ -625,7 +762,7 @@ begin
     WBREG_rddata<=0;
     WBREG_rd<=0;
   end
-  else if(WBREG_en)begin
+  else if(WBREG_en&(~block))begin
     WBREG_ctrl_wb <=MEMREG_ctrl_wb ;
     WBREG_rddata<=rddata;
     WBREG_rd<=MEMREG_rd;

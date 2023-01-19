@@ -1,7 +1,9 @@
 `ifndef NPCDEFINE_V
 `define NPCDEFINE_V
 
-//`define MULTICYCLE 1
+`define MULTICYCLE 1
+//`define REGINFO 1
+//`define AXIINFO 1
 
 `define ysyx_22050133_OP_LUI    7'b0110111
 `define ysyx_22050133_OP_AUIPC  7'b0010111
@@ -245,13 +247,13 @@ import "DPI-C" function void set_pc(
     input longint pc, input longint npc,input int inst
 );
 import "DPI-C" function void vmem_read(
-    input longint raddr, output longint rdata, input byte wmask
+    input longint raddr, output longint rdata
 );
 import "DPI-C" function void inst_read(
     input longint raddr, output longint rdata
 );
 import "DPI-C" function void vmem_write(
-    input longint waddr, input longint wdata, input byte wmask,input longint wdataraw
+    input longint waddr, input longint wdata, input byte wmask
 );
 import "DPI-C" function void reg_info(
     input logic[4:0] rs1,input longint rs1d,

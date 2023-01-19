@@ -42,17 +42,15 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_set_pc_TOP____024u
     set_pc(pc__Vcvt, npc__Vcvt, inst__Vcvt);
 }
 
-extern "C" void vmem_read(long long raddr, long long* rdata, char wmask);
+extern "C" void vmem_read(long long raddr, long long* rdata);
 
-VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_read_TOP____024unit(QData/*63:0*/ raddr, QData/*63:0*/ &rdata, CData/*7:0*/ wmask) {
+VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_read_TOP____024unit(QData/*63:0*/ raddr, QData/*63:0*/ &rdata) {
     VL_DEBUG_IF(VL_DBG_MSGF("+        Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_read_TOP____024unit\n"); );
     // Body
     long long raddr__Vcvt;
     for (size_t raddr__Vidx = 0; raddr__Vidx < 1; ++raddr__Vidx) raddr__Vcvt = raddr;
     long long rdata__Vcvt;
-    char wmask__Vcvt;
-    for (size_t wmask__Vidx = 0; wmask__Vidx < 1; ++wmask__Vidx) wmask__Vcvt = wmask;
-    vmem_read(raddr__Vcvt, &rdata__Vcvt, wmask__Vcvt);
+    vmem_read(raddr__Vcvt, &rdata__Vcvt);
     rdata = rdata__Vcvt;
 }
 
@@ -68,9 +66,9 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_inst_read_TOP____0
     rdata = rdata__Vcvt;
 }
 
-extern "C" void vmem_write(long long waddr, long long wdata, char wmask, long long wdataraw);
+extern "C" void vmem_write(long long waddr, long long wdata, char wmask);
 
-VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit(QData/*63:0*/ waddr, QData/*63:0*/ wdata, CData/*7:0*/ wmask, QData/*63:0*/ wdataraw) {
+VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit(QData/*63:0*/ waddr, QData/*63:0*/ wdata, CData/*7:0*/ wmask) {
     VL_DEBUG_IF(VL_DBG_MSGF("+        Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____024unit\n"); );
     // Body
     long long waddr__Vcvt;
@@ -79,9 +77,7 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_write_TOP____
     for (size_t wdata__Vidx = 0; wdata__Vidx < 1; ++wdata__Vidx) wdata__Vcvt = wdata;
     char wmask__Vcvt;
     for (size_t wmask__Vidx = 0; wmask__Vidx < 1; ++wmask__Vidx) wmask__Vcvt = wmask;
-    long long wdataraw__Vcvt;
-    for (size_t wdataraw__Vidx = 0; wdataraw__Vidx < 1; ++wdataraw__Vidx) wdataraw__Vcvt = wdataraw;
-    vmem_write(waddr__Vcvt, wdata__Vcvt, wmask__Vcvt, wdataraw__Vcvt);
+    vmem_write(waddr__Vcvt, wdata__Vcvt, wmask__Vcvt);
 }
 
 extern "C" void reg_info(const svLogicVecVal* rs1, long long rs1d, const svLogicVecVal* rs2, long long rs2d, const svLogicVecVal* rd, long long rdd);

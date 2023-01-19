@@ -28,16 +28,16 @@
 
 //#define MULTICYCLE
 
-//#define CONFIG_DEBUGINFO
+#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
-#define CONFIG_ITRACE 1
+//#define CONFIG_ITRACE 1
 //#define CONFIG_IRINGBUF 1
 //#define CONFIG_FTRACE 1
 //#define CONFIG_MTRACE 1
 //#define CONFIG_DTRACE 1
 //#define CONFIG_ETRACE 1
-#define CONFIG_WATCHPOINT 1
-//#define CONFIG_DIFFTEST 1
+//#define CONFIG_WATCHPOINT 1
+#define CONFIG_DIFFTEST 1
 //#define CONFIG_DIFFTEST_DEVICE 1
 #endif
 
@@ -85,9 +85,9 @@ extern Vysyx_22050133_NPC* top;
 extern CPU_state cpu;
 extern const char *regs[];
 
-extern "C" void vmem_read(long long raddr, long long *rdata, char wmask);
+extern "C" void vmem_read(long long raddr, long long *rdata);
 extern "C" void inst_read(long long raddr, long long *rdata);
-extern "C" void vmem_write(long long waddr, long long wdata, char wmask,long long wdataraw);
+extern "C" void vmem_write(long long waddr, long long wdata, char wmask);
 extern "C" void npc_etrace(long long pc,long long NO);
 word_t vaddr_read(word_t addr,int n);
 
