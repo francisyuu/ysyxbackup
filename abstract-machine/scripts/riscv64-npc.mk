@@ -18,7 +18,7 @@ LDFLAGS   += --gc-sections -e _start
 CFLAGS += -DMAINARGS=\"$(mainargs)\"
 NEMUFLAGS += -d $(NEMU_HOME)/build/riscv64-nemu-interpreter-so
 #NEMUFLAGS += -d $(NEMU_HOME)/tools/spike-diff/build/riscv64-spike-so
-NEMUFLAGS += -b
+#NEMUFLAGS += -b
 NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt $(IMAGE).bin
 .PHONY: $(AM_HOME)/am/src/riscv/npc/trm.c
 

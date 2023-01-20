@@ -167,9 +167,6 @@ wire FMRET   =  inst[31:7]==`ysyx_22050133_F_MRET;
 assign rs1=(OPLUI|OPAUIPC|OPJAL)?0:inst[19:15];
 assign rs2=(OPBXX|OPSXX|OPRXX|OPRWX)?inst[24:20]:0;
 assign rdout=(OPBXX|OPSXX)?0:inst[11:7];
-//assign rs1=inst[19:15];
-assign rs2=inst[24:20];
-assign rdout=inst[11:7];
 
 
 wire[63:0]  immI={{52{inst[31]}},inst[31:20]};

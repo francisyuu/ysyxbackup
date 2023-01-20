@@ -37,7 +37,7 @@ VM_MODPREFIX = Vysyx_22050133_NPC
 VM_USER_CFLAGS = \
 	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/include \
 	-DTOP_NAME="Vysyx_22050133_NPC" \
-	-Og \
+	-O3 \
 	-MMD \
 	-Wall \
 	-Og \

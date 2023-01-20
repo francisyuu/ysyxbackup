@@ -4,6 +4,7 @@
 #include "Vysyx_22050133_NPC___024root.cpp"
 #include "Vysyx_22050133_NPC___024unit.cpp"
 #include "Vysyx_22050133_NPC__Dpi.cpp"
+#include "Vysyx_22050133_NPC__ConstPool_0.cpp"
 #include "Vysyx_22050133_NPC___024root__Slow.cpp"
 #include "Vysyx_22050133_NPC___024unit__Slow.cpp"
 #include "Vysyx_22050133_NPC__Syms.cpp"
