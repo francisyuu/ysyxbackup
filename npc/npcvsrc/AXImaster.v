@@ -61,13 +61,20 @@ module ysyx_22050133_axi_master # (
     input                               clk,
     input                               rst,
 
-    input                               rw_valid_i,         
-    output reg                          rw_ready_o,     
-    output reg [RW_DATA_WIDTH-1:0]      data_read_o,  
-    input  [RW_DATA_WIDTH-1:0]          rw_w_data_i,  
+    input                               rw_addr_valid_i,         
+    output reg                          rw_addr_ready_o,     
     input  [RW_ADDR_WIDTH-1:0]          rw_addr_i,    
-    input  [7:0]                        rw_size_i,    
+    input                               rw_we_i,    
+    input  [7:0]                        rw_len_i,    
+    input  [2:0]                        rw_size_i,    
+    input  [1:0]                        rw_burst_i,    
     input                               rw_if_i,         
+    input                               w_data_valid_i,     
+    output reg                          w_data_ready_o,     
+    input  [RW_DATA_WIDTH-1:0]          rw_w_data_i,  
+    output reg                          r_data_valid_o,     
+    input                               r_data_ready_i,     
+    output reg [RW_DATA_WIDTH-1:0]      data_read_o,  
 
     // Advanced eXtensible Interface
     input                               axi_aw_ready_i,             
@@ -76,9 +83,9 @@ module ysyx_22050133_axi_master # (
     output reg [2:0]                    axi_aw_prot_o,
     //output reg [AXI_ID_WIDTH-1:0]     axi_aw_id_o,
     //output reg [AXI_USER_WIDTH-1:0]   axi_aw_user_o,
-    //output reg [7:0]                  axi_aw_len_o,
-    //output reg [2:0]                  axi_aw_size_o,
-    //output reg [1:0]                  axi_aw_burst_o,
+    output reg [7:0]                  axi_aw_len_o,
+    output reg [2:0]                  axi_aw_size_o,
+    output reg [1:0]                  axi_aw_burst_o,
     //output reg                        axi_aw_lock_o,
     //output reg [3:0]                  axi_aw_cache_o,
     //output reg [3:0]                  axi_aw_qos_o,
@@ -88,7 +95,7 @@ module ysyx_22050133_axi_master # (
     output reg                          axi_w_valid_o,
     output reg [AXI_DATA_WIDTH-1:0]     axi_w_data_o,
     output reg [AXI_DATA_WIDTH/8-1:0]   axi_w_strb_o,
-    //output reg                        axi_w_last_o,
+    output reg                        axi_w_last_o,
     //output reg [AXI_USER_WIDTH-1:0]   axi_w_user_o,
     
     output reg                          axi_b_ready_o,          
@@ -103,9 +110,9 @@ module ysyx_22050133_axi_master # (
     output reg [2:0]                    axi_ar_prot_o,
     //output reg [AXI_ID_WIDTH-1:0]     axi_ar_id_o,
     //output reg [AXI_USER_WIDTH-1:0]   axi_ar_user_o,
-    //output reg [7:0]                  axi_ar_len_o,
-    //output reg [2:0]                  axi_ar_size_o,
-    //output reg [1:0]                  axi_ar_burst_o,
+    output reg [7:0]                  axi_ar_len_o,
+    output reg [2:0]                  axi_ar_size_o,
+    output reg [1:0]                  axi_ar_burst_o,
     //output reg                        axi_ar_lock_o,
     //output reg [3:0]                  axi_ar_cache_o,
     //output reg [3:0]                  axi_ar_qos_o,
@@ -115,7 +122,7 @@ module ysyx_22050133_axi_master # (
     input                               axi_r_valid_i,             
     input  [1:0]                        axi_r_resp_i,
     input  [AXI_DATA_WIDTH-1:0]         axi_r_data_i
-    //input                             axi_r_last_i,
+    input                             axi_r_last_i,
     //input  [AXI_ID_WIDTH-1:0]         axi_r_id_i,
     //input  [AXI_USER_WIDTH-1:0]       axi_r_user_i
 );
@@ -194,89 +201,81 @@ always@(posedge clk)begin
 end
 
 always@(*) begin
-  if(rst)next_wstate=WS_IDLE;
+  if(rst)next_wstate=S_IDLE;
   else case(wstate)
-    WS_IDLE:if(rw_valid_i&(rw_size_i!=0))next_wstate=WS_AWHS;
-    else next_wstate=RS_IDLE;
-    WS_AWHS:if(axi_aw_ready_i)next_wstate=WS_WHS;
-    else next_wstate=WS_AWHS;
-    WS_WHS:if(axi_w_ready_i)next_wstate=WS_BHS;
-    else next_wstate=WS_WHS;
-    WS_BHS:if(axi_b_valid_i)next_wstate=WS_IDLE;
-    else next_wstate=WS_BHS;
-    default:next_wstate=WS_IDLE;
+    S_IDLE:if(rw_addr_valid_i&rw_we_i)next_wstate=S_AWHS;
+    else next_wstate=S_IDLE;
+    S_AWHS:if(axi_aw_ready_i)next_wstate=S_BHS;
+    else next_wstate=S_AWHS;
+    S_BHS:if(axi_b_ready_o&axi_b_valid_i)next_wstate=S_IDLE;
+    else next_wstate=S_BHS;
+    default:next_wstate=S_IDLE;
+  endcase
+end
+
+always@(*) begin
+  if(rst)next_wstate=S_IDLE;
+  else case(wstate)
+    S_IDLE:if(w_data_valid_i)next_wstate=S_WHS;
+    else next_wstate=S_IDLE;
+    S_WHS:if(axi_w_valid_i)next_wstate=S_BHS;
+    else next_wstate=S_AWHS;
+    S_BHS:if(axi_b_ready_o&axi_b_valid_i)next_wstate=S_IDLE;
+    else next_wstate=S_BHS;
+    default:next_wstate=S_IDLE;
   endcase
 end
 always@(posedge clk)begin
-`ifdef AXIINFO
-  $display("WM:%d rwvalid=%d size=%d awvalid=%d,addr=%h,wready=%d,data=%h",wstate,rw_valid_i,rw_size_i,axi_aw_valid_o,axi_aw_addr_o,axi_w_valid_o,axi_w_data_o);
-`endif
   if(rst)begin
-        w_addr<=0;
-        w_size<=0;
-        w_data<=0;
-        w_ready_o<=1;
-        axi_aw_valid_o<=0;
-        axi_aw_addr_o<=0;
-        axi_aw_prot_o<=0;
-        axi_w_valid_o<=0;
-        axi_w_data_o<=0;
-        axi_w_strb_o<=0;
-        axi_b_ready_o<=0;
   end
   else begin
-    case(wstate)
-      WS_IDLE:if(next_wstate==WS_AWHS)begin
-        w_addr<=rw_addr_i;
-        w_size<= rw_size_i;
-        w_data<= rw_w_data_i;
-        w_ready_o<=0;
-        axi_aw_valid_o<=1;
-        axi_aw_addr_o<=rw_addr_aligned;
-        axi_aw_prot_o<=0;
+    case(wastate)
+      S_IDLE:
+        if(next_wstate==S_AWHS)begin
+          rw_addr_ready_o<=0;
+          w_addr<=rw_addr_i;
+          w_burst<= rw_burst_i;
+          w_size<= rw_size_i;
+          axi_aw_valid_o<=1;
+          axi_aw_addr_o<=rw_addr_i;
+          axi_aw_prot_o<=0;
+          axi_aw_len_o<=rw_len_i;
+          axi_aw_size_o<=rw_burst_i;
+          axi_aw_burst_o<=rw_burst_i;
+        end
+        else begin
+        end
+      S_AWHS:if(next_wstate==S_BHS)begin
       end
-      else begin
-        w_addr<=0;
-        w_size<=0;
-        w_data<=0;
-        w_ready_o<=1;
-        axi_aw_valid_o<=0;
-        axi_aw_addr_o<=0;
-        axi_aw_prot_o<=0;
-        axi_w_valid_o<=0;
-        axi_w_data_o<=0;
-        axi_w_strb_o<=0;
-        axi_b_ready_o<=0;
-      end
-      WS_AWHS:if(next_wstate==WS_WHS)begin
-        axi_aw_valid_o<=0;
-        axi_aw_addr_o<=0;
-        axi_aw_prot_o<=0;
-        axi_w_valid_o<=1;
-        axi_w_data_o<=wdata_aligned;
-        axi_w_strb_o<=wmask;
-      end
-      WS_WHS:if(next_wstate==WS_BHS)begin
-        axi_w_valid_o<=0;
-        axi_w_data_o<=0;
-        axi_w_strb_o<=0;
-        axi_b_ready_o<=1;
-      end
-      WS_BHS:if(next_wstate==WS_IDLE)begin
-        axi_b_ready_o<=0;
-        w_ready_o<=1;
+      S_BHS:if(next_wstate==S_IDLE)begin
+        rw_addr_ready_o<=1;
       end
     default:begin
-        w_addr<=0;
-        w_size<=0;
-        w_data<=0;
-        axi_aw_valid_o<=0;
-        axi_aw_addr_o<=0;
-        axi_aw_prot_o<=0;
-        axi_w_valid_o<=0;
-        axi_w_data_o<=0;
-        axi_w_strb_o<=0;
-        axi_b_ready_o<=0;
+    end
+    endcase
+  end
+end
+    
+always@(posedge clk)begin
+  if(rst)begin
+  end
+  else begin
+    case(wastate)
+      S_IDLE:if(next_wstate==S_WHS)begin
+        w_data_ready_o<=0;
+        axi_w_valid_o<=1;
+        axi_w_data_o<=rw_w_data_i;
+        axi_w_strb_o<=
+        axi_w_last_o<=
+      end
+      else begin
+      end
+      S_WHS:begin
+        if(axi_w_ready_o)begin
+
+        end
+      end
+    default:begin
     end
     endcase
   end
