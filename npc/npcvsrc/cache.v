@@ -3,10 +3,10 @@ module ysyx_22050133_cache#(
   parameter RW_ADDR_WIDTH     = 32,
   parameter ADDR_WIDTH=32,
   parameter TAG_WIDTH=20,
-  parameter INDEX_WIDTH=6,
-  parameter INDEX_DEPTH=64,//$pow(2,INDEX_WIDTH),
-  parameter OFFSET_WIDTH=6,
-  parameter BURST_LEN=7,//$pow(2,OFFSET_WIDTH)/8-1,
+  parameter INDEX_WIDTH=8,
+  parameter INDEX_DEPTH=256,//$pow(2,INDEX_WIDTH),
+  parameter OFFSET_WIDTH=4,
+  parameter BURST_LEN=1,//$pow(2,OFFSET_WIDTH)/8-1,
   parameter WAY_DEPTH=2,
   parameter WAY_WIDTH=1//$clog2(WAY_DEPTH)
 )(
@@ -55,6 +55,7 @@ parameter RAMR=10;
 
 
 assign w_data_ready_o=1;
+
 reg [RW_ADDR_WIDTH-1:0] addr;
 reg [RW_ADDR_WIDTH-1:0] addr0;
 reg we;
@@ -88,19 +89,18 @@ always@(posedge clk)begin
 end
 
 wire [127:0]RAM_Q[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
-reg RAM_CEN[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
+wire RAM_CEN=0;
 //wire [127:0]RAM_Q[WAY_DEPTH-1:0][4-1:0];
-//reg RAM_CEN[WAY_DEPTH-1:0][4-1:0];
 reg RAM_WEN;
-wire [RW_DATA_WIDTH-1:0]maskb=~maskbn;
-wire [RW_DATA_WIDTH-1:0]maskbn=
-  rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'hffffffffffffff00
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'hffffffffffff0000
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'hffffffff00000000
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'h0000000000000000
-  :64'hffffffffffffffff;
+wire [RW_DATA_WIDTH-1:0]maskb=
+	state>3 ? 64'hffffffffffffffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'h00000000000000ff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
+  :64'h0000000000000000;
 wire [6:0]shift={addr[3:0],3'd0};
-wire [127:0]RAM_BWEN={64'd0,maskbn}<<shift;
+wire [127:0]RAM_BWEN=~({64'd0,maskb}<<shift);
 wire [5:0] RAM_A=addr[9:4];
 wire [127:0]RAM_D={64'd0,w_data}<<shift;
 wire [RAM_WIDTH-1:0]RAM_N_in=rw_addr_i[RAML:RAMR];
@@ -117,7 +117,7 @@ generate
       (
         .Q(RAM_Q[i][j]),
         .CLK(clk),
-        .CEN(RAM_CEN[i][j]),
+        .CEN(RAM_CEN),
         .WEN(RAM_WEN),
         .BWEN(RAM_BWEN),
         .A(RAM_A),
@@ -130,6 +130,28 @@ endgenerate
 wire[127:0]data_o=RAM_Q[waynum][RAM_N]>>shift;
 assign r_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 assign axi_w_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
+
+`ifdef CACHEINFO
+always@(posedge clk)begin
+	$display("\
+	addr = %h , addr0 = %h , \
+	w_data = %h , w_data0 = %h ,\
+  tag_in = %h , index_in = %h , hit_wayflag = %h, hit_waynum_i=%h,\
+	tag=%h,index=%h,waynum=%d,\
+	RAM_A=%h,\
+	RAM_Q=%h,\
+	RAM_D=%h,\
+	RAM_BWEN=%h,\
+	RAM_N=%d,RAM_WEN=%d\
+	"
+	,addr,addr0,w_data,w_data0,
+		tag_in,index_in,hit_wayflag,hit_waynum_i,
+		tag[waynum][index],index,waynum,
+		RAM_A,RAM_Q[waynum][RAM_N],RAM_D,
+		RAM_BWEN,RAM_N,RAM_WEN
+	);
+end
+`endif
 
 parameter S_IDLE =1;
 parameter S_HIT  =2;
@@ -181,6 +203,7 @@ always@(posedge clk)begin
     axi_rw_if_o<=0;
 		axi_w_data_valid_o<=0;
 		axi_r_data_ready_o<=0;
+    RAM_WEN<=1;
   end
   else begin
     case(state)
@@ -193,7 +216,6 @@ always@(posedge clk)begin
           size<=rw_size_i;
           rw_if<=rw_if_i;
           w_data<=w_data_i;
-          RAM_CEN[hit_waynum_i][RAM_N_in]<=0;
           RAM_WEN<=~rw_we_i;
         end
         else if(next_state==S_AW)begin

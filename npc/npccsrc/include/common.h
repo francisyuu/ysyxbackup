@@ -26,9 +26,9 @@
 //#include "verilated_vcd_c.h" 
 
 
-//#define MULTICYCLE
+#define MULTICYCLE
 
-//#define CONFIG_DEBUGINFO
+#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
 #define CONFIG_ITRACE 1
 //#define CONFIG_IRINGBUF 1

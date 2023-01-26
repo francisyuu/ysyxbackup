@@ -312,7 +312,7 @@ always@(*) begin
   else case(wstate)
     WS_IDLE:if(axi_aw_ready_i&s2_axi_aw_valid_i&(~s1_axi_aw_valid_i))next_wstate=WS_S2;
     else next_wstate=RS_IDLE;
-    WS_S2:if(axi_b_valid_i&s2_axi_b_ready_i)next_wstate=WS_IDLE;
+    WS_S2:if(axi_aw_ready_i&s1_axi_aw_valid_i&(~s2_axi_aw_valid_i))next_wstate=WS_IDLE;
     else next_wstate=WS_S2;
     default:next_wstate=WS_IDLE;
   endcase
@@ -349,7 +349,7 @@ always@(*) begin
   else case(rstate)
     RS_IDLE:if(axi_ar_ready_i&s2_axi_ar_valid_i&(~s1_axi_ar_valid_i))next_rstate=RS_S2;
       else next_rstate=RS_IDLE;
-    RS_S2:if(axi_r_valid_i&s2_axi_r_ready_i)next_rstate=RS_IDLE;
+    RS_S2:if(axi_ar_ready_i&s1_axi_ar_valid_i&(~s2_axi_ar_valid_i))next_rstate=RS_IDLE;
     else next_rstate=RS_S2;
     default:next_rstate=RS_IDLE;
   endcase
