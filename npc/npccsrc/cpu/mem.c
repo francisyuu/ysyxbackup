@@ -52,7 +52,7 @@ word_t vaddr_read(word_t addr,int n)
   return data;
 }
 extern "C" void vmem_write(long long waddr, long long wdata, char wmask) {
-      if(wmask==0|waddr==0)return;
+      if(wmask==0||waddr==0)return;
       uint8_t mask=(uint8_t)wmask;
       long long vaddr=waddr;
 			long long wdataraw=wdata;

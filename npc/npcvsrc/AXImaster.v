@@ -51,7 +51,7 @@
 
 module ysyx_22050133_axi_master # (
     parameter RW_DATA_WIDTH     = 64,
-    parameter RW_ADDR_WIDTH     = 64,
+    parameter RW_ADDR_WIDTH     = 32,
     parameter AXI_DATA_WIDTH    = 64,
     parameter AXI_ADDR_WIDTH    = 32,
     parameter AXI_ID_WIDTH      = 4,
@@ -126,62 +126,68 @@ module ysyx_22050133_axi_master # (
     //input  [AXI_ID_WIDTH-1:0]         axi_r_id_i,
     //input  [AXI_USER_WIDTH-1:0]       axi_r_user_i
 );
-`ifdef FAKEAXI
-wire[63:0]r_addr=rw_addr_i;
-wire[63:0]r_data=rw_if_i?inst64:din;
-wire[63:0]inst64;
-wire[63:0]din;
 
-wire[63:0] r_data_shifted=
-          r_addr[2] ? 
-            r_addr[1] ? 
-              r_addr[0] ? {56'd0,r_data[63:56]}:{48'd0,r_data[63:48]}
-              :r_addr[0] ? {40'd0,r_data[63:40]}:{32'd0,r_data[63:32]}
-            :r_addr[1] ? 
-              r_addr[0] ? {24'd0,r_data[63:24]}:{16'd0,r_data[63:16]}
-              :r_addr[0] ? {8'd0,r_data[63:8]}:r_data;
+wire [7:0]mask=rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_1 ? 8'h01
+              :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_2 ? 8'h03
+              :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_4 ? 8'h0f
+              :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_8 ? 8'hff
+              :8'h00;
+wire [63:0]maskb=
+  rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ?  64'h00000000000000ff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
+  :64'h0000000000000000;
+
+`ifdef FAKEAXI
+wire[RW_ADDR_WIDTH-1:0]rw_addr_in=rw_addr_i;
+wire[RW_DATA_WIDTH-1:0]r_data=rw_if_i?inst64:din;
+wire[RW_DATA_WIDTH-1:0]inst64;
+wire[RW_DATA_WIDTH-1:0]din;
+
+wire [5:0]r_shift={rw_addr_i[2:0],3'd0};
+wire [RW_DATA_WIDTH-1:0]r_data_i_shift=(r_data>>r_shift)&maskb;
 
 always@(*)begin
-    rw_ready_o=1;
+    rw_addr_ready_o=1;
+    w_data_ready_o=1;
+    r_data_valid_o=1;
 end
 always@(posedge clk)begin
-    if(rw_valid_i==1)data_read_o=r_data_shifted;
+    if(rw_addr_valid_i==1)r_data_o=r_data_i_shift;
 end
-wire [63:0]instaddr=(rw_valid_i&rw_if_i)?r_addr:0;
-wire [63:0]raddr=(rw_valid_i&~rw_if_i&rw_size_i==0)?r_addr:0;
-wire [63:0]waddr=(rw_valid_i&~rw_if_i&rw_size_i!=0)?r_addr:0;
+wire [RW_ADDR_WIDTH-1:0]instaddr=(rw_addr_valid_i&rw_if_i)?rw_addr_in:0;
+wire [RW_ADDR_WIDTH-1:0]raddr=(rw_addr_valid_i&(~rw_if_i)&(rw_we_i==0))?rw_addr_in:0;
+wire [RW_ADDR_WIDTH-1:0]waddr=(rw_addr_valid_i&(~rw_if_i)&rw_we_i)?rw_addr_in:0;
+
 always@(*)begin
-          inst_read(instaddr,inst64);
-end
-always@(*)begin
-          vmem_read(raddr,din);
+          inst_read({32'd0,instaddr},inst64);
 end
 always@(*)begin
-        vmem_write(waddr,rw_w_data_i,rw_size_i);
+          vmem_read({32'd0,raddr},din);
+end
+always@(*)begin
+        vmem_write({32'd0,waddr},w_data_i,mask);
 end
 `else
+
+parameter AWS_IDLE = 1;
+parameter AWS_AWHS = 2;
+parameter AWS_BHS = 3;
+
+parameter WS_IDLE = 1;
+parameter WS_WHS = 2;
+parameter WS_DHS = 3;
+parameter WS_BHS = 4;
 
 parameter RS_IDLE = 1;
 parameter RS_ARHS = 2;//address handshake
 parameter RS_RHS = 3;//address handshake
-parameter WS_IDLE = 1;
-parameter WS_AWHS = 2;
-parameter WS_WHS = 3;
-parameter WS_BHS = 4;
+parameter RS_DHS = 4;//address handshake
 
-reg  [RW_DATA_WIDTH-1:0] w_data;        //IF&MEM输入信号
-reg  [RW_ADDR_WIDTH-1:0] w_addr;          //IF&MEM输入信号
-reg  [7:0]               w_size;          //IF&MEM输信号
-reg                      w_ready_o;          //IF&MEM输入信号
-reg  [RW_ADDR_WIDTH-1:0] r_addr;          //IF&MEM输入信号
-reg  [7:0]               r_size;          //IF&MEM输入信号
-reg                      r_if;          //IF&MEM输入信号
-reg                      r_ready_o;          //IF&MEM输入信号
 
-assign rw_ready_o=r_ready_o&w_ready_o;
+assign rw_addr_ready_o=r_addr_ready_o&w_addr_ready_o;
 //assign rw_ready_o=r_ready_o;
-
-wire [31:0] rw_addr_aligned = {rw_addr_i[31:3],3'd0};
 
 reg[15:0] rstate;
 reg[15:0] next_rstate;
@@ -194,67 +200,56 @@ reg[15:0] next_wstate;
 
     //// ------------------State Machine------------------TODO
     //// 写通道状态切换
+reg w_addr_ready_o;
 
 always@(posedge clk)begin
-  if(rst)awstate<=WS_IDLE;
+  if(rst)awstate<=AWS_IDLE;
   else awstate<=next_awstate;
 end
 
 always@(*) begin
-  if(rst)next_awstate=S_IDLE;
+  if(rst)next_awstate=AWS_IDLE;
   else case(awstate)
-    S_IDLE:if(rw_addr_ready_o&rw_addr_valid_i&rw_we_i)next_awstate=S_AWHS;
-    else next_awstate=S_IDLE;
-    S_AWHS:if(axi_aw_valid_o&axi_aw_ready_i)next_awstate=S_BHS;
-    else next_awstate=S_AWHS;
-    S_BHS:if(axi_b_ready_o&axi_b_valid_i)next_awstate=S_IDLE;
-    else next_awstate=S_BHS;
-    default:next_awstate=S_IDLE;
+    AWS_IDLE:if(rw_addr_ready_o&rw_addr_valid_i&rw_we_i)next_awstate=AWS_AWHS;
+    else next_awstate=AWS_IDLE;
+    AWS_AWHS:if(axi_aw_valid_o&axi_aw_ready_i)next_awstate=AWS_BHS;
+    else next_awstate=AWS_AWHS;
+    AWS_BHS:if(axi_b_ready_o&axi_b_valid_i)next_awstate=AWS_IDLE;
+    else next_awstate=AWS_BHS;
+    default:next_awstate=AWS_IDLE;
   endcase
 end
 
-always@(*) begin
-  if(rst)next_wstate=S_IDLE;
-  else case(wstate)
-    S_IDLE:if(w_data_ready_o&w_data_valid_i)next_wstate=S_WHS;
-    else next_wstate=S_IDLE;
-    S_WHS:if(axi_w_valid_o&axi_w_ready_i)
-            if(w_len_cnt==0)next_wstate=S_BHS;
-            else next_state=S_DHS;
-    else next_wstate=S_WHS;
-    S_DHS:if(w_data_ready_o&w_data_valid_i)next_wstate=S_WHS;
-    else next_wstate=S_BHS;
-    S_BHS:if(axi_b_ready_o&axi_b_valid_i)next_wstate=S_IDLE;
-    else next_wstate=S_BHS;
-    default:next_wstate=S_IDLE;
-  endcase
-end
 always@(posedge clk)begin
   if(rst)begin
+          w_addr_ready_o<=1;
+          axi_aw_valid_o<=0;
+          axi_aw_addr_o<=0;
+          axi_aw_prot_o<=0;
+          axi_aw_len_o<=0;
+          axi_aw_size_o<=0;
+          axi_aw_burst_o<=0;
   end
   else begin
     case(awstate)
-      S_IDLE:
-        if(next_awstate==S_AWHS)begin
-          rw_addr_ready_o<=0;
-          w_addr<=rw_addr_i;
-          w_len<= rw_len_i;
-          w_size<= rw_size_i;
-          w_burst<= rw_burst_i;
+      AWS_IDLE:
+        if(next_awstate==AWS_AWHS)begin
+          w_addr_ready_o<=0;
           axi_aw_valid_o<=1;
           axi_aw_addr_o<=rw_addr_i;
           axi_aw_prot_o<=0;
           axi_aw_len_o<=rw_len_i;
-          axi_aw_size_o<=rw_burst_i;
+          axi_aw_size_o<=rw_size_i;
           axi_aw_burst_o<=rw_burst_i;
         end
         else begin
+          w_addr_ready_o<=1;
         end
-      S_AWHS:if(next_wstate==S_BHS)begin
+      AWS_AWHS:if(next_awstate==AWS_BHS)begin
           axi_aw_valid_o<=0;
       end
-      S_BHS:if(next_wstate==S_IDLE)begin
-        rw_addr_ready_o<=1;
+      AWS_BHS:if(next_awstate==AWS_IDLE)begin
+        w_addr_ready_o<=1;
       end
       default:begin
       end
@@ -262,21 +257,44 @@ always@(posedge clk)begin
   end
 end
     
-wire [7:0]mask=rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_1 ? 7'h01
-              :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_2 ? 7'h03
-              :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_4 ? 7'h0f
-              :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_8 ? 7'hff
-              :7'h00;
 wire [7:0]strb=mask<<rw_addr_i[2:0];
-wire [5:0]shift={rw_addr_i[2:0],3'd0};
-wire [63:0]w_data_i_shift=rw_data_i<<shift;
+wire [5:0]w_shift={rw_addr_i[2:0],3'd0};
+wire [63:0]w_data_i_shift=w_data_i<<w_shift;
 reg [7:0] w_len_cnt;
+
+always@(posedge clk)begin
+  if(rst)wstate<=WS_IDLE;
+  else wstate<=next_wstate;
+end
+
+always@(*) begin
+  if(rst)next_wstate=WS_IDLE;
+  else case(wstate)
+    WS_IDLE:if(w_data_ready_o&w_data_valid_i)next_wstate=WS_WHS;
+    else next_wstate=WS_IDLE;
+    WS_WHS:if(axi_w_valid_o&axi_w_ready_i)
+            if(w_len_cnt==0)next_wstate=WS_BHS;
+            else next_wstate=WS_DHS;
+    else next_wstate=WS_WHS;
+    WS_DHS:if(w_data_ready_o&w_data_valid_i)next_wstate=WS_WHS;
+    else next_wstate=WS_BHS;
+    WS_BHS:if(axi_b_ready_o&axi_b_valid_i)next_wstate=WS_IDLE;
+    else next_wstate=WS_BHS;
+    default:next_wstate=WS_IDLE;
+  endcase
+end
 always@(posedge clk)begin
   if(rst)begin
+          w_len_cnt<=0;
+          w_data_ready_o<=1;
+          axi_w_valid_o<=0;
+          axi_w_data_o<=0;
+          axi_w_strb_o<=0;
+          axi_w_last_o<=0;
   end
   else begin
-    case(wastate)
-      S_IDLE:if(next_wstate==S_WHS)begin
+    case(wstate)
+      WS_IDLE:if(next_wstate==WS_WHS)begin
           w_len_cnt<=rw_len_i;
           w_data_ready_o<=0;
           axi_w_valid_o<=1;
@@ -286,20 +304,21 @@ always@(posedge clk)begin
           else axi_w_last_o<=0;
       end
       else begin
+          w_data_ready_o<=1;
       end
-      S_WHS:begin
-        if(next_wstate==S_DHS)begin
+      WS_WHS:begin
+        if(next_wstate==WS_DHS)begin
           axi_w_valid_o<=0;
           w_data_ready_o<=1;
           w_len_cnt<=w_len_cnt-1;
         end
-        else if(next_wstate==S_BHS)begin
+        else if(next_wstate==WS_BHS)begin
           axi_w_valid_o<=0;
           axi_b_ready_o<=1;
         end
       end
-      S_DHS:begin
-        if(next_wstate==S_WHS)begin
+      WS_DHS:begin
+        if(next_wstate==WS_WHS)begin
           w_data_ready_o<=0;
           axi_w_valid_o<=1;
           axi_w_data_o<=w_data_i_shift;
@@ -308,7 +327,7 @@ always@(posedge clk)begin
           else axi_w_last_o<=0;
         end
       end
-      S_BHS:if(next_wstate<=S_IDLE)begin
+      WS_BHS:if(next_wstate==WS_IDLE)begin
           axi_b_ready_o<=0;
       end
     default:begin
@@ -319,14 +338,12 @@ end
     
 
     //// 读通道状态切换
-wire[63:0] axi_r_data_i_shift=
-          r_addr[2] ? 
-            r_addr[1] ? 
-              r_addr[0] ? {56'd0,axi_r_data_i[63:56]}:{48'd0,axi_r_data_i[63:48]}
-              :r_addr[0] ? {40'd0,axi_r_data_i[63:40]}:{32'd0,axi_r_data_i[63:32]}
-            :r_addr[1] ? 
-              r_addr[0] ? {24'd0,axi_r_data_i[63:24]}:{16'd0,axi_r_data_i[63:16]}
-              :r_addr[0] ? {8'd0,axi_r_data_i[63:8]}:axi_r_data_i;
+reg r_addr_ready_o;
+reg  [RW_ADDR_WIDTH-1:0] r_addr;        
+reg  [7:0]               r_len;        
+wire [5:0]r_shift={r_addr[2:0],3'd0};
+wire [63:0]axi_r_data_i_shift=(axi_r_data_i>>r_shift)&maskb;
+
 always@(posedge clk)begin
   if(rst)rstate<=RS_IDLE;
   else rstate<=next_rstate;
@@ -341,7 +358,7 @@ always@(*) begin
     else next_rstate=RS_ARHS;
     RS_RHS:if(axi_r_ready_o&axi_r_valid_i)next_rstate=RS_DHS;
     else next_rstate=RS_RHS;
-    RS_DHS:if(r_data_ready_i)
+    RS_DHS:if(r_data_valid_o&r_data_ready_i)
              if(r_len==0)next_rstate=RS_IDLE;
              else next_rstate=RS_RHS;
     else next_rstate=RS_DHS;
@@ -349,10 +366,19 @@ always@(*) begin
   endcase
 end
 always@(posedge clk)begin
-`ifdef AXIINFO
-  $display("RM:%d rwvalid=%d size=%d arvalid=%d,addr=%h,rready=%d,data=%h",rstate,rw_valid_i,rw_size_i,axi_ar_valid_o,axi_ar_addr_o,axi_r_ready_o,data_read_o);
-`endif
   if(rst)begin
+        r_addr<=0;
+        r_len<=0;
+        r_addr_ready_o<=1;
+        r_data_valid_o<=0;
+        r_data_o<=0;
+        axi_ar_valid_o<=0;
+        axi_ar_addr_o<=0;
+        axi_ar_prot_o<=0;
+        axi_ar_len_o<=0;
+        axi_ar_size_o<=0;
+        axi_ar_burst_o<=0;
+        axi_r_ready_o<=0;
   end
   else begin
     case(rstate)
@@ -360,10 +386,7 @@ always@(posedge clk)begin
       if(next_rstate==RS_ARHS)begin
         r_addr<=rw_addr_i;
         r_len<=rw_len_i;
-        r_size<=rw_size_i;
-        r_burst<=rw_burst_i;
-        r_if<=rw_if_i;
-        r_ready_o<=0;
+        r_addr_ready_o<=0;
         axi_ar_valid_o<=1;
         axi_ar_addr_o<=rw_addr_i;
         axi_ar_prot_o<={rw_if_i,2'd0};
@@ -372,26 +395,27 @@ always@(posedge clk)begin
         axi_ar_burst_o<=rw_burst_i;
       end
       else begin
+        r_addr_ready_o<=1;
       end
       RS_ARHS:if(next_rstate==RS_RHS)begin
         axi_ar_valid_o<=0;
         axi_r_ready_o<=1;
       end
-      RS_RHS:if(next_rstate<=RS_DHS)begin
+      RS_RHS:if(next_rstate==RS_DHS)begin
           axi_r_ready_o<=0;
           r_data_valid_o<=1;
           r_data_o<=axi_r_data_i_shift;
       end
-      RS_DHS:if(next_rstate<=RS_RHS)begin
+      RS_DHS:if(next_rstate==RS_RHS)begin
           r_data_valid_o<=0;
           axi_r_ready_o<=1;
           r_addr<=r_addr+8;
           r_len<=r_len-1;
       end
-      else if(next_rstate<=RS_IDLE)begin
+      else if(next_rstate==RS_IDLE)begin
           r_data_valid_o<=0;
           axi_r_ready_o<=0;
-          r_ready_o<=1;
+          r_addr_ready_o<=1;
       end
       default:begin
       end

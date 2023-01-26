@@ -1,14 +1,14 @@
 module ysyx_22050133_cache#(
   parameter RW_DATA_WIDTH     = 64,
-  parameter RW_ADDR_WIDTH     = 64,
+  parameter RW_ADDR_WIDTH     = 32,
   parameter ADDR_WIDTH=32,
   parameter TAG_WIDTH=20,
   parameter INDEX_WIDTH=6,
-  parameter INDEX_DEPTH=$pow(2,INDEX_WIDTH),
+  parameter INDEX_DEPTH=64,//$pow(2,INDEX_WIDTH),
   parameter OFFSET_WIDTH=6,
-  parameter BURST_LEN=$pow(2,OFFSET_WIDTH)/8-1,
+  parameter BURST_LEN=7,//$pow(2,OFFSET_WIDTH)/8-1,
   parameter WAY_DEPTH=2,
-  parameter WAY_WIDTH=$clog2(WAY_DEPTH)
+  parameter WAY_WIDTH=1//$clog2(WAY_DEPTH)
 )(
   input clk,
   input rst,
@@ -17,46 +17,44 @@ module ysyx_22050133_cache#(
   output reg                          rw_addr_ready_o,     
   input  [RW_ADDR_WIDTH-1:0]          rw_addr_i,    
   input                               rw_we_i,    
-  //input  [7:0]                        rw_len_i,    
+	input  [7:0]                        rw_len_i,    
   input  [2:0]                        rw_size_i,    
-  //input  [1:0]                        rw_burst_i,    
+	input  [1:0]                        rw_burst_i,    
   input                               rw_if_i,         
-  //input                               w_data_valid_i,     
-  //output reg                          w_data_ready_o,     
+	input                               w_data_valid_i,     
+	output                              w_data_ready_o,     
   input  [RW_DATA_WIDTH-1:0]          w_data_i,  
-  output reg                          rw_data_valid_o,     
+  output reg                          r_data_valid_o,     
   input                               r_data_ready_i,     
-  output [RW_DATA_WIDTH-1:0]          r_data_o,  
+  output [RW_DATA_WIDTH-1:0]          r_data_o,         
 
-  output  reg                         cache_rw_addr_valid_o,       
-  input                               cache_rw_addr_ready_i,     
-  output  reg[RW_ADDR_WIDTH-1:0]      cache_rw_addr_o,    
-  output  reg                         cache_rw_we_o,    
-  output  reg[7:0]                    cache_rw_len_o,    
-  output  reg[2:0]                    cache_rw_size_o,    
-  output  reg[1:0]                    cache_rw_burst_o,    
-  output  reg                         cache_rw_if_o,         
-  output  reg                         cache_w_data_valid_o,     
-  input                               cache_w_data_ready_i,     
-  output  reg[RW_DATA_WIDTH-1:0]      cache_w_data_o,  
-  input                               cache_r_data_valid_i,     
-  output  reg                         cache_r_data_ready_o,     
-  input  [RW_DATA_WIDTH-1:0]          cache_r_data_i
+  output  reg                         axi_rw_addr_valid_o,       
+  input                               axi_rw_addr_ready_i,     
+  output  reg[RW_ADDR_WIDTH-1:0]      axi_rw_addr_o,    
+  output  reg                         axi_rw_we_o,    
+  output  reg[7:0]                    axi_rw_len_o,    
+  output  reg[2:0]                    axi_rw_size_o,    
+  output  reg[1:0]                    axi_rw_burst_o,    
+  output  reg                         axi_rw_if_o,         
+  output  reg                         axi_w_data_valid_o,     
+  input                               axi_w_data_ready_i,     
+  output     [RW_DATA_WIDTH-1:0]      axi_w_data_o,  
+  input                               axi_r_data_valid_i,     
+  output  reg                         axi_r_data_ready_o,     
+  input  [RW_DATA_WIDTH-1:0]          axi_r_data_i
 );
 parameter TAGL=ADDR_WIDTH-1;
 parameter TAGR=ADDR_WIDTH-TAG_WIDTH;
 parameter INDEXL=TAGR-1;
 parameter INDEXR=TAGR-INDEX_WIDTH;
 parameter RAM_WIDTH=INDEX_WIDTH+OFFSET_WIDTH-10;
-parameter RAM_DEPTH=$pow(2,RAM_WIDTH);
+parameter RAM_DEPTH=4;//$pow(2,RAM_WIDTH);
 parameter RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
 parameter RAMR=10;
 
 
-wire[127:0]data_o=RAM_Q[waynum][RAM_N]>>shift;
-assign r_data_o=data_o[RW_DATA_WIDTH-1:0];
-assign cache_w_data_o=data_o[RW_DATA_WIDTH-1:0];
 
+assign w_data_ready_o=1;
 reg [RW_ADDR_WIDTH-1:0] addr;
 reg [RW_ADDR_WIDTH-1:0] addr0;
 reg we;
@@ -66,9 +64,14 @@ reg [RW_DATA_WIDTH-1:0] w_data;
 reg [RW_DATA_WIDTH-1:0] w_data0;
 reg [INDEX_WIDTH-1:0]index;
 
+//reg [21:0] tag[1:0][63:0];
 reg [TAG_WIDTH-1:0] tag[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg valid[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg dirty[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
+
+//reg [TAG_WIDTH-1:0] tag[WAY_DEPTH-1:0][64-1:0];
+//reg valid[WAY_DEPTH-1:0][64-1:0];
+//reg dirty[WAY_DEPTH-1:0][64-1:0];
 
 wire[TAG_WIDTH-1:0] tag_in=rw_addr_i[TAGL:TAGR];
 wire[INDEX_WIDTH-1:0] index_in=rw_addr_i[INDEXL:INDEXR];
@@ -86,17 +89,20 @@ end
 
 wire [127:0]RAM_Q[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
 reg RAM_CEN[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
+//wire [127:0]RAM_Q[WAY_DEPTH-1:0][4-1:0];
+//reg RAM_CEN[WAY_DEPTH-1:0][4-1:0];
 reg RAM_WEN;
-wire [RW_DATA_WIDTH-1:0]maskn=
-  rw_size==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'hffffffffffffff00
-  :rw_size==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'hffffffffffff0000
-  :rw_size==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'hffffffff00000000
-  :rw_size==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'h0000000000000000
+wire [RW_DATA_WIDTH-1:0]maskb=~maskbn;
+wire [RW_DATA_WIDTH-1:0]maskbn=
+  rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'hffffffffffffff00
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'hffffffffffff0000
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'hffffffff00000000
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'h0000000000000000
   :64'hffffffffffffffff;
 wire [6:0]shift={addr[3:0],3'd0};
-wire [127:0]RAM_BWEN=maskn<<shift;
+wire [127:0]RAM_BWEN={64'd0,maskbn}<<shift;
 wire [5:0] RAM_A=addr[9:4];
-wire [127:0]RAM_D=w_data<<shift;
+wire [127:0]RAM_D={64'd0,w_data}<<shift;
 wire [RAM_WIDTH-1:0]RAM_N_in=rw_addr_i[RAML:RAMR];
 wire [RAM_WIDTH-1:0]RAM_N=addr[RAML:RAMR];
 
@@ -120,6 +126,10 @@ generate
     end
   end
 endgenerate
+
+wire[127:0]data_o=RAM_Q[waynum][RAM_N]>>shift;
+assign r_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
+assign axi_w_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 
 parameter S_IDLE =1;
 parameter S_HIT  =2;
@@ -145,15 +155,15 @@ always@(*) begin
             else next_state=S_AR;
           end
         else next_state=S_IDLE;
-    S_HIT:if(data_ready_i&rw_data_valid_o)next_state=S_IDLE;
+    S_HIT:if(r_data_ready_i&r_data_valid_o)next_state=S_IDLE;
       else next_state=S_HIT;
-    S_AW:if(cache_rw_addr_valid_o&cache_rw_addr_ready_i)next_state=S_W;
+    S_AW:if(axi_rw_addr_valid_o&axi_rw_addr_ready_i)next_state=S_W;
       else next_state=S_AW;
-    S_W:if(cache_w_data_ready_i&cache_w_data_valid_o&(cache_rw_len_o==0))next_state=S_AR;
+    S_W:if(axi_w_data_ready_i&axi_w_data_valid_o&(axi_rw_len_o==0))next_state=S_AR;
       else next_state=S_W;
-    S_AR:if(cache_rw_addr_valid_o&cache_rw_addr_ready_i)next_state=S_R;
+    S_AR:if(axi_rw_addr_valid_o&axi_rw_addr_ready_i)next_state=S_R;
       else next_state=S_AR;
-    S_R:if(cache_r_data_ready_o==0&(cache_rw_len_o==0))next_state=S_HIT;
+    S_R:if(axi_r_data_ready_o==0&(axi_rw_len_o==0))next_state=S_HIT;
       else next_state=S_R;
     default:next_state=S_IDLE;
   endcase
@@ -161,18 +171,16 @@ end
 always@(posedge clk)begin
   if(rst)begin
 		rw_addr_ready_o<=1;
-		rw_data_valid_o<=0;
-		r_data_o<=0;
-    cache_rw_addr_valid_o<=0;
-    cache_rw_addr_o<=0;
-    cache_rw_we_o<=0;
-    cache_rw_len_o<=0;
-    cache_rw_size_o<=0;
-    cache_rw_burst_o<=0;
-    cache_rw_if_o<=0;
-		cache_w_data_valid_o<=0;
-		cache_w_data_o<=0;
-		cache_r_data_ready_o<=0;
+		r_data_valid_o<=0;
+    axi_rw_addr_valid_o<=0;
+    axi_rw_addr_o<=0;
+    axi_rw_we_o<=0;
+    axi_rw_len_o<=0;
+    axi_rw_size_o<=0;
+    axi_rw_burst_o<=0;
+    axi_rw_if_o<=0;
+		axi_w_data_valid_o<=0;
+		axi_r_data_ready_o<=0;
   end
   else begin
     case(state)
@@ -200,19 +208,19 @@ always@(posedge clk)begin
           w_data<=w_data_i;
           w_data0<=w_data_i;
 
-          cache_rw_addr_valid_o<=1;
-          cache_rw_addr_o<={tag[random][index_in],index_in,OFFSET0};
-          cache_rw_we_o<=1;
-          cache_rw_len_o<=BURST_LEN;
-          cache_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
-          cache_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-          cache_rw_if_o<=rw_if_i;
+          axi_rw_addr_valid_o<=1;
+          axi_rw_addr_o<={tag[random][index_in],index_in,OFFSET0};
+          axi_rw_we_o<=1;
+          axi_rw_len_o<=BURST_LEN;
+          axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
+          axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
+          axi_rw_if_o<=rw_if_i;
         end
         else if(next_state==S_AR)begin
 					rw_addr_ready_o<=0;
           waynum<=random;
           index=index_in;
-          addr={rw_addr_in[TAGL:INDEXR],OFFSET0};
+          addr<={rw_addr_i[TAGL:INDEXR],OFFSET0};
           addr0<=rw_addr_i;
           we<=rw_we_i;
           size<=rw_size_i;
@@ -222,87 +230,87 @@ always@(posedge clk)begin
           valid[random][index_in]<=0;
           tag[random][index_in]<=rw_addr_i[TAGL:TAGR];
 
-          cache_rw_addr_valid_o<=1;
-          cache_rw_addr_o<={rw_addr_in[TAGL:INDEXR],OFFSET0};
-          cache_rw_we_o<=0;
-          cache_rw_len_o<=BURST_LEN;
-          cache_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
-          cache_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-          cache_rw_if_o<=rw_if;
+          axi_rw_addr_valid_o<=1;
+          axi_rw_addr_o<={rw_addr_i[TAGL:INDEXR],OFFSET0};
+          axi_rw_we_o<=0;
+          axi_rw_len_o<=BURST_LEN;
+          axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
+          axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
+          axi_rw_if_o<=rw_if;
         end
         else begin
 					rw_addr_ready_o<=1;
-					rw_data_valid_o<=0;
-    			cache_rw_addr_valid_o<=0;
-					cache_w_data_valid_o<=0;
-					cache_r_data_ready_o<=0;
+					r_data_valid_o<=0;
+    			axi_rw_addr_valid_o<=0;
+					axi_w_data_valid_o<=0;
+					axi_r_data_ready_o<=0;
         end
       S_HIT:if(next_state==S_IDLE)begin
 					rw_addr_ready_o<=1;
-					rw_data_valid_o<=0;
-    			cache_rw_addr_valid_o<=0;
-					cache_w_data_valid_o<=0;
-					cache_r_data_ready_o<=0;
+					r_data_valid_o<=0;
+    			axi_rw_addr_valid_o<=0;
+					axi_w_data_valid_o<=0;
+					axi_r_data_ready_o<=0;
       end
-      else if(rw_data_valid_o==0)begin
+      else if(r_data_valid_o==0)begin
         if(RAM_WEN==0)begin
           dirty[waynum][index]<=1;
           RAM_WEN<=1;
         end
-        rw_data_valid_o<=1;
+        r_data_valid_o<=1;
       end
       S_AW:if(next_state<=S_W)begin
-          cache_rw_addr_valid_o<=0;
-          cache_w_data_valid_o<=1;
+          axi_rw_addr_valid_o<=0;
+          axi_w_data_valid_o<=1;
         end
       S_W:begin
-        if(cache_w_data_valid_o&cache_w_data_ready_i)begin
-          if(cache_rw_len_o==0)begin
+        if(axi_w_data_valid_o&axi_w_data_ready_i)begin
+          if(axi_rw_len_o==0)begin
             dirty[waynum][index]<=0;
             valid[waynum][index]<=0;
             tag[waynum][index]<=addr0[TAGL:TAGR];
-            addr={addr0[TAGL:INDEXR],OFFSET0};
-            cache_rw_addr_valid_o<=1;
-            cache_rw_addr_o<={addr0[TAGL:INDEXR],OFFSET0};
-            cache_rw_we_o<=0;
-            cache_rw_len_o<=BURST_LEN;
-            cache_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
-            cache_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-            cache_rw_if_o<=rw_if;
-            cache_w_data_valid_o<=0;
+            addr<={addr0[TAGL:INDEXR],OFFSET0};
+            axi_rw_addr_valid_o<=1;
+            axi_rw_addr_o<={addr0[TAGL:INDEXR],OFFSET0};
+            axi_rw_we_o<=0;
+            axi_rw_len_o<=BURST_LEN;
+            axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
+            axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
+            axi_rw_if_o<=rw_if;
+            axi_w_data_valid_o<=0;
           end
           else begin
             addr<=addr+8;
-            cache_w_data_valid_o<=0;
-            cache_rw_len_o<=cache_rw_len_o-1;
+            axi_w_data_valid_o<=0;
+            axi_rw_len_o<=axi_rw_len_o-1;
           end
         end
         else begin
-          cache_rw_addr_o<=cache_rw_addr_o+8;
-          cache_w_data_valid_o<=1;
+          axi_rw_addr_o<=axi_rw_addr_o+8;
+          axi_w_data_valid_o<=1;
         end
       end
       S_AR:if(next_state==S_R)begin
-            cache_rw_addr_valid_o<=0;
-            cache_r_data_ready_o<=1;
+            axi_rw_addr_valid_o<=0;
+            axi_r_data_ready_o<=1;
           end
-      S_R:if(cache_r_data_valid_i&cache_r_data_ready_o)begin
+      S_R:if(axi_r_data_valid_i&axi_r_data_ready_o)begin
               RAM_WEN<=0;
-              w_data<=cache_r_data_i;
-              cache_r_data_ready_o<=0;
+              w_data<=axi_r_data_i;
+              axi_r_data_ready_o<=0;
           end
           else if(next_state==S_HIT)begin
               valid[waynum][index]=1;
               RAM_WEN<=~we;
               w_data<=w_data0;
               addr<=addr0;
-              rw_data_valid_o<=0;
+              r_data_valid_o<=0;
             end
-          else if(cache_r_data_ready_o==0)begin
-            cache_rw_len_o<=cache_rw_len_o-1;
+          else if(axi_r_data_ready_o==0)begin
+            axi_rw_len_o<=axi_rw_len_o-1;
             RAM_WEN<=1;
             addr<=addr+8;
-            cache_r_data_ready_o<=1;
+            axi_r_data_ready_o<=1;
           end
       default:begin
       end

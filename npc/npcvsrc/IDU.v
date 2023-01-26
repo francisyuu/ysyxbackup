@@ -264,11 +264,17 @@ assign ctrl_mem[11]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))) ? 1:0;
 assign ctrl_mem[10]=OPBXX ? 1:0;
 assign ctrl_mem[9]=OPLXX ? 1:0;
 assign ctrl_mem[8]=OPSXX ? 1:0;
-assign ctrl_mem[7:0]=OPSXX ?
-                      F3SB ? `ysyx_22050133_wmask_b     
-                      :F3SH ? `ysyx_22050133_wmask_h     
-                      :F3SW ? `ysyx_22050133_wmask_w     
-                      :F3SD ? `ysyx_22050133_wmask_d     
+assign ctrl_mem[2:0]=OPSXX ?
+                      F3SB ? `ysyx_22050133_AXI_SIZE_BYTES_1
+                      :F3SH ? `ysyx_22050133_AXI_SIZE_BYTES_2
+                      :F3SW ? `ysyx_22050133_AXI_SIZE_BYTES_4
+                      :F3SD ? `ysyx_22050133_AXI_SIZE_BYTES_8
+                      :0
+                    :OPLXX ?
+                      F3LB|F3LBU ? `ysyx_22050133_AXI_SIZE_BYTES_1
+                      :F3LH|F3LHU ? `ysyx_22050133_AXI_SIZE_BYTES_2
+                      :F3LW|F3LWU ? `ysyx_22050133_AXI_SIZE_BYTES_4
+                      :F3LD ? `ysyx_22050133_AXI_SIZE_BYTES_8
                       :0
                     :0;
 assign ctrl_wb[8]=OPSYS&FEBREAK;
