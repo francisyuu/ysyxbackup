@@ -78,7 +78,7 @@ module ysyx_22050133_crossbar # (
 `ifdef NOCACHE
 	wire uncache=1;
 `else
-wire uncache=(rw_addr_i<32'h80000000)? 0:1;
+wire uncache=((rw_addr_i<32'h80000000)||(rw_addr_i>32'h88000000))? 1:0;
 `endif
 
 wire                     cachei_rw_addr_valid_i;       

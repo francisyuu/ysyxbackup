@@ -85,6 +85,10 @@ extern Vysyx_22050133_NPC* top;
 extern CPU_state cpu;
 extern const char *regs[];
 
+extern uint64_t inst_inst,inst_mem,inst_memr,inst_memw;
+extern uint64_t inst_cache_hit,inst_cache_miss;
+extern uint64_t mem_cache_hit,mem_cache_miss,mem_cache_miss_dirty;
+extern "C" void cache_profiling(int inst,int we,int hit,int dirty);
 extern "C" void cache_rw(long long addr, long long data,char size,char we,char waynum,char index);
 extern "C" void vmem_read(long long raddr, long long *rdata);
 extern "C" void inst_read(long long raddr, long long *rdata);

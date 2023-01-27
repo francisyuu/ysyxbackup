@@ -19,6 +19,5 @@ assign rs2data = rs2==0 ? 0
                       :rf[rs2];
 always @(posedge clk) begin
   if (wen) rf[rd] <= rddata;
-  //reg_info(rs1,rs1data,rs2,rs2data,rd,rddata);
 end
 endmodule

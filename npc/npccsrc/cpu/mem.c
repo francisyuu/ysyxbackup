@@ -3,6 +3,26 @@
 
 uint8_t pmem[CONFIG_MSIZE];
 
+uint64_t inst_inst=0,inst_mem=0,inst_memr=0,inst_memw=0;
+uint64_t inst_cache_hit=0,inst_cache_miss=0;
+uint64_t mem_cache_hit=0,mem_cache_miss=0,mem_cache_miss_dirty=0;
+extern "C" void cache_profiling(int inst,int we,int hit,int dirty){
+  if(inst==1){
+    inst_inst++;
+    if(hit==1)inst_cache_hit++;
+    else inst_cache_miss++;
+  }
+  else{
+    inst_mem++;
+    if(we==1)inst_memw++;
+    else inst_memr++;
+    if(hit==1)mem_cache_hit++;
+    else {
+      mem_cache_miss++;
+      if(dirty==1)mem_cache_miss_dirty++;
+    }
+  }
+}
 extern "C" void cache_rw(long long addr, long long data,char size,char we,char waynum,char index) {
 #ifdef CONFIG_MTRACE
   char str[96];

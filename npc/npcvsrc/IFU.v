@@ -34,12 +34,6 @@ begin
   end
   else if(pc_ready_i)pc_valid<=0;
 end
-
-//always @(*) begin
-    //inst_read(pc,inst64);
-//end
-
-//assign inst=pc[2] ? inst64[63:32]:inst64[31:0];
 assign inst=inst64[31:0];
 
 endmodule

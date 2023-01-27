@@ -524,9 +524,9 @@ begin
   end
 end
 
+`ifdef REGINFO
 always@(posedge clk)
   begin
-`ifdef REGINFO
   $display("\
     pc        =%h,inst      =%h,\
 IDREG_en  =%h,     IDREG_pc  =%h,     IDREG_inst=%h,     \
@@ -575,8 +575,11 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
          ,WBREG_en  ,WBREG_ctrl_wb,WBREG_rddata 
          ,WBREG_rd    ,WBREG_ctrl_wb[8],WBREG_ctrl_wb[5]
          );
+end
 `endif
 `ifdef AXIINFOIFU
+always@(posedge clk)
+  begin
   $display("\
 ifu_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
     w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
@@ -621,8 +624,8 @@ mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
          ,mem_axi_ar_ready_i,mem_axi_ar_valid_o,mem_axi_ar_addr_o,mem_axi_ar_prot_o
          ,mem_axi_r_ready_o, mem_axi_r_valid_i, mem_axi_r_resp_i, mem_axi_r_data_i
                );
-`endif
 end
+`endif
 
 
 ysyx_22050133_IDU ysyx_22050133_IDU_dut(

@@ -23,6 +23,8 @@ void stopsim()
     //printf("ebreak\n");
   }
 }
+uint64_t g_nr_guest_inst = 0;
+uint64_t g_nr_guest_clk = 0;
 void cpu_single_cycle() {
         //if(top->rst!=1)printf("pc = %08lx, inst = %08x\n", top->pc, top->inst);
 	static long lastpc= 0x80000000;
@@ -31,11 +33,16 @@ void cpu_single_cycle() {
 		{
 			top->clk = 1; top->eval();
 			top->clk = 0; top->eval();
+      g_nr_guest_clk ++;
 		}
 		lastpc=cpu.pc;
+    g_nr_guest_inst ++;
 #else
   top->clk = 1; top->eval();
   top->clk = 0; top->eval();
+  g_nr_guest_clk ++;
+  if(cpu.pc!=lastpc)g_nr_guest_inst ++;
+		lastpc=cpu.pc;
 #endif
        // printf("pc = %08x, inst = %08x rd=%08x\n", top->pc, top->inst,top->rddata);
 }
@@ -60,7 +67,6 @@ void cpu_reset(int n) {
 #define MAX_INST_TO_PRINT 10
 
 CPU_state cpu = {};
-uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 /*static bool g_print_always = true;*/
@@ -131,7 +137,6 @@ static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
     exec_once(&s, cpu.pc);
-    g_nr_guest_inst ++;
 #ifdef CONFIG_DEBUGINFO
     trace_and_difftest(&s, cpu.pc);
 #endif
@@ -145,8 +150,15 @@ static void statistic() {
 #define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
   Log("host time spent = " NUMBERIC_FMT " us", g_timer);
   Log("total guest instructions = " NUMBERIC_FMT, g_nr_guest_inst);
-  if (g_timer > 0) Log("simulation frequency = " NUMBERIC_FMT " inst/s", g_nr_guest_inst * 1000000 / g_timer);
+  Log("total guest clk number = " NUMBERIC_FMT, g_nr_guest_clk);
+  if (g_timer > 0) {
+    Log("simulation frequency = " NUMBERIC_FMT " inst/s", g_nr_guest_inst * 1000000 / g_timer);
+    Log("simulation frequency = " NUMBERIC_FMT " clk/s", g_nr_guest_clk * 1000000 / g_timer);
+    Log("simulation frequency = %f inst/clk", float(g_nr_guest_inst)/(float)g_nr_guest_clk );
+  }
   else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
+    printf("total inst fetch:%ld,\nmem rw:%ld,%%%3.1f,\nmemr:%ld,%%%3.1f,\nmemw:%ld,%%%3.1f\n",inst_inst,inst_mem,inst_mem*100/(float)inst_inst,inst_memr,inst_memr*100/(float)inst_mem,inst_memw,inst_memw*100/(float)inst_mem);
+    printf("inst cache hit:%ld,%%%3.1f,\nmem cache hit:%ld,%%%3.1f,\nmem cache miss dirty:%ld,%%%3.1f\n",inst_cache_hit,inst_cache_hit*100/(float)(inst_cache_hit+inst_cache_miss),mem_cache_hit,mem_cache_hit*100/(float)(mem_cache_hit+mem_cache_miss),mem_cache_miss_dirty,mem_cache_miss_dirty*100/(float)mem_cache_miss);
 }
 
 void assert_fail_msg() {
