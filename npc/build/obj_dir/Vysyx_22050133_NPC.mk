@@ -40,6 +40,8 @@ VM_USER_CFLAGS = \
 	-O3 \
 	-MMD \
 	-Wall \
+	-I/home/francisyuu/Documents/ysyx22050133/ysyx-workbench/npc/npccsrc/include \
+	-Werror \
 	-Og \
 	-ggdb3 \
 	-I/usr/lib/llvm-14/include \

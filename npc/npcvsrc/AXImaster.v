@@ -352,7 +352,7 @@ end
 always@(*) begin
   if(rst)next_rstate=RS_IDLE;
   else case(rstate)
-    RS_IDLE:if(rw_addr_valid_i&(rw_we_i==0))next_rstate=RS_ARHS;
+    RS_IDLE:if(rw_addr_ready_o&rw_addr_valid_i&(rw_we_i==0))next_rstate=RS_ARHS;
       else next_rstate=RS_IDLE;
     RS_ARHS:if(axi_ar_valid_o&axi_ar_ready_i)next_rstate=RS_RHS;
     else next_rstate=RS_ARHS;

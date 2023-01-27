@@ -3,6 +3,14 @@
 
 uint8_t pmem[CONFIG_MSIZE];
 
+extern "C" void cache_rw(long long addr, long long data,char size,char we,char waynum,char index) {
+#ifdef CONFIG_MTRACE
+  char str[96];
+  sprintf(str,"%08lx:cache:addr=%08llx,data=%016llx,size=%u,we=%u,waynum=%u,index=%u",cpu.pc,addr,data,size,we,waynum,index);
+  mtrace_write(str);
+#endif
+}
+
 void _vmem_read(long long raddr, long long *rdata) {
       // 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
 #ifdef CONFIG_DEBUGINFO

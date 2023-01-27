@@ -42,6 +42,26 @@ VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_set_pc_TOP____024u
     set_pc(pc__Vcvt, npc__Vcvt, inst__Vcvt);
 }
 
+extern "C" void cache_rw(long long addr, long long data, char size, char we, char waynum, char index);
+
+VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_cache_rw_TOP____024unit(QData/*63:0*/ addr, QData/*63:0*/ data, CData/*7:0*/ size, CData/*7:0*/ we, CData/*7:0*/ waynum, CData/*7:0*/ index) {
+    VL_DEBUG_IF(VL_DBG_MSGF("+        Vysyx_22050133_NPC___024unit____Vdpiimwrap_cache_rw_TOP____024unit\n"); );
+    // Body
+    long long addr__Vcvt;
+    for (size_t addr__Vidx = 0; addr__Vidx < 1; ++addr__Vidx) addr__Vcvt = addr;
+    long long data__Vcvt;
+    for (size_t data__Vidx = 0; data__Vidx < 1; ++data__Vidx) data__Vcvt = data;
+    char size__Vcvt;
+    for (size_t size__Vidx = 0; size__Vidx < 1; ++size__Vidx) size__Vcvt = size;
+    char we__Vcvt;
+    for (size_t we__Vidx = 0; we__Vidx < 1; ++we__Vidx) we__Vcvt = we;
+    char waynum__Vcvt;
+    for (size_t waynum__Vidx = 0; waynum__Vidx < 1; ++waynum__Vidx) waynum__Vcvt = waynum;
+    char index__Vcvt;
+    for (size_t index__Vidx = 0; index__Vidx < 1; ++index__Vidx) index__Vcvt = index;
+    cache_rw(addr__Vcvt, data__Vcvt, size__Vcvt, we__Vcvt, waynum__Vcvt, index__Vcvt);
+}
+
 extern "C" void vmem_read(long long raddr, long long* rdata);
 
 VL_INLINE_OPT void Vysyx_22050133_NPC___024unit____Vdpiimwrap_vmem_read_TOP____024unit(QData/*63:0*/ raddr, QData/*63:0*/ &rdata) {

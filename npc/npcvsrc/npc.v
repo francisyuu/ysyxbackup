@@ -524,15 +524,10 @@ begin
   end
 end
 
-`ifdef MULTICYCLE 
 always@(posedge clk)
-  if(IDREG_en)begin
-`else
-always@(*)
   begin
-`endif
 `ifdef REGINFO
-  $monitor("\
+  $display("\
     pc        =%h,inst      =%h,\
 IDREG_en  =%h,     IDREG_pc  =%h,     IDREG_inst=%h,     \
     block_axi_ifu=%d,  block_axi_mem=%d,  block=%d,  \
@@ -553,25 +548,8 @@ MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
     MEMREG_read=%d,    MEMREG_write=%d,   MEMREG_wmask=%h,  \
     WBREG_rdSrc    =%d,WBREG_rdSEXT   =%d,rddata      =%h \
 WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
-    WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,   \
-ifu_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
-    w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
-    r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
-    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
-    w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
-    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
-    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
-    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
-mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
-    w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
-    r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
-    rw_wdata_i=%h, rw_addr_i =%h,  rw_size_i=%h,\
-    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
-    w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
-    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
-    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
-    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
-    "   
+    WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,\
+"
          ,pc,inst
          ,IDREG_en  ,IDREG_pc  ,IDREG_inst
          ,block_axi_ifu,block_axi_mem,block
@@ -596,6 +574,20 @@ mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
 
          ,WBREG_en  ,WBREG_ctrl_wb,WBREG_rddata 
          ,WBREG_rd    ,WBREG_ctrl_wb[8],WBREG_ctrl_wb[5]
+         );
+`endif
+`ifdef AXIINFOIFU
+  $display("\
+ifu_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
+    w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
+    r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
+    \
+    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
+    w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
+    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
+    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
+    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
+    "   
          ,ifu_rw_addr_valid_i,ifu_rw_addr_ready_o,ifu_rw_addr_i
          ,ifu_w_data_valid_i,ifu_w_data_ready_o,ifu_w_data_i
          ,ifu_r_data_valid_o,ifu_r_data_ready_i,ifu_r_data_o
@@ -604,6 +596,21 @@ mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
          ,ifu_axi_b_ready_o, ifu_axi_b_valid_i, ifu_axi_b_resp_i
          ,ifu_axi_ar_ready_i,ifu_axi_ar_valid_o,ifu_axi_ar_addr_o,ifu_axi_ar_prot_o
          ,ifu_axi_r_ready_o, ifu_axi_r_valid_i, ifu_axi_r_resp_i, ifu_axi_r_data_i
+               );
+`endif
+`ifdef AXIINFOMEM
+  $display("\
+mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
+    w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
+    r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
+    rw_wdata_i=%h, rw_addr_i =%h,  rw_size_i=%h,\
+    \
+    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
+    w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
+    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
+    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
+    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
+    "   
          ,mem_rw_addr_valid_i,mem_rw_addr_ready_o,mem_rw_addr_i
          ,mem_w_data_valid_i,mem_w_data_ready_o,mem_w_data_i
          ,mem_r_data_valid_o,mem_r_data_ready_i,mem_r_data_o

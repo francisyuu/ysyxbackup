@@ -261,6 +261,7 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   return true;
 }
 
+#ifdef MULTICYCLE
 static void checkregs(CPU_state *ref, vaddr_t pc) {
 		static CPU_state laststate;
   if (!isa_difftest_checkregs(ref, pc)) {
@@ -282,7 +283,6 @@ static void checkregs(CPU_state *ref, vaddr_t pc) {
 		laststate=cpu;
 }
 
-#ifdef MULTICYCLE
 void difftest_step(vaddr_t pc, vaddr_t npc) {
   CPU_state ref_r;
 

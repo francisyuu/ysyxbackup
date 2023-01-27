@@ -1,11 +1,13 @@
 `ifndef NPCDEFINE_V
 `define NPCDEFINE_V
 
-`define MULTICYCLE 1
+//`define MULTICYCLE 1
+`define NOCACHE 1
 //`define REGINFO 1
-//`define AXIINFO 1
+//`define AXIINFOIFU 1
+//`define AXIINFOMEM 1
 //`define CACHEINFO 1
-//`define FAKEAXI 1
+`define FAKEAXI 1
 
 `define ysyx_22050133_OP_LUI    7'b0110111
 `define ysyx_22050133_OP_AUIPC  7'b0010111
@@ -294,6 +296,9 @@ import "DPI-C" function void stopsim();
 import "DPI-C" function void set_gpr_ptr(input logic [63:0] a []);
 import "DPI-C" function void set_pc(
     input longint pc, input longint npc,input int inst
+);
+import "DPI-C" function void cache_rw(
+    input longint addr, input longint data, input byte size,input byte we,input byte waynum,input byte index
 );
 import "DPI-C" function void vmem_read(
     input longint raddr, output longint rdata
