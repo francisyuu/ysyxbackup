@@ -154,7 +154,7 @@ static void statistic() {
   if (g_timer > 0) {
     Log("simulation frequency = " NUMBERIC_FMT " inst/s", g_nr_guest_inst * 1000000 / g_timer);
     Log("simulation frequency = " NUMBERIC_FMT " clk/s", g_nr_guest_clk * 1000000 / g_timer);
-    Log("simulation frequency = %f inst/clk", float(g_nr_guest_inst)/(float)g_nr_guest_clk );
+    Log("IPC = %f inst/clk", float(g_nr_guest_inst)/(float)g_nr_guest_clk );
   }
   else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
     printf("total inst fetch:%ld,\nmem rw:%ld,%%%3.1f,\nmemr:%ld,%%%3.1f,\nmemw:%ld,%%%3.1f\n",inst_inst,inst_mem,inst_mem*100/(float)inst_inst,inst_memr,inst_memr*100/(float)inst_mem,inst_memw,inst_memw*100/(float)inst_mem);
@@ -317,6 +317,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 		/*printf("skip\n");*/
 			IFDEF(CONFIG_DIFFTEST_DEVICE,ref_difftest_exec(1));
 			ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+	is_skip_ref[0] = false;
 	}
 	else
 	{
@@ -326,7 +327,6 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 		checkregs(&ref_r, pc);
 	}
 	/*is_skip_ref[0] = is_skip_ref[1];*/
-	/*is_skip_ref[1] = false;*/
 	return;
 }
 #else
@@ -337,9 +337,9 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 	/*printf("duta5=%lx\n",cpu.gpr[15]);*/
 	if (is_skip_ref[0]) {
 		// to skip the checking of an instruction, just copy the reg state to reference design
-		/*printf("skip\n");*/
 			IFDEF(CONFIG_DIFFTEST_DEVICE,ref_difftest_exec(1));
 			ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+	/*is_skip_ref[0] = false;*/
 	}
 	else
 	{
@@ -363,6 +363,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
 				}
 			}
 		}
+		/*printf("skip\n");*/
     for(int i=0;i<32;i++)
     {
 			if(ref_r.gpr[i]!=cpu.gpr[i])

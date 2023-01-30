@@ -18,15 +18,16 @@ wire displayinfo=0;
 
 wire pcSrc;
 wire pop=has_hazard;
+wire block_EXU;
 
 `ifdef MULTICYCLE 
 wire flush=0;
-wire block=block_axi_ifu|block_axi_mem;
+wire block=block_axi_ifu|block_axi_mem|block_EXU;
 //wire block=block_axi_ifu;
 `else
 wire flush=pcSrc&(~block);
 //wire block=(block_axi_mem|block_axi_ifu|has_hazard)&(~pcSrc);
-wire block=(block_axi_mem|block_axi_ifu);
+wire block=(block_axi_mem|block_axi_ifu|block_EXU);
 `endif
 
 wire[63:0] pc;
@@ -650,6 +651,9 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .rdout    (rdout    )
 );
 
+reg EXU_valid_i;
+wire EXU_valid_o;
+wire block_EXU=~(~EXU_valid_i&EXU_valid_o);
 always@(posedge clk)
 begin
   if(rst|flush)begin
@@ -675,7 +679,9 @@ begin
     EXREG_rs2data <=rs2data ;
     EXREG_imm     <=imm     ;
     EXREG_rd   <=rdout   ;
+    if(ctrl_ex[16]|ctrl_ex[17])EXU_valid_i<=1;
   end
+  else EXU_valid_i<=0;
 end
 
 
@@ -694,6 +700,8 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .forward_wdataSrc(forward_wdataSrc),
   .forward_wdata_mem(rddata),
   .forward_wdata_wb(WBREG_rddata),
+  .src_valid_i  (EXU_valid_i) ,
+  .result_valid_o  (EXU_valid_o) ,
   .dnpc   (dnpc   ) ,
   .result (result ) ,
   .csrdata(csrdata) ,

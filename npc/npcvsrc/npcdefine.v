@@ -2,8 +2,8 @@
 `define NPCDEFINE_V
 
 //`define MULTICYCLE 1
-//`define FAKEAXI 1
-//`define NOCACHE 1
+`define FAKEAXI 1
+`define NOCACHE 1
 `define DEBUGINFO 1
 `ifdef DEBUGINFO 
   //`define REGINFO 1
@@ -220,7 +220,7 @@
 
 `define ysyx_22050133_ctrl_wb_len   12
 `define ysyx_22050133_ctrl_mem_len  12
-`define ysyx_22050133_ctrl_ex_len   16
+`define ysyx_22050133_ctrl_ex_len   18
 
 //// Burst types
 `define ysyx_22050133_AXI_BURST_TYPE_FIXED                 2'b00               //突发类型  FIFO

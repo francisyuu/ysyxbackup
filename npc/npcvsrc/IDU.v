@@ -195,6 +195,8 @@ assign ctrl_wb_out=has_hazard?0:ctrl_wb;
 assign ctrl_mem_out=has_hazard?0:ctrl_mem;
 assign ctrl_ex_out=has_hazard?0:ctrl_ex;
 
+assign ctrl_ex[17]=(OPRXX|OPRWX)&F7MUL&(funct3[2]) ? 1:0;
+assign ctrl_ex[16]=(OPRXX|OPRWX)&F7MUL&(~funct3[2]) ? 1:0;
 assign ctrl_ex[15:13]=OPSYS ?
                        FECALL ?`ysyx_22050133_CSRop_ecall
                        :F3CSRRW ?`ysyx_22050133_CSRop_csrrw
