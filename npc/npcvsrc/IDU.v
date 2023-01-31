@@ -6,9 +6,7 @@ module ysyx_22050133_IDU(
   input             rdwen,
   input     [4:0]   rdin,
   input     [63:0]  rddata,
-  input             hazard_detect_mem_read,
-  input     [4:0]   hazard_detect_rd,
-  output            has_hazard,
+  input             has_hazard,
   output    [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb_out,
   output    [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem_out,
   output    [`ysyx_22050133_ctrl_ex_len :0]   ctrl_ex_out,
@@ -184,19 +182,13 @@ assign imm=
   :(OPJAL)?immJ:0;
 
 
-`ifdef MULTICYCLE 
-assign has_hazard=0;
-`else
-assign has_hazard=hazard_detect_mem_read&
-                ((hazard_detect_rd==rs1)|(hazard_detect_rd==rs2));
-`endif
 
-assign ctrl_wb_out=has_hazard?0:ctrl_wb;
-assign ctrl_mem_out=has_hazard?0:ctrl_mem;
-assign ctrl_ex_out=has_hazard?0:ctrl_ex;
+assign ctrl_wb_out=has_hazard ? 0:ctrl_wb;
+assign ctrl_mem_out=has_hazard ? 0:ctrl_mem;
+assign ctrl_ex_out=has_hazard ? 0:ctrl_ex;
 
-assign ctrl_ex[17]=(OPRXX|OPRWX)&F7MUL&(funct3[2]) ? 1:0;
-assign ctrl_ex[16]=(OPRXX|OPRWX)&F7MUL&(~funct3[2]) ? 1:0;
+assign ctrl_ex[17]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))) ? 1:0;
+assign ctrl_ex[16]=OPBXX ? 1:0;
 assign ctrl_ex[15:13]=OPSYS ?
                        FECALL ?`ysyx_22050133_CSRop_ecall
                        :F3CSRRW ?`ysyx_22050133_CSRop_csrrw
@@ -210,12 +202,12 @@ assign ctrl_ex[12:11]=OPSYS ?
                        :0
                       :0;
 assign ctrl_ex[10]=(OPSYS&(FECALL|FMRET)) ? 1:0;
-assign ctrl_ex[9]=(OPRWX|OPXXIW) ? 1:0;
-assign ctrl_ex[8]=OPJALR ? 1:0;
-assign ctrl_ex[7]=(OPAUIPC|OPJAL|OPJALR) ? 1:0;
-assign ctrl_ex[6:5]=(OPAUIPC|OPLXX|OPSXX|OPXXI|OPXXIW) ? 1
+assign ctrl_ex[9]=OPJALR ? 1:0;
+assign ctrl_ex[8]=(OPAUIPC|OPJAL|OPJALR) ? 1:0;
+assign ctrl_ex[7:6]=(OPAUIPC|OPLXX|OPSXX|OPXXI|OPXXIW) ? 1
                     :(OPJAL|OPJALR) ? 2
                     :0;
+assign ctrl_ex[5]=(OPRWX|OPXXIW) ? 1:0;
 assign ctrl_ex[4:0]=OPBXX ?
                       F3BEQ ? `ysyx_22050133_ALUop_BEQ
                       :F3BNE ? `ysyx_22050133_ALUop_BNE
@@ -262,8 +254,6 @@ assign ctrl_ex[4:0]=OPBXX ?
                       :`ysyx_22050133_ALUop_NOP
                     :(OPAUIPC|OPJAL|OPJALR|OPLXX|OPSXX)?`ysyx_22050133_ALUop_ADD
                     :`ysyx_22050133_ALUop_NOP;
-assign ctrl_mem[11]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))) ? 1:0;
-assign ctrl_mem[10]=OPBXX ? 1:0;
 assign ctrl_mem[9]=OPLXX ? 1:0;
 assign ctrl_mem[8]=OPSXX ? 1:0;
 assign ctrl_mem[2:0]=OPSXX ?

@@ -23,6 +23,7 @@ NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt $(IMAGE).bin
 .PHONY: $(AM_HOME)/am/src/riscv/npc/trm.c
 
 image: $(IMAGE).elf
+	$(MAKE) clean -C $(AM_HOME)/../npc
 	$(MAKE) -C $(AM_HOME)/../npc
 	@$(OBJDUMP) -d $(IMAGE).elf > $(IMAGE).txt
 	@echo + OBJCOPY "->" $(IMAGE_REL).bin

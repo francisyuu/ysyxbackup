@@ -1,6 +1,6 @@
 // Create Date: 2023/01/30 15:38:32
-//`define DIV_RADIX2
-`define DIV_CYCLE 0
+`define DIV_RADIX2
+//`define DIV_CYCLE 0
 module ysyx_22050133_Divider(
     input             clk        ,  //时钟信号
     input             rst        ,  //复位信号（高有效）
@@ -78,6 +78,10 @@ module ysyx_22050133_Divider(
     end
     else case(state)
       S_IDLE:if(next_state==S_DIV)begin
+        `ifdef DEBUGINFO
+            div_inst_profiling();
+            div_cycle_profiling();
+        `endif
         div_ready<=0;
         out_valid<=0;
         B<=divisor_ext;
@@ -113,7 +117,11 @@ module ysyx_22050133_Divider(
       else begin
         div_ready<=1;
       end
-      S_DIV:if(next_state==S_IDLE)begin
+      S_DIV:begin
+        `ifdef DEBUGINFO
+            div_cycle_profiling();
+        `endif
+        if(next_state==S_IDLE)begin
         quotient<=S_out;
         //quotient<=0;
         remainder<=R_out;
@@ -121,18 +129,19 @@ module ysyx_22050133_Divider(
         div_ready<=1;
         out_valid<=1;
         clk_cnt<=0;
-      end
-      else begin
-        clk_cnt<=clk_cnt-1;
-        if(S_set)begin
-          S[clk_cnt[5:0]]<=1;
-          A<={AmB[63:0],A[62:0],1'b0};
-          R<=AmB[63:0];
         end
         else begin
-          S[clk_cnt[5:0]]<=0;
-          A<=A<<1;
-          R<=A[126:63];
+          clk_cnt<=clk_cnt-1;
+          if(S_set)begin
+            S[clk_cnt[5:0]]<=1;
+            A<={AmB[63:0],A[62:0],1'b0};
+            R<=AmB[63:0];
+          end
+          else begin
+            S[clk_cnt[5:0]]<=0;
+            A<=A<<1;
+            R<=A[126:63];
+          end
         end
       end
       default:begin
@@ -186,6 +195,10 @@ module ysyx_22050133_Divider(
     end
     else case(state)
       S_IDLE:if(next_state==S_DIV)begin
+        `ifdef DEBUGINFO
+            div_inst_profiling();
+            div_cycle_profiling();
+        `endif
         div_ready<=0;
         out_valid<=0;
         clk_cnt<=0;
@@ -194,13 +207,18 @@ module ysyx_22050133_Divider(
         div_ready<=1;
         clk_cnt<=0;
       end
-      S_DIV:if(next_state==S_IDLE)begin
+      S_DIV:begin
+        `ifdef DEBUGINFO
+            div_cycle_profiling();
+        `endif
+        if(next_state==S_IDLE)begin
         clk_cnt<=0;
         out_valid<=1;
         quotient<=result_quotient[63:0];
         remainder<=result_remainder[63:0];
+        end
+        else clk_cnt<=clk_cnt+1;
       end
-      else clk_cnt<=clk_cnt+1;
       default:begin
       end
     endcase

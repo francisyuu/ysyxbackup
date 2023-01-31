@@ -1,10 +1,10 @@
 // Create Date: 2023/01/29 16:32:12
-//`define MUL_BOOTH
+`define MUL_BOOTH
 //`define MUL_WALLACE
 `ifdef MUL_WALLACE
   `define SEGMENTATION
 `endif
-`define MUL_CYCLE 0
+//`define MUL_CYCLE 0
 //
 module ysyx_22050133_Multipler(
     input              clk         ,   //时钟信号
@@ -86,11 +86,19 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=0;
         out_valid<=0;
         result<=0;
+        `ifdef DEBUGINFO
+            mul_inst_profiling();
+            mul_cycle_profiling();
+        `endif
       end
       else begin
         mul_ready<=1;
       end
-      S_MUL:if(next_state==S_IDLE)begin
+      S_MUL:begin
+        `ifdef DEBUGINFO
+            mul_cycle_profiling();
+        `endif
+        if(next_state==S_IDLE)begin
         result_hi<=result[127:64];
         result_lo<=result[63:0];
         out_valid<=1;
@@ -102,6 +110,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         x<=x<<2;
         y<=y>>2;
       end
+    end
       default:begin
       end
     endcase
@@ -192,18 +201,27 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=0;
         out_valid<=0;
         clk_cnt<=0;
+        `ifdef DEBUGINFO
+            mul_inst_profiling();
+            mul_cycle_profiling();
+        `endif
       end
       else begin
         mul_ready<=1;
         clk_cnt<=0;
       end
-      S_MUL:if(next_state==S_IDLE)begin
+      S_MUL:begin
+        `ifdef DEBUGINFO
+            mul_cycle_profiling();
+        `endif
+        if(next_state==S_IDLE)begin
         clk_cnt<=0;
         out_valid<=1;
         result_hi<=result[127:64];
         result_lo<=result[63:0];
+        end
+          else clk_cnt<=clk_cnt+1;
       end
-      else clk_cnt<=clk_cnt+1;
       default:begin
       end
     endcase
@@ -247,18 +265,27 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=0;
         out_valid<=0;
         clk_cnt<=0;
+        `ifdef DEBUGINFO
+            mul_inst_profiling();
+            mul_cycle_profiling();
+        `endif
       end
       else begin
         mul_ready<=1;
         clk_cnt<=0;
       end
-      S_MUL:if(next_state==S_IDLE)begin
+      S_MUL:begin
+        `ifdef DEBUGINFO
+            mul_cycle_profiling();
+        `endif
+        if(next_state==S_IDLE)begin
         clk_cnt<=0;
         out_valid<=1;
         result_hi<=result[127:64];
         result_lo<=result[63:0];
+        end
+        else clk_cnt<=clk_cnt+1;
       end
-      else clk_cnt<=clk_cnt+1;
       default:begin
       end
     endcase

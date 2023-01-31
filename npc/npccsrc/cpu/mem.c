@@ -3,9 +3,9 @@
 
 uint8_t pmem[CONFIG_MSIZE];
 
-uint64_t inst_inst=0,inst_mem=0,inst_memr=0,inst_memw=0;
-uint64_t inst_cache_hit=0,inst_cache_miss=0;
-uint64_t mem_cache_hit=0,mem_cache_miss=0,mem_cache_miss_dirty=0;
+uint64_t inst_inst,inst_mem,inst_memr,inst_memw;
+uint64_t inst_cache_hit,inst_cache_miss;
+uint64_t mem_cache_hit,mem_cache_miss,mem_cache_miss_dirty;
 extern "C" void cache_profiling(int inst,int we,int hit,int dirty){
   if(inst==1){
     inst_inst++;
@@ -23,6 +23,31 @@ extern "C" void cache_profiling(int inst,int we,int hit,int dirty){
     }
   }
 }
+uint64_t inst_mul,cycle_mul;
+uint64_t inst_div,cycle_div;
+uint64_t block_total,block_inst,block_alu,block_mem,npc_pop,npc_flush;
+uint64_t block_IXX,block_XAX,block_XXM,block_IAX,block_IXM,block_XAM,block_IAM;
+extern "C" void mul_inst_profiling(){inst_mul++;};
+extern "C" void mul_cycle_profiling(){cycle_mul++;};
+extern "C" void div_inst_profiling(){inst_div++;};
+extern "C" void div_cycle_profiling(){cycle_div++;};
+extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush)
+{
+	if(inst ==1||alu==1||mem==1)block_total++;
+	if(inst ==1)block_inst ++;
+	if(alu  ==1)block_alu  ++;
+	if(mem  ==1)block_mem  ++;
+	if(pop  ==1)npc_pop  ++;
+	if(flush==1)npc_flush++;
+	if(inst==1&&alu==0&&mem==0)block_IXX++;
+	if(inst==0&&alu==1&&mem==0)block_XAX++;
+	if(inst==0&&alu==0&&mem==1)block_XXM++;
+	if(inst==1&&alu==1&&mem==0)block_IAX++;
+	if(inst==1&&alu==0&&mem==1)block_IXM++;
+	if(inst==0&&alu==1&&mem==1)block_XAM++;
+	if(inst==1&&alu==1&&mem==1)block_IAM++;
+}
+
 extern "C" void cache_rw(long long addr, long long data,char size,char we,char waynum,char index) {
 #ifdef CONFIG_MTRACE
   char str[96];

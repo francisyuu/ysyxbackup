@@ -2,8 +2,8 @@
 `define NPCDEFINE_V
 
 //`define MULTICYCLE 1
-`define FAKEAXI 1
-`define NOCACHE 1
+//`define FAKEAXI 1
+//`define NOCACHE 1
 `define DEBUGINFO 1
 `ifdef DEBUGINFO 
   //`define REGINFO 1
@@ -181,31 +181,31 @@
 `define ysyx_22050133_CSRop_csrrw  2
 `define ysyx_22050133_CSRop_csrrs  3
 
-`define ysyx_22050133_ALUop_NOP     0
-`define ysyx_22050133_ALUop_BEQ     1
-`define ysyx_22050133_ALUop_BNE     2
-`define ysyx_22050133_ALUop_BLT     3
-`define ysyx_22050133_ALUop_BGE     4
-`define ysyx_22050133_ALUop_BLTU    5
-`define ysyx_22050133_ALUop_BGEU    6
-`define ysyx_22050133_ALUop_ADD     7
-`define ysyx_22050133_ALUop_SUB     8
-`define ysyx_22050133_ALUop_SLT     9
-`define ysyx_22050133_ALUop_SLTU    10
-`define ysyx_22050133_ALUop_XOR     11
-`define ysyx_22050133_ALUop_OR      12
-`define ysyx_22050133_ALUop_AND     13
-`define ysyx_22050133_ALUop_SLL     14
-`define ysyx_22050133_ALUop_SRL     15
-`define ysyx_22050133_ALUop_SRA     16
-`define ysyx_22050133_ALUop_MUL     17
-`define ysyx_22050133_ALUop_MULH    18
-`define ysyx_22050133_ALUop_MULHSU  19
-`define ysyx_22050133_ALUop_MULHU   20
-`define ysyx_22050133_ALUop_DIV     21
-`define ysyx_22050133_ALUop_DIVU    22
-`define ysyx_22050133_ALUop_REM     23
-`define ysyx_22050133_ALUop_REMU    24
+`define ysyx_22050133_ALUop_NOP     5'b00000
+`define ysyx_22050133_ALUop_BEQ     5'b00001
+`define ysyx_22050133_ALUop_BNE     5'b00010
+`define ysyx_22050133_ALUop_BLT     5'b00011
+`define ysyx_22050133_ALUop_BGE     5'b00100
+`define ysyx_22050133_ALUop_BLTU    5'b00101
+`define ysyx_22050133_ALUop_BGEU    5'b00110
+`define ysyx_22050133_ALUop_ADD     5'b00111
+`define ysyx_22050133_ALUop_SUB     5'b01000
+`define ysyx_22050133_ALUop_SLT     5'b01001
+`define ysyx_22050133_ALUop_SLTU    5'b01010
+`define ysyx_22050133_ALUop_XOR     5'b01011
+`define ysyx_22050133_ALUop_OR      5'b01100
+`define ysyx_22050133_ALUop_AND     5'b01101
+`define ysyx_22050133_ALUop_SLL     5'b01110
+`define ysyx_22050133_ALUop_SRL     5'b01111
+`define ysyx_22050133_ALUop_SRA     5'b00000
+`define ysyx_22050133_ALUop_MUL     5'b10011
+`define ysyx_22050133_ALUop_MULH    5'b10111
+`define ysyx_22050133_ALUop_MULHSU  5'b10110
+`define ysyx_22050133_ALUop_MULHU   5'b10100
+`define ysyx_22050133_ALUop_DIV     5'b11001
+`define ysyx_22050133_ALUop_DIVU    5'b11000
+`define ysyx_22050133_ALUop_REM     5'b11011
+`define ysyx_22050133_ALUop_REMU    5'b11010
 //`define ysyx_22050133_ALUop_ADDW    0
 //`define ysyx_22050133_ALUop_SUBW    0
 //`define ysyx_22050133_ALUop_SLLW    0
@@ -294,6 +294,14 @@ begin
 	endcase
 end
 endfunction
+
+import "DPI-C" function void IPC_profiling(
+    input byte inst,input byte alu,input byte mem,input byte pop,input byte flush
+);
+import "DPI-C" function void div_inst_profiling();
+import "DPI-C" function void div_cycle_profiling();
+import "DPI-C" function void mul_inst_profiling();
+import "DPI-C" function void mul_cycle_profiling();
 
 import "DPI-C" function void stopsim();
 import "DPI-C" function void set_gpr_ptr(input logic [63:0] a []);

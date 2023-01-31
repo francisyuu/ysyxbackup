@@ -10,11 +10,9 @@ module ysyx_22050133_EXU(
   input   [63:0]   imm     ,
   input   [1:0]    forward_ALUSrc1,
   input   [1:0]    forward_ALUSrc2,
+  input   [1:0]    forward_wdataSrc,
   input   [63:0]   forward_data_mem,
   input   [63:0]   forward_data_wb,
-  input   [1:0]    forward_wdataSrc,
-  input   [63:0]   forward_wdata_mem,
-  input   [63:0]   forward_wdata_wb,
   output           src_valid_i,
   output           result_valid_o,
   output  [63:0]   dnpc,
@@ -22,23 +20,23 @@ module ysyx_22050133_EXU(
   output  [63:0]   csrdata ,
   output  [63:0]   wdata
 );
-wire[63:0] rs1data_forward=forward_ALUSrc1==0?rs1data
-                    :forward_ALUSrc1==1?forward_data_wb
-                    :forward_ALUSrc1==2?forward_data_mem
+wire[63:0] rs1data_forward=forward_ALUSrc1==0 ? rs1data
+                    :forward_ALUSrc1==1 ? forward_data_wb
+                    :forward_ALUSrc1==2 ? forward_data_mem
                     :0;
                     
-wire[63:0] rs2data_forward=forward_ALUSrc2==0?rs2data
-                    :forward_ALUSrc2==1?forward_data_wb
-                    :forward_ALUSrc2==2?forward_data_mem
+wire[63:0] rs2data_forward=forward_ALUSrc2==0 ? rs2data
+                    :forward_ALUSrc2==1 ? forward_data_wb
+                    :forward_ALUSrc2==2 ? forward_data_mem
                     :0;
-wire[63:0] ALUdata1=ctrl_ex[7]?pc:rs1data_forward;
-wire[63:0] ALUdata2=ctrl_ex[6]?4
-                              :ctrl_ex[5]?imm
+wire[63:0] ALUdata1=ctrl_ex[8] ? pc:rs1data_forward;
+wire[63:0] ALUdata2=ctrl_ex[7] ? 4
+                              :ctrl_ex[6] ? imm
                               :rs2data_forward;
 
-assign wdata=forward_wdataSrc==0?rs2data
-                 :forward_wdataSrc==1?forward_data_wb
-                 :forward_wdataSrc==2?forward_data_mem
+assign wdata=forward_wdataSrc==0 ? rs2data
+                 :forward_wdataSrc==1 ? forward_data_wb
+                 :forward_wdataSrc==2 ? forward_data_mem
                  :0;
 
 wire[63:0] ALUdata2n=~ALUdata2;
@@ -47,8 +45,8 @@ wire[64:0] Rsub65=  ALUdata1+ALUdata2n+1;
 wire[63:0] Rsub  =  Rsub65[63:0];
 wire       Rsubc =  Rsub65[64];
 wire       Rsubo =  (ALUdata1[63]==ALUdata2n[63])&&(Rsub[63]^ALUdata1[63]);
-wire[63:0] Rbeq  =  ALUdata1==ALUdata2?1:0;
-wire[63:0] Rbne  =  ALUdata1!=ALUdata2?1:0;
+wire[63:0] Rbeq  =  ALUdata1==ALUdata2 ? 1:0;
+wire[63:0] Rbne  =  ALUdata1!=ALUdata2 ? 1:0;
 wire[63:0] Rblt  =	{63'd0,Rsub[63]^Rsubo};
 wire[63:0] Rbge  =	{63'd0,!Rblt[0]};
 wire[63:0] Rbltu =  {63'd0,!Rsubc};
@@ -97,18 +95,15 @@ wire[63:0] Rremuw =  remainder;
 //wire[63:0] Rremw  =  SEXT({32'd0,signed'(ALUdata1[31:0])%signed'(ALUdata2[31:0])},3);
 //wire[63:0] Rremuw =  SEXT({32'd0,ALUdata1[31:0]%ALUdata2[31:0]},3);
 
-assign result_valid_o=ctrl_ex[16]?mul_ready
-                      :ctrl_ex[17]?div_ready
+wire ctrl_mul=ctrl_ex[4]&(~ctrl_ex[3]);//5'b10xxx
+wire ctrl_div=ctrl_ex[4]&ctrl_ex[3];//5'b11xxx
+assign result_valid_o=ctrl_mul ? mul_ready
+                      :ctrl_div ? div_ready
                       :1;
 
-wire       mul_valid   =ctrl_ex[16]&src_valid_i;
-wire       mulw        =ctrl_ex[9];
-wire[1:0]  mul_signed  =
-  ctrl_ex[4:0]==`ysyx_22050133_ALUop_MUL?2'b11
-  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULH?2'b11
-  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULHSU?2'b10
-  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULHU?2'b00
-  :2'b11;
+wire       mul_valid   =ctrl_mul&src_valid_i;
+wire       mulw        =ctrl_ex[5];
+wire[1:0]  mul_signed  =ctrl_ex[1:0];
 wire[63:0] multiplicand=ALUdata1;
 wire[63:0] multiplier  =ALUdata2;
 wire       mul_ready ;
@@ -130,14 +125,9 @@ ysyx_22050133_Multipler ysyx_22050133_Multipler_dut(
     .result_lo   (result_lo   )    //低 xlen bits 结果
     );
 
-wire       div_valid   =ctrl_ex[17]&src_valid_i;
-wire       divw        =ctrl_ex[9];
-wire       div_signed  =
-  ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIV? 1'b1
-  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REM? 1'b1
-  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIVU? 1'b0
-  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU? 1'b0
-  :1'b0;
+wire       div_valid   =ctrl_div&src_valid_i;
+wire       divw        =ctrl_ex[5];
+wire       div_signed  =ctrl_ex[0];
 wire[63:0] dividend=ALUdata1;
 wire[63:0] divisor  =ALUdata2;
 wire       div_ready ;
@@ -160,51 +150,51 @@ ysyx_22050133_Divider ysyx_22050133_Divider_dut(
     );
 
 
-assign dnpc=ctrl_ex[10]?csrdata:imm+(ctrl_ex[8]?rs1data_forward:pc);
-assign result=  ctrl_ex[9]?
-                  ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD?Raddw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB?Rsubw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLL?Rsllw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRL?Rsrlw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRA?Rsraw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MUL?Rmulw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIV?Rdivw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIVU?Rdivuw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REM?Rremw
-                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU?Rremuw
+assign dnpc=ctrl_ex[10] ? csrdata:imm+(ctrl_ex[9] ? rs1data_forward:pc);
+assign result=  ctrl_ex[5] ? 
+                  ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD ? Raddw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB ? Rsubw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLL ? Rsllw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRL ? Rsrlw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRA ? Rsraw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MUL ? Rmulw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIV ? Rdivw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIVU ? Rdivuw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REM ? Rremw
+                  :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU ? Rremuw
                   :0
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD ?Radd
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB ?Rsub
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BEQ ?Rbeq 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BNE ?Rbne 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BLT ?Rblt 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BGE ?Rbge 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BLTU?Rbltu
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BGEU?Rbgeu
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLT ?Rslt 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLTU?Rsltu
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_XOR ?Rxor 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_OR  ?Ror  
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_AND ?Rand 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLL ?Rsll 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRL ?Rsrl 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRA ?Rsra 
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MUL?Rmul
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULH?Rmulh
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULHSU?Rmulhsu
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULHU?Rmulhu
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIV?Rdiv
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIVU?Rdivu
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REM?Rrem
-                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU?Rremu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD  ? Radd
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB  ? Rsub
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BEQ  ? Rbeq 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BNE  ? Rbne 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BLT  ? Rblt 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BGE  ? Rbge 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BLTU ? Rbltu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_BGEU ? Rbgeu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLT  ? Rslt 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLTU ? Rsltu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_XOR  ? Rxor 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_OR   ? Ror  
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_AND  ? Rand 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SLL  ? Rsll 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRL  ? Rsrl 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SRA  ? Rsra 
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MUL ? Rmul
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULH ? Rmulh
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULHSU ? Rmulhsu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_MULHU ? Rmulhu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIV ? Rdiv
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_DIVU ? Rdivu
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REM ? Rrem
+                :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU ? Rremu
                 :0;
  
 //reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
 reg[63:0] csr[3:0];
 assign csrdata=
-  ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mtvec?csr[1]
-  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc?csr[2]
-  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm?csr[CSRi(imm)]
+  ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mtvec ? csr[1]
+  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc ? csr[2]
+  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm ? csr[CSRi(imm)]
   :0;
 
 always@(posedge clk)begin
@@ -222,13 +212,5 @@ always@(posedge clk)begin
     csr[CSRi(imm)]<=csr[CSRi(imm)]|rs1data_forward;
   end
 end
-//assign wmask=
-  //OPSXX ? 
-    //F3SB ? 8'h01
-    //:F3SH ? 8'h03
-    //:F3SW ? 8'h0f
-    //:F3SD ? 8'hff
-    //:0
-  //:0;
 
 endmodule
