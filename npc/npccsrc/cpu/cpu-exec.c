@@ -60,6 +60,7 @@ void cpu_reset(int n) {
 			top->clk = 1; top->eval();
 			top->clk = 0; top->eval();
 		}
+    g_nr_guest_inst ++;
 		printf("cpu reset:pc=%08lx,inst=%08x\n",cpu.pc,cpu.inst);
 	}
 }
@@ -146,6 +147,9 @@ static void execute(uint64_t n) {
 }
 
 static void statistic() {
+#ifndef MULTICYCLE
+	g_nr_guest_inst-=2*npc_flush;
+#endif
   IFNDEF(CONFIG_TARGET_AM, setlocale(LC_NUMERIC, ""));
 #define NUMBERIC_FMT MUXDEF(CONFIG_TARGET_AM, "%", "%'") PRIu64
   Log("host time spent = " NUMBERIC_FMT " us", g_timer);
@@ -157,42 +161,45 @@ static void statistic() {
     Log("IPC = %f inst/clk", float(g_nr_guest_inst)/(float)g_nr_guest_clk );
   }
   else Log("Finish running in less than 1 us and can not calculate the simulation frequency");
+#ifdef PROFILINGINFO
 	printf("**********cache***********\n");
     printf("\
 total inst fetch:%ld,\n\
-mem rw:%ld,%%%3.3f,\n\
-mem r :%ld,%%%3.3f,\n\
-mem w :%ld,%%%3.3f\n",inst_inst,inst_mem,inst_mem*100.0f/inst_inst,inst_memr,inst_memr*100.0f/inst_mem,inst_memw,inst_memw*100.0f/inst_mem);
+mem rw:%-16ld, %%%6.3f(total inst),\n\
+mem r :%-16ld, %%%6.3f(inst mem),\n\
+mem w :%-16ld, %%%6.3f(inst mem)\n",inst_inst,inst_mem,inst_mem*100.0f/g_nr_guest_inst,inst_memr,inst_memr*100.0f/inst_mem,inst_memw,inst_memw*100.0f/inst_mem);
     printf("\
-inst cache hit      :%ld,%%%3.3f,\n\
-mem cache hit       :%ld,%%%3.3f,\n\
-mem cache miss dirty:%ld,%%%3.3f\n",inst_cache_hit,inst_cache_hit*100.0f/(inst_cache_hit+inst_cache_miss),mem_cache_hit,mem_cache_hit*100.0f/(mem_cache_hit+mem_cache_miss),mem_cache_miss_dirty,mem_cache_miss_dirty*100.0f/mem_cache_miss);
+inst cache hit      :%-16ld, %%%6.3f,\n\
+mem cache hit       :%-16ld, %%%6.3f,\n\
+mem cache miss dirty:%-16ld, %%%6.3f(mem cache miss)\n",inst_cache_hit,inst_cache_hit*100.0f/(inst_cache_hit+inst_cache_miss),mem_cache_hit,mem_cache_hit*100.0f/(mem_cache_hit+mem_cache_miss),mem_cache_miss_dirty,mem_cache_miss_dirty*100.0f/mem_cache_miss);
 	printf("**********alu************\n");
 	printf("\
-total   mul_inst :%ld,%%%3.3f,\n\
-total   mul_cycle:%ld,%%%3.3f,\n\
-average mul_cycle:%3.3f\n",inst_mul,inst_mul*100.0f/inst_inst,cycle_mul,cycle_mul*100.0f/g_nr_guest_clk,(float)cycle_mul/inst_mul);
+total   mul_inst :%-16ld, %%%6.3f(total inst),\n\
+total   mul_cycle:%-16ld, %%%6.3f(total clk),\n\
+average mul_cycle:%6.3f\n",inst_mul,inst_mul*100.0f/g_nr_guest_inst,cycle_mul,cycle_mul*100.0f/g_nr_guest_clk,(float)cycle_mul/inst_mul);
 	printf("\
-total   div_inst :%ld,%%%3.3f,\n\
-total   div_cycle:%ld,%%%3.3f,\n\
-average div_cycle:%3.3f\n",inst_div,inst_div*100.0f/inst_inst,cycle_div,cycle_div*100.0f/g_nr_guest_clk,(float)cycle_div/inst_div);
+total   div_inst :%-16ld, %%%6.3f(total inst),\n\
+total   div_cycle:%-16ld, %%%6.3f(total clk),\n\
+average div_cycle:%6.3f\n",inst_div,inst_div*100.0f/g_nr_guest_inst,cycle_div,cycle_div*100.0f/g_nr_guest_clk,(float)cycle_div/inst_div);
 	printf("**********IPC************\n");
 	printf("\
-pop        =%ld,%%%3.3f\n\
-flush      =%ld,%%%3.3f\n\
-block_total=%ld,%%%3.3f\n\
-block_inst =%ld,%%%3.3f\n\
-block_alu  =%ld,%%%3.3f\n\
-block_mem  =%ld,%%%3.3f\n\
-block_IXX  =%ld,%%%3.3f\n\
-block_XAX  =%ld,%%%3.3f\n\
-block_XXM  =%ld,%%%3.3f\n\
-block_IAX  =%ld,%%%3.3f\n\
-block_IXM  =%ld,%%%3.3f\n\
-block_XAM  =%ld,%%%3.3f\n\
-block_IAM  =%ld,%%%3.3f\n",
-npc_pop,npc_pop*100.0f/inst_inst,
-npc_flush,npc_flush*100.0f/inst_inst,
+pop        =%-16ld, %%%6.3f(total inst)\n\
+jump       =%-16ld, %%%6.3f(total inst)\n\
+flush      =%-16ld, %%%6.3f(total jump)\n\
+block_total=%-16ld, %%%6.3f(total clk)\n\
+block_inst =%-16ld, %%%6.3f(total block)\n\
+block_alu  =%-16ld, %%%6.3f(total block)\n\
+block_mem  =%-16ld, %%%6.3f(total block)\n\
+block_IXX  =%-16ld, %%%6.3f(total block)\n\
+block_XAX  =%-16ld, %%%6.3f(total block)\n\
+block_XXM  =%-16ld, %%%6.3f(total block)\n\
+block_IAX  =%-16ld, %%%6.3f(total block)\n\
+block_IXM  =%-16ld, %%%6.3f(total block)\n\
+block_XAM  =%-16ld, %%%6.3f(total block)\n\
+block_IAM  =%-16ld, %%%6.3f(total block)\n",
+npc_pop,npc_pop*100.0f/g_nr_guest_inst,
+npc_jump,npc_jump*100.0f/g_nr_guest_inst,
+npc_flush,npc_flush*100.0f/npc_jump,
 block_total,block_total*100.0f/g_nr_guest_clk,
 block_inst ,block_inst*100.0f/block_total, 
 block_alu  ,block_alu *100.0f/block_total, 
@@ -205,6 +212,7 @@ block_IXM  ,block_IXM *100.0f/block_total,
 block_XAM  ,block_XAM *100.0f/block_total, 
 block_IAM  ,block_IAM *100.0f/block_total
 );
+#endif
 }
 
 void assert_fail_msg() {

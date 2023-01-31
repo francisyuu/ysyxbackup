@@ -137,7 +137,7 @@ wire[127:0]data_o=RAM_Q[waynum][RAM_N]>>shift;
 assign r_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 assign axi_w_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 
-`ifdef CACHEINFO
+`ifdef ysyx_22050133_CACHEINFO
 always@(posedge clk)begin
 	$display("  addr = %h , addr0 = %h,\
   w_data = %h , w_data0 = %h ,\
@@ -252,7 +252,7 @@ always@(posedge clk)begin
           rw_if<=rw_if_i;
           w_data<=w_data_i;
           RAM_WEN[hit_waynum_in][RAM_N_in]<=~rw_we_i;
-					`ifdef DEBUGINFO
+					`ifdef ysyx_22050133_DEBUGINFO
 					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
 				  `endif
         end
@@ -275,7 +275,7 @@ always@(posedge clk)begin
           axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
           axi_rw_if_o<=rw_if_i;
-					`ifdef DEBUGINFO
+					`ifdef ysyx_22050133_DEBUGINFO
 					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd1);
 					if(rw_if_i==0)cache_rw({32'd0,{tag[random][index_in],index_in,OFFSET0}},64'd0,8'd5,8'd1,{7'd0,random},{2'd0,index_in});
 				  `endif
@@ -301,7 +301,7 @@ always@(posedge clk)begin
           axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
           axi_rw_if_o<=rw_if_i;
-					`ifdef DEBUGINFO
+					`ifdef ysyx_22050133_DEBUGINFO
 					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd0);
 					if(rw_if_i==0)cache_rw({32'd0,{rw_addr_i[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{7'd0,random},{2'd0,index_in});
 					`endif
@@ -319,7 +319,7 @@ always@(posedge clk)begin
     			axi_rw_addr_valid_o<=0;
 					axi_w_data_valid_o<=0;
 					axi_r_data_ready_o<=0;
-					`ifdef DEBUGINFO
+					`ifdef ysyx_22050133_DEBUGINFO
 					if(rw_if==0)begin
 						if(we)cache_rw({32'd0,addr},w_data,{5'd0,size},{7'd0,we},{7'd0,waynum},{2'd0,index});
 						else cache_rw({32'd0,addr},r_data_o,{5'd0,size},{7'd0,we},{7'd0,waynum},{2'd0,index});
@@ -353,7 +353,7 @@ always@(posedge clk)begin
             axi_rw_if_o<=rw_if;
             axi_w_data_valid_o<=0;
 						axi_r_data_ready_o<=1;
-					`ifdef DEBUGINFO
+					`ifdef ysyx_22050133_DEBUGINFO
 						if(rw_if==0)cache_rw({32'd0,{addr0[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{7'd0,waynum},{2'd0,index});
 					`endif
           end

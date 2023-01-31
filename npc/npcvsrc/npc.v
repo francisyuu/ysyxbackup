@@ -15,21 +15,21 @@ module ysyx_22050133_NPC # (
   );
 
 
-`ifdef MULTICYCLE 
+`ifdef ysyx_22050133_MULTICYCLE 
 wire flush=0;
 wire pop=0;
 wire has_hazard=0;
 wire block=block_axi_ifu|block_axi_mem|block_EXU;
-reg       raw_pcREG_en  ;
-reg       raw_IDREG_en  ;
-reg       raw_EXREG_en;
-reg       raw_MEMREG_en;
-reg       raw_WBREG_en;
-wire       pcREG_en  =raw_pcREG_en &(~block);
-wire       IDREG_en  =raw_IDREG_en &(~block);
-wire       EXREG_en  =raw_EXREG_en &(~block);
-wire       MEMREG_en =raw_MEMREG_en&(~block);
-wire       WBREG_en  =raw_WBREG_en &(~block);
+reg  raw_pcREG_en  ;
+reg  raw_IDREG_en  ;
+reg  raw_EXREG_en  ;
+reg  raw_MEMREG_en ;
+reg  raw_WBREG_en  ;
+wire pcREG_en  =raw_pcREG_en &(~block);
+wire IDREG_en  =raw_IDREG_en &(~block);
+wire EXREG_en  =raw_EXREG_en &(~block);
+wire MEMREG_en =raw_MEMREG_en&(~block);
+wire WBREG_en  =raw_WBREG_en &(~block);
 `else
 wire flush=pcSrc&(~block);
 //hazard:
@@ -38,20 +38,20 @@ wire flush=pcSrc&(~block);
 wire has_hazard=EXREG_ctrl_mem[9]&((EXREG_rd==rs1)|(EXREG_rd==rs2));
 wire pop=has_hazard;
 wire block=(block_axi_mem|block_axi_ifu|block_EXU);
-wire       pcREG_en  =~(block|pop);
-wire       IDREG_en  =~(block|pop);
-wire       EXREG_en  =~block;
-wire       MEMREG_en =~block;
-wire       WBREG_en  =~block;
+wire pcREG_en  =~(block|pop);
+wire IDREG_en  =~(block|pop);
+wire EXREG_en  =~block;
+wire MEMREG_en =~block;
+wire WBREG_en  =~block;
 `endif
 
 always @(*)begin
   set_pc(IDREG_pc,dnpc,IDREG_inst);
 end
 
-`ifdef DEBUGINFO
+`ifdef ysyx_22050133_DEBUGINFO
 always@(posedge clk)begin
-  if(~rst)IPC_profiling({7'd0,block_axi_ifu},{7'd0,block_EXU},{7'd0,block_axi_mem},{7'd0,pop&(~block)},{7'd0,flush});
+  if(~rst)IPC_profiling({7'd0,block_axi_ifu},{7'd0,block_EXU},{7'd0,block_axi_mem},{7'd0,pop&(~block)},{7'd0,flush&(~block)},{7'd0,(EXREG_ctrl_ex[17]|EXREG_ctrl_ex[16])&(MEMREG_en)});
 end
 `endif
 
@@ -102,18 +102,12 @@ reg[63:0] MEMREG_imm    ;
 reg[4:0]  MEMREG_rs2     ;
 reg[4:0]  MEMREG_rd     ;
 
-wire [63:0]addr;
-wire [63:0]din;
-wire [63:0]dinA;
-wire [63:0]doutA;
-wire [63:0]douts;
-
 reg [`ysyx_22050133_ctrl_wb_len:0]WBREG_ctrl_wb;
 reg [63:0]WBREG_rddata ;
 reg [4:0] WBREG_rd    ;
 wire[63:0]rddata      ;
 
-`ifdef MULTICYCLE 
+`ifdef ysyx_22050133_MULTICYCLE 
 always@(posedge clk)
 begin
   if(rst)begin
@@ -347,9 +341,10 @@ reg EXU_valid_i;
 wire EXU_valid_o;
 wire block_EXU=~(~EXU_valid_i&EXU_valid_o);
 assign pcSrc=EXREG_ctrl_ex[17]|(EXREG_ctrl_ex[16]&result[0]);
+
 always@(posedge clk)
 begin
-  if(rst|flush|pop)begin
+  if(rst|flush)begin
     EXREG_ctrl_wb <=0;
     EXREG_ctrl_mem<=0;
     EXREG_ctrl_ex <=0;
@@ -360,6 +355,7 @@ begin
     EXREG_rs2data <=0;
     EXREG_imm     <=0;
     EXREG_rd      <=0;
+    EXU_valid_i   <=0;
   end
   else if(EXREG_en)begin
     EXREG_ctrl_wb <=ctrl_wb ;
@@ -373,8 +369,9 @@ begin
     EXREG_imm     <=imm     ;
     EXREG_rd   <=rdout   ;
     if(ctrl_ex[4])EXU_valid_i<=1;
+    else EXU_valid_i<=0;
   end
-  else EXU_valid_i<=0;
+  else if(EXU_valid_o)EXU_valid_i<=0;
 end
 
 
@@ -399,23 +396,29 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .wdata (wdata ) 
 );
 
-`ifdef MULTICYCLE 
+`ifdef ysyx_22050133_MULTICYCLE 
 assign forward_ALUSrc1=0;
 assign forward_ALUSrc2=0;
 assign forward_wdataSrc=0;
 `else
 assign forward_ALUSrc1= EXREG_rs1==0?0
-                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs1)?2
-                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs1)?1
+                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs1)?
+                         `ysyx_22050133_forward_src_mem
+                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs1)?
+                         `ysyx_22050133_forward_src_wb
                        :0;
 assign forward_ALUSrc2= EXREG_rs2==0?0
-                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?2
-                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?1
+                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?
+                         `ysyx_22050133_forward_src_mem
+                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?
+                         `ysyx_22050133_forward_src_wb
                        :0;
 assign forward_wdataSrc= EXREG_rs2==0?0
-                       :EXREG_ctrl_mem[8]&(MEMREG_rd==EXREG_rs2)?2
-                       :EXREG_ctrl_mem[8]&(WBREG_rd==EXREG_rs2)?1
-                       :0;
+    :EXREG_ctrl_mem[8]&MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?
+      `ysyx_22050133_forward_src_mem
+    :EXREG_ctrl_mem[8]&WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?
+      `ysyx_22050133_forward_src_wb
+    :0;
 `endif
 
 reg      mem_rw_addr_valid_i;         
@@ -441,21 +444,11 @@ begin
     MEMREG_imm     <= EXREG_imm;
     MEMREG_rs2      <= EXREG_rs2;
     MEMREG_rd      <= EXREG_rd;
-//`ifdef MULTICYCLE
     if(EXREG_ctrl_mem[9]|EXREG_ctrl_mem[8])mem_rw_addr_valid_i<=1;
+    else mem_rw_addr_valid_i<=0;
   end
   else if(mem_rw_addr_ready_o)mem_rw_addr_valid_i<=0;
-//`else
-    //if(EXREG_ctrl_mem[9]|EXREG_ctrl_mem[8])mem_rw_addr_valid_i<=1;
-    //else if(mem_rw_addr_ready_o)mem_rw_addr_valid_i<=0;
-    //end
-//`endif
 end
-
-
-assign addr=MEMREG_result;
-wire[2:0] w_size=MEMREG_ctrl_mem[2:0];
-wire[63:0] dout=MEMREG_wdata;
 
 wire                              mem_rw_addr_valid_i;         
 wire                              mem_rw_addr_ready_o;     
@@ -477,16 +470,15 @@ wire [RW_DATA_WIDTH-1:0]          mem_r_data_o       ;
 assign mem_rw_addr_i       = MEMREG_result[31:0];
 assign mem_rw_we_i         = MEMREG_ctrl_mem[8] ;
 assign mem_rw_len_i        = 0                  ;
-assign mem_rw_size_i       = w_size             ;
+assign mem_rw_size_i       = MEMREG_ctrl_mem[2:0];
 assign mem_rw_burst_i      = `ysyx_22050133_AXI_BURST_TYPE_FIXED;
 assign mem_rw_if_i         = 0                  ;
 assign mem_w_data_valid_i  = mem_rw_addr_valid_i&mem_rw_we_i;  
 //assign mem_w_data_ready_o  = mem_w_data_ready_o ;  
-assign mem_w_data_i        = dout               ;
+assign mem_w_data_i        = MEMREG_wdata       ;
 //assign mem_r_data_valid_o  = mem_r_data_valid_o ;  
 assign mem_r_data_ready_i  = 1                  ;  
 //assign mem_r_data_o        = din                ;
-assign din        = mem_r_data_o                ;
 
 // Advanced eXtensible Interface
 wire                               mem_axi_aw_ready_i;             
@@ -626,11 +618,11 @@ begin
   end
 end
 wire[63:0] rddata_raw=
-        MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_alu ? MEMREG_result
-        :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_mem ? din
-        :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_imm ? MEMREG_imm
-        :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_csr ? MEMREG_csrdata
-        :0;
+  MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_alu ? MEMREG_result
+  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_mem ? mem_r_data_o  
+  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_imm ? MEMREG_imm
+  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_csr ? MEMREG_csrdata
+  :0;
 assign rddata=
     MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_b?SEXT(rddata_raw,0)
     :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_bu?{{56'd0},rddata_raw[7:0]}
@@ -896,7 +888,7 @@ ysyx_22050133_axi_slave ysyx_22050133_axi_slave(
     //.axi_r_user_o      (axi_r_user_i)          
 );
 
-`ifdef REGINFO
+`ifdef ysyx_22050133_REGINFO
 always@(posedge clk)
   begin
   $display("\
@@ -951,7 +943,7 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
          );
 end
 `endif
-`ifdef AXIINFOIFU
+`ifdef ysyx_22050133_AXIINFOIFU
 always@(posedge clk)
   begin
   $display("\
@@ -974,8 +966,10 @@ ifu_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
          ,ifu_axi_ar_ready_i,ifu_axi_ar_valid_o,ifu_axi_ar_addr_o,ifu_axi_ar_prot_o
          ,ifu_axi_r_ready_o, ifu_axi_r_valid_i, ifu_axi_r_resp_i, ifu_axi_r_data_i
                );
+end
 `endif
-`ifdef AXIINFOMEM
+`ifdef ysyx_22050133_AXIINFOMEM
+always@(posedge clk)begin
   $display("\
 mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
     w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
@@ -991,7 +985,7 @@ mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
          ,mem_rw_addr_valid_i,mem_rw_addr_ready_o,mem_rw_addr_i
          ,mem_w_data_valid_i,mem_w_data_ready_o,mem_w_data_i
          ,mem_r_data_valid_o,mem_r_data_ready_i,mem_r_data_o
-         ,MEMREG_wdata,addr,MEMREG_ctrl_mem[7:0]
+         ,MEMREG_wdata,MEMREG_result,MEMREG_ctrl_mem[7:0]
          ,mem_axi_aw_ready_i,mem_axi_aw_valid_o,mem_axi_aw_addr_o,mem_axi_aw_prot_o
          ,mem_axi_w_ready_i, mem_axi_w_valid_o, mem_axi_w_data_o, mem_axi_w_strb_o
          ,mem_axi_b_ready_o, mem_axi_b_valid_i, mem_axi_b_resp_i

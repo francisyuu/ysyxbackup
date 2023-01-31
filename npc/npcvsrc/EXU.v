@@ -21,23 +21,23 @@ module ysyx_22050133_EXU(
   output  [63:0]   wdata
 );
 wire[63:0] rs1data_forward=forward_ALUSrc1==0 ? rs1data
-                    :forward_ALUSrc1==1 ? forward_data_wb
-                    :forward_ALUSrc1==2 ? forward_data_mem
-                    :0;
-                    
+:forward_ALUSrc1==`ysyx_22050133_forward_src_wb ? forward_data_wb
+:forward_ALUSrc1==`ysyx_22050133_forward_src_mem ? forward_data_mem
+:0;
+  
 wire[63:0] rs2data_forward=forward_ALUSrc2==0 ? rs2data
-                    :forward_ALUSrc2==1 ? forward_data_wb
-                    :forward_ALUSrc2==2 ? forward_data_mem
-                    :0;
+:forward_ALUSrc2==`ysyx_22050133_forward_src_wb ? forward_data_wb
+:forward_ALUSrc2==`ysyx_22050133_forward_src_mem ? forward_data_mem
+:0;
 wire[63:0] ALUdata1=ctrl_ex[8] ? pc:rs1data_forward;
 wire[63:0] ALUdata2=ctrl_ex[7] ? 4
-                              :ctrl_ex[6] ? imm
-                              :rs2data_forward;
+                    :ctrl_ex[6] ? imm
+                    :rs2data_forward;
 
 assign wdata=forward_wdataSrc==0 ? rs2data
-                 :forward_wdataSrc==1 ? forward_data_wb
-                 :forward_wdataSrc==2 ? forward_data_mem
-                 :0;
+:forward_wdataSrc==`ysyx_22050133_forward_src_wb ? forward_data_wb
+:forward_wdataSrc==`ysyx_22050133_forward_src_mem ? forward_data_mem
+:0;
 
 wire[63:0] ALUdata2n=~ALUdata2;
 wire[63:0] Radd  =  ALUdata1+ALUdata2;

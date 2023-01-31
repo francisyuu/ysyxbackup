@@ -139,7 +139,7 @@ wire [63:0]maskb=
   :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
   :64'h0000000000000000;
 
-`ifdef FAKEAXI
+`ifdef ysyx_22050133_FAKEAXI
 wire[RW_ADDR_WIDTH-1:0]rw_addr_in=rw_addr_i;
 wire[RW_DATA_WIDTH-1:0]r_data=rw_if_i?inst64:din;
 wire[RW_DATA_WIDTH-1:0]inst64;

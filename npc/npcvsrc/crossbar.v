@@ -75,7 +75,7 @@ module ysyx_22050133_crossbar # (
     //input  [AXI_ID_WIDTH-1:0]         axi_r_id_i,
     //input  [AXI_USER_WIDTH-1:0]       axi_r_user_i
 );
-`ifdef NOCACHE
+`ifdef ysyx_22050133_NOCACHE
 	wire uncache=1;
 `else
 wire uncache=((rw_addr_i<32'h80000000)||(rw_addr_i>32'h88000000))? 1:0;
@@ -188,7 +188,7 @@ assign                     axii_w_data_i         =uncache?w_data_i        :cache
 assign                     axii_r_data_ready_i   =uncache?r_data_ready_i  :cacheo_r_data_ready_o ;    
 //assign [RW_DATA_WIDTH-1:0] axii_r_data_o         =uncache?r_data_o        :cacheo_r_data_i       ;
 //
-`ifndef NOCACHE
+`ifndef ysyx_22050133_NOCACHE
 ysyx_22050133_cache ysyx_22050133_cache_dut
 (
   .clk                    (clk                   ), 

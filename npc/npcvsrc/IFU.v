@@ -12,14 +12,6 @@ module ysyx_22050133_IFU(
   output [31:0] inst
 );
 
-//reg pc_valid;
-//`ifdef MULTICYCLE
-//assign pc_valid_o=pc_valid;
-//`else
-////assign pc_valid_o=pc_valid&(~pcSrc);
-//assign pc_valid_o=pc_valid;
-//`endif
-
 wire[63:0] npc=pcSrc?dnpc:pc+4;
 
 always@(posedge clk)

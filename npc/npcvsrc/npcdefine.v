@@ -1,15 +1,18 @@
-`ifndef NPCDEFINE_V
-`define NPCDEFINE_V
+`ifndef ysyx_22050133_NPCDEFINE_V
+`define ysyx_22050133_NPCDEFINE_V
 
-//`define MULTICYCLE 1
-//`define FAKEAXI 1
-//`define NOCACHE 1
-`define DEBUGINFO 1
-`ifdef DEBUGINFO 
-  //`define REGINFO 1
-  //`define AXIINFOIFU 1
-  //`define AXIINFOMEM 1
-  //`define CACHEINFO 1
+//`define ysyx_22050133_MULTICYCLE 1
+
+//`define ysyx_22050133_NOCACHE 1
+`ifdef ysyx_22050133_NOCACHE
+  `define ysyx_22050133_FAKEAXI 1
+`endif
+`define ysyx_22050133_DEBUGINFO 1
+`ifdef ysyx_22050133_DEBUGINFO 
+  //`define ysyx_22050133_REGINFO 1
+  //`define ysyx_22050133_AXIINFOIFU 1
+  //`define ysyx_22050133_AXIINFOMEM 1
+  //`define ysyx_22050133_CACHEINFO 1
 `endif
 
 `define ysyx_22050133_OP_LUI    7'b0110111
@@ -218,6 +221,9 @@
 //`define ysyx_22050133_ALUop_REMUW   0
 
 
+`define ysyx_22050133_forward_src_wb  1
+`define ysyx_22050133_forward_src_mem 2
+
 `define ysyx_22050133_ctrl_wb_len   12
 `define ysyx_22050133_ctrl_mem_len  12
 `define ysyx_22050133_ctrl_ex_len   18
@@ -296,7 +302,7 @@ end
 endfunction
 
 import "DPI-C" function void IPC_profiling(
-    input byte inst,input byte alu,input byte mem,input byte pop,input byte flush
+    input byte inst,input byte alu,input byte mem,input byte pop,input byte flush,input byte jump
 );
 import "DPI-C" function void div_inst_profiling();
 import "DPI-C" function void div_cycle_profiling();

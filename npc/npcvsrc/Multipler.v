@@ -1,10 +1,10 @@
 // Create Date: 2023/01/29 16:32:12
-`define MUL_BOOTH
-//`define MUL_WALLACE
-`ifdef MUL_WALLACE
-  `define SEGMENTATION
+`define ysyx_22050133_MUL_BOOTH
+//`define ysyx_22050133_MUL_WALLACE
+`ifdef ysyx_22050133_MUL_WALLACE
+  `define ysyx_22050133_SEGMENTATION
 `endif
-//`define MUL_CYCLE 0
+//`define ysyx_22050133_MUL_CYCLE 0
 //
 module ysyx_22050133_Multipler(
     input              clk         ,   //时钟信号
@@ -32,7 +32,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
                               :{{2{multiplier[63]}},multiplier}
                               :mulw?{34'd0,multiplier[31:0]}
                               :{2'd0,multiplier};
-`ifdef MUL_BOOTH
+`ifdef ysyx_22050133_MUL_BOOTH
   reg[131:0] x;
   reg[66:0] y;
   wire[131:0] p;
@@ -86,7 +86,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=0;
         out_valid<=0;
         result<=0;
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             mul_inst_profiling();
             mul_cycle_profiling();
         `endif
@@ -95,7 +95,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=1;
       end
       S_MUL:begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             mul_cycle_profiling();
         `endif
         if(next_state==S_IDLE)begin
@@ -117,7 +117,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
   end
 `endif
 
-`ifdef MUL_WALLACE
+`ifdef ysyx_22050133_MUL_WALLACE
   reg[7:0] clk_cnt;
   reg[131:0] x;
   reg[66:0] y;
@@ -172,7 +172,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
     else case(state)
       S_IDLE:if(mul_valid&mul_ready)next_state=S_MUL;
               else next_state=S_IDLE;
-  `ifdef SEGMENTATION
+  `ifdef ysyx_22050133_SEGMENTATION
       S_MUL:if(clk_cnt==4)next_state=S_IDLE;
             else next_state=S_MUL;
   `else
@@ -201,7 +201,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=0;
         out_valid<=0;
         clk_cnt<=0;
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             mul_inst_profiling();
             mul_cycle_profiling();
         `endif
@@ -211,7 +211,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         clk_cnt<=0;
       end
       S_MUL:begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             mul_cycle_profiling();
         `endif
         if(next_state==S_IDLE)begin
@@ -227,7 +227,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
     endcase
   end
 `endif
-`ifdef MUL_CYCLE
+`ifdef ysyx_22050133_MUL_CYCLE
   wire [131:0] result=$signed(multiplicand_sext)*$signed({{66{multiplier_sext[65]}},multiplier_sext});
   reg[8:0] clk_cnt;
   localparam S_IDLE = 0;
@@ -265,7 +265,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         mul_ready<=0;
         out_valid<=0;
         clk_cnt<=0;
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             mul_inst_profiling();
             mul_cycle_profiling();
         `endif
@@ -275,7 +275,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         clk_cnt<=0;
       end
       S_MUL:begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             mul_cycle_profiling();
         `endif
         if(next_state==S_IDLE)begin
@@ -365,7 +365,7 @@ module wallace_33bits(
     output      cout,s
 );
 
-`ifdef SEGMENTATION
+`ifdef ysyx_22050133_SEGMENTATION
   wire [29:0] c;
   reg [32:0] src_in_reg;
   always@(posedge clk)begin

@@ -1,5 +1,5 @@
 // Create Date: 2023/01/30 15:38:32
-`define DIV_RADIX2
+`define ysyx_22050133_DIV_RADIX2
 //`define DIV_CYCLE 0
 module ysyx_22050133_Divider(
     input             clk        ,  //时钟信号
@@ -15,7 +15,7 @@ module ysyx_22050133_Divider(
     output reg [63:0] quotient   ,  //xlen 商
     output reg [63:0] remainder     //xlen 余数
     );
-`ifdef DIV_RADIX2
+`ifdef ysyx_22050133_DIV_RADIX2
   wire [63:0]dividend_abs=(div_signed&dividend[63])?~dividend+1:dividend;
   wire [63:0]divisor_abs=(div_signed&divisor[63])?~divisor+1:divisor;
 
@@ -78,7 +78,7 @@ module ysyx_22050133_Divider(
     end
     else case(state)
       S_IDLE:if(next_state==S_DIV)begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             div_inst_profiling();
             div_cycle_profiling();
         `endif
@@ -118,7 +118,7 @@ module ysyx_22050133_Divider(
         div_ready<=1;
       end
       S_DIV:begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             div_cycle_profiling();
         `endif
         if(next_state==S_IDLE)begin
@@ -195,7 +195,7 @@ module ysyx_22050133_Divider(
     end
     else case(state)
       S_IDLE:if(next_state==S_DIV)begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             div_inst_profiling();
             div_cycle_profiling();
         `endif
@@ -208,7 +208,7 @@ module ysyx_22050133_Divider(
         clk_cnt<=0;
       end
       S_DIV:begin
-        `ifdef DEBUGINFO
+        `ifdef ysyx_22050133_DEBUGINFO
             div_cycle_profiling();
         `endif
         if(next_state==S_IDLE)begin

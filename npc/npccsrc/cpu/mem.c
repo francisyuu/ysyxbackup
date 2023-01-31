@@ -25,20 +25,24 @@ extern "C" void cache_profiling(int inst,int we,int hit,int dirty){
 }
 uint64_t inst_mul,cycle_mul;
 uint64_t inst_div,cycle_div;
-uint64_t block_total,block_inst,block_alu,block_mem,npc_pop,npc_flush;
+uint64_t block_total,block_inst,block_alu,block_mem,npc_pop,npc_flush,npc_jump;
 uint64_t block_IXX,block_XAX,block_XXM,block_IAX,block_IXM,block_XAM,block_IAM;
 extern "C" void mul_inst_profiling(){inst_mul++;};
 extern "C" void mul_cycle_profiling(){cycle_mul++;};
 extern "C" void div_inst_profiling(){inst_div++;};
 extern "C" void div_cycle_profiling(){cycle_div++;};
-extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush)
+extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush,char jump)
 {
 	if(inst ==1||alu==1||mem==1)block_total++;
 	if(inst ==1)block_inst ++;
 	if(alu  ==1)block_alu  ++;
 	if(mem  ==1)block_mem  ++;
-	if(pop  ==1)npc_pop  ++;
-	if(flush==1)npc_flush++;
+	if(pop  ==1)npc_pop    ++;
+	if(flush==1)npc_flush  ++;
+	if(jump ==1)npc_jump   ++;
+#ifndef MULTICYCLE
+	if(flush ==1)inst_inst-=2;
+#endif
 	if(inst==1&&alu==0&&mem==0)block_IXX++;
 	if(inst==0&&alu==1&&mem==0)block_XAX++;
 	if(inst==0&&alu==0&&mem==1)block_XXM++;
