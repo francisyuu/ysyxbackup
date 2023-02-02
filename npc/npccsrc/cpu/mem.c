@@ -41,7 +41,7 @@ extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush,ch
 	if(flush==1)npc_flush  ++;
 	if(jump ==1)npc_jump   ++;
 #ifndef MULTICYCLE
-	if(flush ==1)inst_inst-=2;
+	if(flush ==1)inst_inst-=4;
 #endif
 	if(inst==1&&alu==0&&mem==0)block_IXX++;
 	if(inst==0&&alu==1&&mem==0)block_XAX++;
@@ -50,6 +50,7 @@ extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush,ch
 	if(inst==1&&alu==0&&mem==1)block_IXM++;
 	if(inst==0&&alu==1&&mem==1)block_XAM++;
 	if(inst==1&&alu==1&&mem==1)block_IAM++;
+	/*printf("inst=%ld,block=%ld,pop=%ld,flush=%ld,jump=%ld",inst_inst,block_total,npc_pop,npc_flush,npc_jump);*/
 }
 
 extern "C" void cache_rw(long long addr, long long data,char size,char we,char waynum,char index) {

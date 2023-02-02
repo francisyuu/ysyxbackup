@@ -44,6 +44,7 @@ void cpu_single_cycle() {
   if(cpu.pc!=lastpc)g_nr_guest_inst ++;
 		lastpc=cpu.pc;
 #endif
+		/*printf("clk=%ld\n",g_nr_guest_clk);*/
        // printf("pc = %08x, inst = %08x rd=%08x\n", top->pc, top->inst,top->rddata);
 }
 
@@ -57,6 +58,7 @@ void cpu_reset(int n) {
 		top->rst = 0; top->eval();
 		while(cpu.pc==0)
 		{
+      g_nr_guest_clk ++;
 			top->clk = 1; top->eval();
 			top->clk = 0; top->eval();
 		}
@@ -183,6 +185,10 @@ total   div_cycle:%-16ld, %%%6.3f(total clk),\n\
 average div_cycle:%6.3f\n",inst_div,inst_div*100.0f/g_nr_guest_inst,cycle_div,cycle_div*100.0f/g_nr_guest_clk,(float)cycle_div/inst_div);
 	printf("**********IPC************\n");
 	printf("\
+IPC_calculate = (1-block)*(1-pop-flush*4)\n\
+              = (1-%4.3f)*(1/(1+%4.3f+%4.3f*4))\n\
+              = %4.3f*%4.3f\n\
+              = %7.6f inst/clk\n\
 pop        =%-16ld, %%%6.3f(total inst)\n\
 jump       =%-16ld, %%%6.3f(total inst)\n\
 flush      =%-16ld, %%%6.3f(total jump)\n\
@@ -197,6 +203,9 @@ block_IAX  =%-16ld, %%%6.3f(total block)\n\
 block_IXM  =%-16ld, %%%6.3f(total block)\n\
 block_XAM  =%-16ld, %%%6.3f(total block)\n\
 block_IAM  =%-16ld, %%%6.3f(total block)\n",
+block_total/(float)g_nr_guest_clk,npc_pop/(float)g_nr_guest_inst,npc_flush/(float)g_nr_guest_inst,
+(1-block_total/(float)g_nr_guest_clk),1/(1+npc_pop/(float)g_nr_guest_inst+npc_flush/(float)g_nr_guest_inst*4),
+(1-block_total/(float)g_nr_guest_clk)/(1+npc_pop/(float)g_nr_guest_inst+npc_flush/(float)g_nr_guest_inst*4),
 npc_pop,npc_pop*100.0f/g_nr_guest_inst,
 npc_jump,npc_jump*100.0f/g_nr_guest_inst,
 npc_flush,npc_flush*100.0f/npc_jump,
@@ -428,6 +437,9 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {
     }
     if(nemu_state.state==NEMU_ABORT)
 		{
+				printf("last pc:0x%016lx ",refgpr_laststate.pc); 
+				printf("dut pc:0x%016lx  ",cpu.pc); 
+				printf("ref pc:0x%016lx\n",ref_r.pc); 
 			for(int i=0;i<32;i++)
 			{
 				if(ref_r.gpr[i]!=cpu.gpr[i])printf( C_RED );

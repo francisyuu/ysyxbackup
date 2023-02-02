@@ -26,7 +26,7 @@ reg  raw_EXREG_en  ;
 reg  raw_MEMREG_en ;
 reg  raw_WBREG_en  ;
 wire pcREG_en  =raw_pcREG_en &(~block);
-wire IDREG_en  =raw_IDREG_en &(~block);
+wire IDREG_en  =raw_IDREG_en &(~block)&(pc==pc2);
 wire EXREG_en  =raw_EXREG_en &(~block);
 wire MEMREG_en =raw_MEMREG_en&(~block);
 wire WBREG_en  =raw_WBREG_en &(~block);
@@ -56,6 +56,7 @@ end
 `endif
 
 wire[63:0] pc;
+wire[63:0] pc2;
 wire pcSrc;
 wire [31:0] inst;
 
@@ -111,13 +112,13 @@ wire[63:0]rddata      ;
 always@(posedge clk)
 begin
   if(rst)begin
-    raw_pcREG_en<=1;
-    raw_IDREG_en<=0;
+    raw_pcREG_en<=0;
+    raw_IDREG_en<=1;
     raw_EXREG_en<=0;
     raw_MEMREG_en<=0;
     raw_WBREG_en<=0;
   end
-  else if(pcREG_en==1)begin
+  else if((pcREG_en==1))begin
     raw_pcREG_en<=0;
     raw_IDREG_en<=1;
   end
@@ -142,18 +143,21 @@ end
 
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .clk(clk),
-  .pcREG_en(pcREG_en),
   .rst(rst),
+  .pcREG_en(pcREG_en),
+  .flush(flush),
   .dnpc(dnpc),
   .pcSrc(pcSrc),
   .inst64(ifu_r_data_o),
   .pc_ready_i(ifu_rw_addr_ready_o),
   .pc_valid_o(ifu_rw_addr_valid_i),
   .pc(pc),
+  .pc2(pc2),
   .inst(inst)
   );
 
-wire block_axi_ifu=~(~ifu_rw_addr_valid_i&ifu_rw_addr_ready_o);
+//wire block_axi_ifu=~(~ifu_rw_addr_valid_i&ifu_rw_addr_ready_o);
+wire block_axi_ifu=~ifu_rw_addr_ready_o;
 
 wire                              ifu_rw_addr_valid_i;         
 wire                              ifu_rw_addr_ready_o;     
@@ -311,7 +315,7 @@ begin
     IDREG_inst<=0;
   end
   else if(IDREG_en)begin
-    IDREG_pc<=pc;
+    IDREG_pc<=pc2;
     IDREG_inst<=inst;
   end
 end
@@ -892,7 +896,7 @@ ysyx_22050133_axi_slave ysyx_22050133_axi_slave(
 always@(posedge clk)
   begin
   $display("\
-    pc        =%h,inst      =%h,\
+    pc2=%h,inst=%h,pc=%h,inst64=%h\
 IDREG_en  =%h,     IDREG_pc  =%h,     IDREG_inst=%h,     \
     block_axi_ifu=%d,  block_axi_mem=%d,  block=%d,  \
 EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
@@ -915,7 +919,7 @@ MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
 WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
     WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,\
 "
-         ,pc,inst
+         ,pc2,inst,pc,ifu_r_data_o
          ,IDREG_en  ,IDREG_pc  ,IDREG_inst
          ,block_axi_ifu,block_axi_mem,block
 

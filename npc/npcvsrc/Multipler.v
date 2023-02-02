@@ -244,7 +244,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
     else case(state)
       S_IDLE:if(mul_valid&mul_ready)next_state=S_MUL;
               else next_state=S_IDLE;
-      S_MUL:if(clk_cnt==`MUL_CYCLE)next_state=S_IDLE;
+      S_MUL:if(clk_cnt== `ysyx_22050133_MUL_CYCLE)next_state=S_IDLE;
             else next_state=S_MUL;
       default:begin
       next_state=S_IDLE;
