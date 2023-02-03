@@ -31,7 +31,7 @@
 
 //#define CONFIG_DEBUGINFO
 #ifdef CONFIG_DEBUGINFO
-//#define CONFIG_ITRACE 1
+#define CONFIG_ITRACE 1
 //#define CONFIG_IRINGBUF 1
 //#define CONFIG_FTRACE 1
 //#define CONFIG_MTRACE 1

@@ -19,14 +19,18 @@ module ysyx_22050133_NPC # (
 wire flush=0;
 wire pop=0;
 wire has_hazard=0;
-wire block=block_axi_ifu|block_axi_mem|block_EXU;
+wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
 reg  raw_pcREG_en  ;
+reg  raw_pc1REG_en  ;
+reg  raw_pc2REG_en  ;
 reg  raw_IDREG_en  ;
 reg  raw_EXREG_en  ;
 reg  raw_MEMREG_en ;
 reg  raw_WBREG_en  ;
 wire pcREG_en  =raw_pcREG_en &(~block);
-wire IDREG_en  =raw_IDREG_en &(~block)&(pc==pc2);
+wire pc1REG_en  =raw_pc1REG_en &(~block);
+wire pc2REG_en  =raw_pc2REG_en &(~block);
+wire IDREG_en  =raw_IDREG_en &(~block);
 wire EXREG_en  =raw_EXREG_en &(~block);
 wire MEMREG_en =raw_MEMREG_en&(~block);
 wire WBREG_en  =raw_WBREG_en &(~block);
@@ -37,7 +41,7 @@ wire flush=pcSrc&(~block);
 //add a0 a1 
 wire has_hazard=EXREG_ctrl_mem[9]&((EXREG_rd==rs1)|(EXREG_rd==rs2));
 wire pop=has_hazard;
-wire block=(block_axi_mem|block_axi_ifu|block_EXU);
+wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
 wire pcREG_en  =~(block|pop);
 wire IDREG_en  =~(block|pop);
 wire EXREG_en  =~block;
@@ -51,7 +55,7 @@ end
 
 `ifdef ysyx_22050133_DEBUGINFO
 always@(posedge clk)begin
-  if(~rst)IPC_profiling({7'd0,block_axi_ifu},{7'd0,block_EXU},{7'd0,block_axi_mem},{7'd0,pop&(~block)},{7'd0,flush&(~block)},{7'd0,(EXREG_ctrl_ex[17]|EXREG_ctrl_ex[16])&(MEMREG_en)});
+  if(~rst)IPC_profiling({7'd0,ifu_rw_block_o},{7'd0,block_EXU},{7'd0,mem_rw_block_o},{7'd0,pop&(~block)},{7'd0,flush&(~block)},{7'd0,(EXREG_ctrl_ex[17]|EXREG_ctrl_ex[16])&(MEMREG_en)});
 end
 `endif
 
@@ -113,13 +117,23 @@ always@(posedge clk)
 begin
   if(rst)begin
     raw_pcREG_en<=0;
-    raw_IDREG_en<=1;
+    raw_pc1REG_en<=1;
+    raw_pc2REG_en<=0;
+    raw_IDREG_en<=0;
     raw_EXREG_en<=0;
     raw_MEMREG_en<=0;
     raw_WBREG_en<=0;
   end
   else if((pcREG_en==1))begin
     raw_pcREG_en<=0;
+    raw_pc1REG_en<=1;
+  end
+  else if((pc1REG_en==1))begin
+    raw_pc1REG_en<=0;
+    raw_pc2REG_en<=1;
+  end
+  else if((pc2REG_en==1))begin
+    raw_pc2REG_en<=0;
     raw_IDREG_en<=1;
   end
   else if(IDREG_en==1)begin
@@ -156,9 +170,6 @@ ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .inst(inst)
   );
 
-//wire block_axi_ifu=~(~ifu_rw_addr_valid_i&ifu_rw_addr_ready_o);
-wire block_axi_ifu=~ifu_rw_addr_ready_o;
-
 wire                              ifu_rw_addr_valid_i;         
 wire                              ifu_rw_addr_ready_o;     
 wire [RW_ADDR_WIDTH-1:0]          ifu_rw_addr_i      ;
@@ -173,6 +184,8 @@ wire [RW_DATA_WIDTH-1:0]          ifu_w_data_i       ;
 wire                              ifu_r_data_valid_o ;   
 wire                              ifu_r_data_ready_i ;   
 wire [RW_DATA_WIDTH-1:0]          ifu_r_data_o       ;
+wire                              ifu_rw_block_o     ;   
+wire                              ifu_rw_block_i     ;   
 
 //assign ifu_rw_addr_valid_i =ifu_rw_addr_valid_i;           
 //assign ifu_rw_addr_ready_o =ifu_rw_addr_ready_o;       
@@ -188,6 +201,7 @@ assign ifu_w_data_i        =0                  ;
 //assign ifu_r_data_valid_o  =ifu_r_data_valid_o ;     
 assign ifu_r_data_ready_i  =1                  ;     
 //assign ifu_r_data_o        =ifu_r_data_o       ;  
+assign ifu_rw_block_i       = block                ;
 
 // Advanced eXtensible Interface
 wire                               ifu_axi_aw_ready_i;             
@@ -257,6 +271,8 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
     .r_data_valid_o   (ifu_r_data_valid_o ),
     .r_data_ready_i   (ifu_r_data_ready_i ),
     .r_data_o         (ifu_r_data_o       ),
+    .rw_block_o       (ifu_rw_block_o     ),
+    .rw_block_i       (ifu_rw_block_i     ),
     // Advanced eXtensible Intenterface
     .axi_aw_ready_i   (ifu_axi_aw_ready_i),               
     .axi_aw_valid_o   (ifu_axi_aw_valid_o),
@@ -308,6 +324,12 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
   //.axi_r_user_i     (ifu_axi_r_user_i)           
 );
 
+`ifdef ysyx_22050133_NOCACHE
+wire uncache=1;
+`else
+wire uncache=((ifu_rw_addr_i<32'h80000000)||(ifu_rw_addr_i>32'h88000000))? 1:0;
+`endif
+
 always@(posedge clk)
 begin
   if(rst|flush)begin
@@ -315,8 +337,14 @@ begin
     IDREG_inst<=0;
   end
   else if(IDREG_en)begin
+    if(uncache)begin
+    IDREG_pc<=pc;
+    IDREG_inst<=ifu_r_data_o[31:0];
+    end
+    else begin
     IDREG_pc<=pc2;
     IDREG_inst<=inst;
+    end
   end
 end
 
@@ -468,6 +496,8 @@ wire [RW_DATA_WIDTH-1:0]          mem_w_data_i       ;
 wire                              mem_r_data_valid_o ;   
 wire                              mem_r_data_ready_i ;   
 wire [RW_DATA_WIDTH-1:0]          mem_r_data_o       ;
+wire                              mem_rw_block_o     ;   
+wire                              mem_rw_block_i     ;   
 
 //assign mem_rw_addr_valid_i = mem_rw_addr_valid_i;        
 //assign mem_rw_addr_ready_o = mem_rw_addr_ready_o;    
@@ -483,6 +513,7 @@ assign mem_w_data_i        = MEMREG_wdata       ;
 //assign mem_r_data_valid_o  = mem_r_data_valid_o ;  
 assign mem_r_data_ready_i  = 1                  ;  
 //assign mem_r_data_o        = din                ;
+assign mem_rw_block_i       = block                ;
 
 // Advanced eXtensible Interface
 wire                               mem_axi_aw_ready_i;             
@@ -534,8 +565,6 @@ wire                               mem_axi_r_last_i;
 //wire  [AXI_ID_WIDTH-1:0]           mem_axi_r_id_i;
 //wire  [AXI_USER_WIDTH-1:0]         mem_axi_r_user_i
 
-wire block_axi_mem=~(~mem_rw_addr_valid_i&mem_rw_addr_ready_o);
-
 ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .clk              (clk),
     .rst              (rst),
@@ -554,6 +583,8 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .r_data_valid_o   (mem_r_data_valid_o ),
     .r_data_ready_i   (mem_r_data_ready_i ),
     .r_data_o         (mem_r_data_o       ),
+    .rw_block_o       (mem_rw_block_o     ),
+    .rw_block_i       (mem_rw_block_i     ),
     // Advanced eXtensible Intenterface
     .axi_aw_ready_i   (mem_axi_aw_ready_i),               
     .axi_aw_valid_o   (mem_axi_aw_valid_o),
@@ -921,7 +952,7 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
 "
          ,pc2,inst,pc,ifu_r_data_o
          ,IDREG_en  ,IDREG_pc  ,IDREG_inst
-         ,block_axi_ifu,block_axi_mem,block
+         ,ifu_rw_block_o,mem_rw_block_o,block
 
          ,EXREG_en  ,EXREG_ctrl_wb ,EXREG_ctrl_mem
          ,EXREG_ctrl_ex ,has_hazard

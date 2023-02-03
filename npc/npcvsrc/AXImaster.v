@@ -74,7 +74,9 @@ module ysyx_22050133_axi_master # (
     input  [RW_DATA_WIDTH-1:0]          w_data_i,  
     output reg                          r_data_valid_o,     
     input                               r_data_ready_i,     
-    output reg [RW_DATA_WIDTH-1:0]      r_data_o,  
+    output [RW_DATA_WIDTH-1:0]          r_data_o,  
+		input                               rw_block_i,
+		output                              rw_block_o,
 
     // Advanced eXtensible Interface
     input                               axi_aw_ready_i,             
@@ -127,6 +129,7 @@ module ysyx_22050133_axi_master # (
     //input  [AXI_USER_WIDTH-1:0]       axi_r_user_i
 );
 
+assign rw_block_o=~(~rw_addr_valid_i&rw_addr_ready_o);
 wire [7:0]mask=rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_1 ? 8'h01
               :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_2 ? 8'h03
               :rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_4 ? 8'h0f
@@ -152,13 +155,20 @@ always@(*)begin
     rw_addr_ready_o=1;
     w_data_ready_o=1;
     r_data_valid_o=1;
+		//$display("if=%d,addr=%h,shift=%d,mask=%h,data=%h",rw_if_i,rw_addr_i,r_shift,maskb,r_data);
 end
+reg [RW_DATA_WIDTH-1:0]      r_data_o_reg;  
+assign r_data_o=r_data_o_reg;
+
+//always@(*)begin
+    //r_data_o=r_data_i_shift;
+//end
 always@(posedge clk)begin
-    if(rw_addr_valid_i==1)r_data_o=r_data_i_shift;
+		if(rw_addr_valid_i==1)r_data_o_reg<=r_data_i_shift;
 end
-wire [RW_ADDR_WIDTH-1:0]instaddr=(rw_addr_valid_i&rw_if_i)?rw_addr_in:0;
-wire [RW_ADDR_WIDTH-1:0]raddr=(rw_addr_valid_i&(~rw_if_i)&(rw_we_i==0))?rw_addr_in:0;
-wire [RW_ADDR_WIDTH-1:0]waddr=(rw_addr_valid_i&(~rw_if_i)&rw_we_i)?rw_addr_in:0;
+wire [RW_ADDR_WIDTH-1:0]instaddr=(rw_addr_valid_i&rw_if_i) ? rw_addr_in:0;
+wire [RW_ADDR_WIDTH-1:0]raddr=(rw_addr_valid_i&(~rw_if_i)&(rw_we_i==0)) ? rw_addr_in:0;
+wire [RW_ADDR_WIDTH-1:0]waddr=(rw_addr_valid_i&(~rw_if_i)&rw_we_i) ? rw_addr_in:0;
 
 always@(*)begin
           inst_read({32'd0,instaddr},inst64);
@@ -365,13 +375,15 @@ always@(*) begin
     default:next_rstate=RS_IDLE;
   endcase
 end
+reg [RW_DATA_WIDTH-1:0]      r_data_o_reg;  
+assign r_data_o=r_data_o_reg;
 always@(posedge clk)begin
   if(rst)begin
         r_addr<=0;
         r_len<=0;
         r_addr_ready_o<=1;
         r_data_valid_o<=0;
-        r_data_o<=0;
+        r_data_o_reg<=0;
         axi_ar_valid_o<=0;
         axi_ar_addr_o<=0;
         axi_ar_prot_o<=0;
@@ -404,7 +416,7 @@ always@(posedge clk)begin
       RS_RHS:if(next_rstate==RS_DHS)begin
           axi_r_ready_o<=0;
           r_data_valid_o<=1;
-          r_data_o<=axi_r_data_i_shift;
+          r_data_o_reg<=axi_r_data_i_shift;
       end
       RS_DHS:if(next_rstate==RS_RHS)begin
           r_data_valid_o<=0;

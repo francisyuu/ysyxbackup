@@ -29,6 +29,8 @@ module ysyx_22050133_cache#(
   output reg                          r_data_valid_o,     
   input                               r_data_ready_i,     
   output [RW_DATA_WIDTH-1:0]          r_data_o,         
+	input                               rw_block_i,
+	output                              rw_block_o,
 
   output  reg                         axi_rw_addr_valid_o,       
   input                               axi_rw_addr_ready_i,     
@@ -43,7 +45,9 @@ module ysyx_22050133_cache#(
   output     [RW_DATA_WIDTH-1:0]      axi_w_data_o,  
   input                               axi_r_data_valid_i,     
   output  reg                         axi_r_data_ready_o,     
-  input  [RW_DATA_WIDTH-1:0]          axi_r_data_i
+  input  [RW_DATA_WIDTH-1:0]          axi_r_data_i,
+	output                              axi_rw_block_o,
+	input                               axi_rw_block_i
 );
 parameter TAGL=ADDR_WIDTH-1;
 parameter TAGR=ADDR_WIDTH-TAG_WIDTH;
@@ -158,6 +162,10 @@ always@(posedge clk)begin
   else state<=next_state;
 end
 
+assign rw_block_o=rw_if_i?~(|hit_wayflag)
+//assign rw_block_o=rw_if_i?rw_addr_ready_o
+								:~(~rw_addr_valid_i&rw_addr_ready_o);
+
 always@(*) begin
   if(rst)next_state=S_IDLE;
   else case(state)
@@ -226,7 +234,7 @@ always@(posedge clk)begin
     waynum1<=waynum;
     case(state)
 			S_IDLE:if(|hit_wayflag&rw_if_i)begin
-				if(rw_addr_valid_i)begin
+				if(~rw_block_i)begin
           waynum<=hit_waynum_in;
           addr<=rw_addr_i;
 					`ifdef ysyx_22050133_DEBUGINFO

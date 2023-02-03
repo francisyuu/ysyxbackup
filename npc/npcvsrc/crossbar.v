@@ -24,6 +24,8 @@ module ysyx_22050133_crossbar # (
     output                              r_data_valid_o ,    
     input                               r_data_ready_i ,    
     output [RW_DATA_WIDTH-1:0]          r_data_o       ,
+		input                               rw_block_i     ,
+		output                              rw_block_o     ,
 
     // Advanced eXtensible Interface
     input                               axi_aw_ready_i,             
@@ -95,6 +97,8 @@ wire [RW_DATA_WIDTH-1:0] cachei_w_data_i       ;
 wire                     cachei_r_data_valid_o;        
 wire                     cachei_r_data_ready_i ;        
 wire [RW_DATA_WIDTH-1:0] cachei_r_data_o       ;       
+wire                     cachei_rw_block_i     ;       
+wire                     cachei_rw_block_o     ;       
 
 wire                     cacheo_rw_addr_valid_o;      
 wire                     cacheo_rw_addr_ready_i;    
@@ -110,6 +114,8 @@ wire [RW_DATA_WIDTH-1:0] cacheo_w_data_o       ;
 wire                     cacheo_r_data_valid_i ;   
 wire                     cacheo_r_data_ready_o ;   
 wire [RW_DATA_WIDTH-1:0] cacheo_r_data_i       ;
+wire                     cacheo_rw_block_i     ;       
+wire                     cacheo_rw_block_o     ;       
 
 wire                     axii_rw_addr_valid_i;       
 wire                     axii_rw_addr_ready_o;        
@@ -125,6 +131,8 @@ wire [RW_DATA_WIDTH-1:0] axii_w_data_i       ;
 wire                     axii_r_data_valid_o;        
 wire                     axii_r_data_ready_i ;        
 wire [RW_DATA_WIDTH-1:0] axii_r_data_o       ;       
+wire                     axii_rw_block_i     ;       
+wire                     axii_rw_block_o     ;       
 
 //assign                      rw_addr_valid_i =uncache?axii_rw_addr_valid_i:cachei_rw_addr_valid_i;         
 assign                      rw_addr_ready_o =uncache?axii_rw_addr_ready_o:cachei_rw_addr_ready_o;     
@@ -140,6 +148,7 @@ assign                      w_data_ready_o  =uncache?axii_w_data_ready_o :cachei
 assign                      r_data_valid_o  =uncache?axii_r_data_valid_o:cachei_r_data_valid_o;    
 //assign                      r_data_ready_i  =uncache?axii_r_data_ready_i :cachei_r_data_ready_i ;    
 assign                      r_data_o        =uncache?axii_r_data_o       :cachei_r_data_o       ;
+assign                      rw_block_o      =uncache?axii_rw_block_o     :cachei_rw_block_o     ;
 
 
 assign                     cachei_rw_addr_valid_i=uncache?0:rw_addr_valid_i   ;       
@@ -156,6 +165,7 @@ assign                     cachei_w_data_i       =uncache?0:w_data_i          ;
 //assign                     cachei_r_data_valid_o=uncache?0:r_data_valid_o   ;        
 assign                     cachei_r_data_ready_i =uncache?0:r_data_ready_i    ;        
 //assign [RW_DATA_WIDTH-1:0] cachei_r_data_o       =uncache?0:r_data_o          ;       
+assign                     cachei_rw_block_i     =uncache?0:rw_block_i        ;       
 
 
 //assign                     cacheo_rw_addr_valid_o =uncache?0:axii_rw_addr_valid_i;       
@@ -172,6 +182,7 @@ assign                     cacheo_w_data_ready_i  =uncache?0:axii_w_data_ready_o
 assign                     cacheo_r_data_valid_i  =uncache?0:axii_r_data_valid_o;    
 //assign                     cacheo_r_data_ready_o  =uncache?0:axii_r_data_ready_i ;    
 assign                     cacheo_r_data_i        =uncache?0:axii_r_data_o       ;
+assign                     cacheo_rw_block_i      =uncache?0:axii_rw_block_o     ;
 
 assign                     axii_rw_addr_valid_i  =uncache?rw_addr_valid_i :cacheo_rw_addr_valid_o;
 //assign                     axii_rw_addr_ready_o =uncache?rw_addr_ready_o :cacheo_rw_addr_ready_i;     
@@ -187,6 +198,7 @@ assign                     axii_w_data_i         =uncache?w_data_i        :cache
 //assign                     axii_r_data_valid_o   =uncache?r_data_valid_o :cacheo_r_data_valid_i ;    
 assign                     axii_r_data_ready_i   =uncache?r_data_ready_i  :cacheo_r_data_ready_o ;    
 //assign [RW_DATA_WIDTH-1:0] axii_r_data_o         =uncache?r_data_o        :cacheo_r_data_i       ;
+assign                     axii_rw_block_i       =uncache?rw_block_i      :cacheo_rw_block_o     ;
 //
 `ifndef ysyx_22050133_NOCACHE
 ysyx_22050133_cache ysyx_22050133_cache_dut
@@ -207,6 +219,8 @@ ysyx_22050133_cache ysyx_22050133_cache_dut
   .r_data_valid_o         (cachei_r_data_valid_o ), 
   .r_data_ready_i         (cachei_r_data_ready_i  ), 
   .r_data_o               (cachei_r_data_o        ), 
+  .rw_block_i             (cachei_rw_block_i      ), 
+  .rw_block_o             (cachei_rw_block_o      ), 
   .axi_rw_addr_valid_o    (cacheo_rw_addr_valid_o ),     
   .axi_rw_addr_ready_i    (cacheo_rw_addr_ready_i ),   
   .axi_rw_addr_o          (cacheo_rw_addr_o       ), 
@@ -220,7 +234,9 @@ ysyx_22050133_cache ysyx_22050133_cache_dut
   .axi_w_data_o           (cacheo_w_data_o        ), 
   .axi_r_data_valid_i     (cacheo_r_data_valid_i  ),  
   .axi_r_data_ready_o     (cacheo_r_data_ready_o  ),  
-  .axi_r_data_i           (cacheo_r_data_i        ) 
+  .axi_r_data_i           (cacheo_r_data_i        ),
+  .axi_rw_block_o         (cacheo_rw_block_o      ),
+  .axi_rw_block_i         (cacheo_rw_block_i      )
 );
 `endif
 
@@ -242,6 +258,8 @@ ysyx_22050133_axi_master ysyx_22050133_axi_master_dut
   .r_data_valid_o          (axii_r_data_valid_o       ),    
   .r_data_ready_i          (axii_r_data_ready_i       ),    
   .r_data_o                (axii_r_data_o             ),
+  .rw_block_i              (axii_rw_block_i           ),
+  .rw_block_o              (axii_rw_block_o           ),
   // Advanced eXtensible Interface
   .axi_aw_ready_i   (axi_aw_ready_i),               
   .axi_aw_valid_o   (axi_aw_valid_o),

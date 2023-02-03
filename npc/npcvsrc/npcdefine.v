@@ -3,10 +3,10 @@
 
 //`define ysyx_22050133_MULTICYCLE 1
 //`define ysyx_22050133_NOCACHE 1
-//`define ysyx_22050133_DEBUGINFO 1
+`define ysyx_22050133_DEBUGINFO 1
 
 `ifdef ysyx_22050133_NOCACHE
-  //`define ysyx_22050133_FAKEAXI 1
+  `define ysyx_22050133_FAKEAXI 1
 `endif
 
 `ifdef ysyx_22050133_DEBUGINFO 
