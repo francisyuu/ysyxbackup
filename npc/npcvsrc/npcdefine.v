@@ -2,7 +2,7 @@
 `define ysyx_22050133_NPCDEFINE_V
 
 //`define ysyx_22050133_MULTICYCLE 1
-//`define ysyx_22050133_NOCACHE 1
+`define ysyx_22050133_NOCACHE 1
 `define ysyx_22050133_DEBUGINFO 1
 
 `ifdef ysyx_22050133_NOCACHE

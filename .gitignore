@@ -10,6 +10,7 @@
 !README.md
 !.gitignore
 !init.sh
-/fceux-am/
-/nvboard/
-/npc/build/
+!/doc/*
+/fceux-am/*
+/nvboard/*
+/npc/build/*

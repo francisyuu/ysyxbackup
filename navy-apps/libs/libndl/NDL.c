@@ -17,7 +17,8 @@ static int dp_vgafb=0;
 uint32_t NDL_GetTicks() {
   struct timeval tv;
   gettimeofday(&tv,NULL);
-  return tv.tv_sec*1000+tv.tv_usec/1000;
+	return tv.tv_sec*1000+tv.tv_usec/1000;
+  /*return (tv.tv_sec*1000+tv.tv_usec/1000)/5;*/
 }
 
 #include <sys/types.h>
