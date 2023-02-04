@@ -15,7 +15,6 @@ endif
 TEST ?= dummy
 ./src/resources.S: $(RAMDISK_FILE)
 	@touch $@
-	#cp $(NAVY_HOME)/tests/$(TEST)/build/$(TEST)-$(ISA) $(AM_HOME)/../nanos-lite/build/ramdisk.img
 
 ifeq ($(HAS_NAVY),)
 files = $(RAMDISK_FILE) src/files.h src/syscall.h
@@ -28,7 +27,12 @@ ifeq ($(wildcard $(NAVY_HOME)/libs/libos/src/syscall.h),)
 endif
 
 update:
-	#@cd $(NAVY_HOME)/apps&&make all$(ISA)
+ifeq ($(ISA),am_native)
+	$(MAKE) -C $(NAVY_HOME)/apps allam_native
+endif
+ifeq ($(ISA),riscv64)
+	$(MAKE) -C $(NAVY_HOME)/apps allriscv64
+endif
 	$(MAKE) -s -C $(NAVY_HOME) ISA=$(ISA) ramdisk
 	@ln -sf $(NAVY_HOME)/build/ramdisk.img $(RAMDISK_FILE)
 	@ln -sf $(NAVY_HOME)/build/ramdisk.h src/files.h
