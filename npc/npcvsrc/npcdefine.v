@@ -6,12 +6,12 @@
 `define ysyx_22050133_DEBUGINFO 1
 
 `ifdef ysyx_22050133_NOCACHE
-  //`define ysyx_22050133_FAKEAXI 1
+	//`define ysyx_22050133_FAKEAXI 1
 `endif
 
 `ifdef ysyx_22050133_DEBUGINFO 
-  //`define ysyx_22050133_REGINFO 1
-  //`define ysyx_22050133_AXIINFOIFU 1
+	//`define ysyx_22050133_REGINFO 1
+	//`define ysyx_22050133_AXIINFOIFU 1
   //`define ysyx_22050133_AXIINFOMEM 1
   //`define ysyx_22050133_ICACHEINFO 1
   //`define ysyx_22050133_MCACHEINFO 1

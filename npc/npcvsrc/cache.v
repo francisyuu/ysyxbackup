@@ -55,10 +55,6 @@ parameter INDEXL=TAGR-1;
 parameter INDEXR=TAGR-INDEX_WIDTH;
 parameter RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
 parameter RAMR=10;
-//parameter RAM_WIDTH=1;
-//parameter RAM_DEPTH=1;
-//parameter RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
-//parameter RAMR=10;
 
 
 wire [7-INDEX_WIDTH:0]pro_index_0=0;
@@ -68,7 +64,6 @@ assign w_data_ready_o=1;
 
 reg [RW_ADDR_WIDTH-1:0] addr;
 reg [RW_ADDR_WIDTH-1:0] addr0;
-reg [RW_ADDR_WIDTH-1:0] addr1;
 reg we;
 reg [2:0] size;
 reg rw_if;
@@ -76,14 +71,9 @@ reg [RW_DATA_WIDTH-1:0] w_data;
 reg [RW_DATA_WIDTH-1:0] w_data0;
 reg [INDEX_WIDTH-1:0]index;
 
-//reg [21:0] tag[1:0][63:0];
 reg [TAG_WIDTH-1:0] tag[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg valid[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg dirty[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
-
-//reg [TAG_WIDTH-1:0] tag[WAY_DEPTH-1:0][64-1:0];
-//reg valid[WAY_DEPTH-1:0][64-1:0];
-//reg dirty[WAY_DEPTH-1:0][64-1:0];
 
 wire[TAG_WIDTH-1:0] tag_in=rw_addr_i[TAGL:TAGR];
 wire[INDEX_WIDTH-1:0] index_in=rw_addr_i[INDEXL:INDEXR];
@@ -93,33 +83,29 @@ wire[WAY_WIDTH-1:0]hit_waynum_in=hit_wayflag==2'b01 ? 0
                           :hit_wayflag==2'b10 ? 1
                           :0;
 reg[WAY_WIDTH-1:0]waynum;
-reg[WAY_WIDTH-1:0]waynum1;
 reg[WAY_WIDTH-1:0]random;
 always@(posedge clk)begin
   if(rst)random<=0;
   else random<=random+1;
 end
 
+wire S_IDLE_HIT=(state==S_IDLE)||(state==S_HIT);
 wire [127:0]RAM_Q[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
 wire RAM_CEN=0;
-//wire [127:0]RAM_Q[WAY_DEPTH-1:0][4-1:0];
 reg RAM_WEN[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
 wire [RW_DATA_WIDTH-1:0]maskb=
-	state>3 ? 64'hffffffffffffffff
+	~S_IDLE_HIT ? 64'hffffffffffffffff
   :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'h00000000000000ff
   :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
   :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
   :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
   :64'h0000000000000000;
-wire [6:0]shift=rw_if_i?{addr1[3:0],3'd0}:{addr[3:0],3'd0};
+wire [6:0]shift={addr[3:0],3'd0};
 wire [127:0]RAM_BWEN=~({64'd0,maskb}<<shift);
-wire [5:0] RAM_A=addr[9:4];
+wire [5:0] RAM_A=S_IDLE_HIT?rw_addr_i[9:4]:addr[9:4];
 wire [127:0]RAM_D={64'd0,w_data}<<shift;
 wire [RAM_WIDTH-1:0]RAM_N_in=rw_addr_i[RAML:RAMR];
 wire [RAM_WIDTH-1:0]RAM_N=addr[RAML:RAMR];
-wire [RAM_WIDTH-1:0]RAM_N1=addr1[RAML:RAMR];
-//wire [RAM_WIDTH-1:0]RAM_N_in=0;
-//wire [RAM_WIDTH-1:0]RAM_N=0;
 
 
 generate
@@ -142,7 +128,7 @@ generate
   end
 endgenerate
 
-wire[127:0]data_o=rw_if_i?RAM_Q[waynum1][RAM_N1]>>shift:RAM_Q[waynum][RAM_N]>>shift;
+wire[127:0]data_o=RAM_Q[waynum][RAM_N]>>shift;
 assign r_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 assign axi_w_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 
@@ -163,7 +149,6 @@ always@(posedge clk)begin
 end
 
 assign rw_block_o=rw_if_i?~(|hit_wayflag)
-//assign rw_block_o=rw_if_i?rw_addr_ready_o
 								:~(~rw_addr_valid_i&rw_addr_ready_o);
 
 always@(*) begin
@@ -176,8 +161,6 @@ always@(*) begin
             else next_state=S_AR;
           end
         else next_state=S_IDLE;
-    //S_HIT:if(r_data_ready_i&r_data_valid_o)next_state=S_IDLE;
-      //else next_state=S_HIT;
     S_HIT:next_state=S_IDLE;
     S_AW:if(axi_rw_addr_valid_o&axi_rw_addr_ready_i)next_state=S_W;
       else next_state=S_AW;
@@ -211,7 +194,6 @@ always@(posedge clk)begin
     index<=0;
     addr<=0;
     addr0<=0;
-    addr1<=0;
     we<=0;
     size<=0;
     rw_if<=0;
@@ -229,9 +211,6 @@ always@(posedge clk)begin
   end
   end
   else begin
-		//RAM_N1<=RAM_N;
-    addr1<=addr;
-    waynum1<=waynum;
     case(state)
 			S_IDLE:if(|hit_wayflag&rw_if_i)begin
 				if(~rw_block_i)begin
@@ -248,7 +227,8 @@ always@(posedge clk)begin
 				end
 			end
 				else if(next_state==S_HIT)begin
-					rw_addr_ready_o<=0;
+					rw_addr_ready_o<=1;
+          r_data_valid_o<=1;
           waynum<=hit_waynum_in;
           index<=index_in;
           addr<=rw_addr_i;
@@ -320,25 +300,21 @@ always@(posedge clk)begin
         end
       S_HIT:if(next_state==S_IDLE)begin
 					rw_addr_ready_o<=1;
-					//r_data_valid_o<=0;
     			axi_rw_addr_valid_o<=0;
 					axi_w_data_valid_o<=0;
 					axi_r_data_ready_o<=0;
+					if(we)begin
+						dirty[waynum][index]<=1;
+						RAM_WEN[waynum][RAM_N]<=1;
+					end
+					r_data_valid_o<=0;
 					`ifdef ysyx_22050133_DEBUGINFO
 					if(rw_if==0)begin
 						if(we)cache_rw({32'd0,addr},w_data,{5'd0,size},{7'd0,we},{pro_way_0,waynum},{pro_index_0,index});
 						else cache_rw({32'd0,addr},r_data_o,{5'd0,size},{7'd0,we},{pro_way_0,waynum},{pro_index_0,index});
-				end
+					end
 					`endif
-      //end
-      //else if(r_data_valid_o==0)begin
-        if(we)begin
-          dirty[waynum][index]<=1;
-					RAM_WEN[waynum][RAM_N]<=1;
-        end
-        r_data_valid_o<=1;
-      end
-      //end
+				end
       S_AW:if(next_state<=S_W)begin
           axi_rw_addr_valid_o<=0;
           axi_w_data_valid_o<=1;
@@ -405,10 +381,10 @@ end
 `ifdef ysyx_22050133_ICACHEINFO
 always@(posedge clk)begin
 	if(rw_if_i)begin
-	$display("ICACHE:  addr = %h , addr0 = %h, addr1 = %h\
+	$display("ICACHE:  addr = %h , addr0 = %h, \
   w_data = %h , w_data0 = %h ,\
   tag_in = %h , index_in = %h , hit_wayflag = %h, hit_waynum_in=%h,\
-  tag=%h,index=%h,waynum=%d,waynum1=%d\
+  tag=%h,index=%h,waynum=%d,\
   RAM_A=%h,\
   RAM_Q=%h,\
   RAM_D=%h,\
@@ -419,9 +395,9 @@ a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
   w_data_valid_o=%d,w_data_ready_i=%d,w_data_o=%h\
   r_data_valid_i=%d,r_data_ready_o=%d,r_data_i=%h\
 "
-	,addr,addr0,addr1,w_data,w_data0,
+	,addr,addr0,w_data,w_data0,
 		tag_in,index_in,hit_wayflag,hit_waynum_in,
-		tag[waynum][index],index,waynum,waynum1,
+		tag[waynum][index],index,waynum,
 		RAM_A,RAM_Q[waynum][RAM_N],RAM_D,
 		RAM_BWEN,RAM_N,RAM_WEN[waynum][RAM_N],
 		axi_rw_addr_valid_o,axi_rw_addr_ready_i,axi_rw_addr_o,
@@ -435,10 +411,10 @@ end
 `ifdef ysyx_22050133_MCACHEINFO
 always@(posedge clk)begin
 	if(~rw_if_i)begin
-	$display("ICACHE:  addr = %h , addr0 = %h, addr1 = %h\
+	$display("ICACHE:  addr = %h , addr0 = %h, \
   w_data = %h , w_data0 = %h ,\
   tag_in = %h , index_in = %h , hit_wayflag = %h, hit_waynum_in=%h,\
-  tag=%h,index=%h,waynum=%d,waynum1=%d\
+  tag=%h,index=%h,waynum=%d,\
   RAM_A=%h,\
   RAM_Q=%h,\
   RAM_D=%h,\
@@ -449,9 +425,9 @@ a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
   w_data_valid_o=%d,w_data_ready_i=%d,w_data_o=%h\
   r_data_valid_i=%d,r_data_ready_o=%d,r_data_i=%h\
 "
-	,addr,addr0,addr1,w_data,w_data0,
+	,addr,addr0,w_data,w_data0,
 		tag_in,index_in,hit_wayflag,hit_waynum_in,
-		tag[waynum][index],index,waynum,waynum1,
+		tag[waynum][index],index,waynum,
 		RAM_A,RAM_Q[waynum][RAM_N],RAM_D,
 		RAM_BWEN,RAM_N,RAM_WEN[waynum][RAM_N],
 		axi_rw_addr_valid_o,axi_rw_addr_ready_i,axi_rw_addr_o,

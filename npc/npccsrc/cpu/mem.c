@@ -41,7 +41,7 @@ extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush,ch
 	if(flush==1)npc_flush  ++;
 	if(jump ==1)npc_jump   ++;
 #ifndef MULTICYCLE
-	if(flush ==1)inst_inst-=4;
+	if(flush ==1)inst_inst-=3;
 #endif
 	if(inst==1&&alu==0&&mem==0)block_IXX++;
 	if(inst==0&&alu==1&&mem==0)block_XAX++;

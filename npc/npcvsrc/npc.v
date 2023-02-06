@@ -22,14 +22,12 @@ wire has_hazard=0;
 wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
 reg  raw_pcREG_en  ;
 reg  raw_pc1REG_en  ;
-reg  raw_pc2REG_en  ;
 reg  raw_IDREG_en  ;
 reg  raw_EXREG_en  ;
 reg  raw_MEMREG_en ;
 reg  raw_WBREG_en  ;
 wire pcREG_en  =raw_pcREG_en &(~block);
-wire pc1REG_en  =raw_pc1REG_en &(~block);
-wire pc2REG_en  =raw_pc2REG_en &(~block);
+wire pc1REG_en =raw_pc1REG_en &(~block);
 wire IDREG_en  =raw_IDREG_en &(~block);
 wire EXREG_en  =raw_EXREG_en &(~block);
 wire MEMREG_en =raw_MEMREG_en&(~block);
@@ -60,7 +58,7 @@ end
 `endif
 
 wire[63:0] pc;
-wire[63:0] pc2;
+wire[63:0] pc1;
 wire pcSrc;
 wire [31:0] inst;
 
@@ -118,7 +116,6 @@ begin
   if(rst)begin
     raw_pcREG_en<=0;
     raw_pc1REG_en<=1;
-    raw_pc2REG_en<=0;
     raw_IDREG_en<=0;
     raw_EXREG_en<=0;
     raw_MEMREG_en<=0;
@@ -130,10 +127,6 @@ begin
   end
   else if((pc1REG_en==1))begin
     raw_pc1REG_en<=0;
-    raw_pc2REG_en<=1;
-  end
-  else if((pc2REG_en==1))begin
-    raw_pc2REG_en<=0;
     raw_IDREG_en<=1;
   end
   else if(IDREG_en==1)begin
@@ -166,7 +159,7 @@ ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .pc_ready_i(ifu_rw_addr_ready_o),
   .pc_valid_o(ifu_rw_addr_valid_i),
   .pc(pc),
-  .pc2(pc2),
+  .pc1(pc1),
   .inst(inst)
   );
 
@@ -342,7 +335,7 @@ begin
     IDREG_inst<=ifu_r_data_o[31:0];
     end
     else begin
-    IDREG_pc<=pc2;
+    IDREG_pc<=pc1;
     IDREG_inst<=inst;
     end
   end
@@ -927,7 +920,7 @@ ysyx_22050133_axi_slave ysyx_22050133_axi_slave(
 always@(posedge clk)
   begin
   $display("\
-    pc2=%h,inst=%h,pc=%h,inst64=%h\
+    pc1=%h,inst=%h,pc=%h,inst64=%h\
 IDREG_en  =%h,     IDREG_pc  =%h,     IDREG_inst=%h,     \
     block_axi_ifu=%d,  block_axi_mem=%d,  block=%d,  \
 EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
@@ -950,7 +943,7 @@ MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
 WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
     WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,\
 "
-         ,pc2,inst,pc,ifu_r_data_o
+         ,pc1,inst,pc,ifu_r_data_o
          ,IDREG_en  ,IDREG_pc  ,IDREG_inst
          ,ifu_rw_block_o,mem_rw_block_o,block
 

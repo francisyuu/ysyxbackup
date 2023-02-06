@@ -185,8 +185,8 @@ total   div_cycle:%-16ld, %%%6.3f(total clk),\n\
 average div_cycle:%6.3f\n",inst_div,inst_div*100.0f/g_nr_guest_inst,cycle_div,cycle_div*100.0f/g_nr_guest_clk,(float)cycle_div/inst_div);
 	printf("**********IPC************\n");
 	printf("\
-IPC_calculate = (1-block)*(1-pop-flush*4)\n\
-              = (1-%4.3f)*(1/(1+%4.3f+%4.3f*4))\n\
+IPC_calculate = (1-block)*(1-pop-flush*3)\n\
+              = (1-%4.3f)*(1/(1+%4.3f+%4.3f*3))\n\
               = %4.3f*%4.3f\n\
               = %7.6f inst/clk\n\
 pop        =%-16ld, %%%6.3f(total inst)\n\
@@ -204,8 +204,8 @@ block_IXM  =%-16ld, %%%6.3f(total block)\n\
 block_XAM  =%-16ld, %%%6.3f(total block)\n\
 block_IAM  =%-16ld, %%%6.3f(total block)\n",
 block_total/(float)g_nr_guest_clk,npc_pop/(float)g_nr_guest_inst,npc_flush/(float)g_nr_guest_inst,
-(1-block_total/(float)g_nr_guest_clk),1/(1+npc_pop/(float)g_nr_guest_inst+npc_flush/(float)g_nr_guest_inst*4),
-(1-block_total/(float)g_nr_guest_clk)/(1+npc_pop/(float)g_nr_guest_inst+npc_flush/(float)g_nr_guest_inst*4),
+(1-block_total/(float)g_nr_guest_clk),1/(1+npc_pop/(float)g_nr_guest_inst+npc_flush/(float)g_nr_guest_inst*3),
+(1-block_total/(float)g_nr_guest_clk)/(1+npc_pop/(float)g_nr_guest_inst+npc_flush/(float)g_nr_guest_inst*3),
 npc_pop,npc_pop*100.0f/g_nr_guest_inst,
 npc_jump,npc_jump*100.0f/g_nr_guest_inst,
 npc_flush,npc_flush*100.0f/npc_jump,
