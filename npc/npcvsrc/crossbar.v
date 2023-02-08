@@ -81,7 +81,13 @@ module ysyx_22050133_crossbar # (
 	wire uncache=1;
 `else
 wire uncache=((rw_addr_i<32'h80000000)||(rw_addr_i>32'h88000000))? 1:0;
+//wire uncache=0;
 `endif
+reg uncache_reg;
+always@(posedge clk)begin
+	if(rst)uncache_reg<=0;
+	else uncache_reg<=uncache;
+end
 
 wire                     cachei_rw_addr_valid_i;       
 wire                     cachei_rw_addr_ready_o;        
@@ -147,7 +153,7 @@ assign                      w_data_ready_o  =uncache?axii_w_data_ready_o :cachei
 //assign [RW_DATA_WIDTH-1:0]  w_data_i        =uncache?axii_w_data_i       :cachei_w_data_i       ;
 assign                      r_data_valid_o  =uncache?axii_r_data_valid_o:cachei_r_data_valid_o;    
 //assign                      r_data_ready_i  =uncache?axii_r_data_ready_i :cachei_r_data_ready_i ;    
-assign                      r_data_o        =uncache?axii_r_data_o       :cachei_r_data_o       ;
+assign                      r_data_o        =uncache_reg?axii_r_data_o       :cachei_r_data_o       ;
 assign                      rw_block_o      =uncache?axii_rw_block_o     :cachei_rw_block_o     ;
 
 

@@ -4,23 +4,23 @@ module ysyx_22050133_IFU(
   input rst          ,
   input pcREG_en          ,
   input flush          ,
-  input     [63:0] dnpc,
+  input     [31:0] dnpc,
   input            pcSrc,
   input     [63:0] inst64,
   input            pc_ready_i,
   output reg pc_valid_o,
-  output reg[63:0] pc,
-  output reg[63:0] pc1,
+  output reg[31:0] pc,
+  output reg[31:0] pc1,
   output [31:0] inst
 );
 
-wire[63:0] npc=pcSrc?dnpc:pc+4;
+wire[31:0] npc=pcSrc?dnpc:pc+4;
 `ifdef ysyx_22050133_MULTICYCLE
 always@(posedge clk)
 begin
   if(rst)begin
-    pc<=64'h8000_0000;
-    pc1<=64'h8000_0000;
+    pc<=32'h8000_0000;
+    pc1<=32'h8000_0000;
     pc_valid_o<=1;
   end
   else if(pcREG_en)begin
@@ -42,14 +42,15 @@ reg[31:0]inst_stored;
 always@(posedge clk)
 begin
   if(rst)begin
-    pc<=64'h8000_0000;
-    pc1<=64'h0000_0000;
+    pc<=32'h8000_0000;
+    pc1<=32'h0000_0000;
     pc_valid_o<=1;
     inst_stored<=0;
   end
   else if(pcREG_en)begin
     pc<=npc;
     if(flush)pc1<=0;
+    //else if(pcSrc)pc1<=npc-4;
     else pc1<=pc;
     pc_valid_o<=1;
     inst_store<=0;

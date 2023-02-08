@@ -1,7 +1,7 @@
 module ysyx_22050133_IDU(
   input             clk    ,
   input             rst    ,
-  input     [63:0]  pc     ,
+  input     [31:0]  pc     ,
   input     [31:0]  inst     ,
   input             rdwen,
   input     [4:0]   rdin,

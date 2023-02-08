@@ -4,7 +4,8 @@ module ysyx_22050133_EXU(
   input            clk        ,
   input            rst        ,
   input   [`ysyx_22050133_ctrl_ex_len:0]    ctrl_ex ,
-  input   [63:0]   pc      ,
+  input   [63:0]   pc64      ,
+  input            Jpred   ,
   input   [63:0]   rs1data ,
   input   [63:0]   rs2data ,
   input   [63:0]   imm     ,
@@ -15,7 +16,7 @@ module ysyx_22050133_EXU(
   input   [63:0]   forward_data_wb,
   output           src_valid_i,
   output           result_valid_o,
-  output  [63:0]   dnpc,
+  output  [63:0]   dnpc_EXU,
   output  [63:0]   result,
   output  [63:0]   csrdata ,
   output  [63:0]   wdata
@@ -29,7 +30,7 @@ wire[63:0] rs2data_forward=forward_ALUSrc2==0 ? rs2data
 :forward_ALUSrc2==`ysyx_22050133_forward_src_wb ? forward_data_wb
 :forward_ALUSrc2==`ysyx_22050133_forward_src_mem ? forward_data_mem
 :0;
-wire[63:0] ALUdata1=ctrl_ex[8] ? pc:rs1data_forward;
+wire[63:0] ALUdata1=ctrl_ex[8] ? pc64:rs1data_forward;
 wire[63:0] ALUdata2=ctrl_ex[7] ? 4
                     :ctrl_ex[6] ? imm
                     :rs2data_forward;
@@ -150,7 +151,9 @@ ysyx_22050133_Divider ysyx_22050133_Divider_dut(
     );
 
 
-assign dnpc=ctrl_ex[10] ? csrdata:imm+(ctrl_ex[9] ? rs1data_forward:pc);
+assign dnpc_EXU=ctrl_ex[10] ? csrdata
+	          :Jpred ? pc64+4
+	          :imm+(ctrl_ex[9] ? rs1data_forward:pc64);
 assign result=  ctrl_ex[5] ? 
                   ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD ? Raddw
                   :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB ? Rsubw
@@ -201,8 +204,8 @@ always@(posedge clk)begin
 	if(rst)csr[0]<=64'ha00001800;
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_ecall)begin
 			////$monitor("hello\n");
-      npc_etrace(pc,64'hb);
-      csr[2]<=pc;
+      npc_etrace(pc64,64'hb);
+      csr[2]<=pc64;
       csr[3]<=64'hb;
   end
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrw)begin

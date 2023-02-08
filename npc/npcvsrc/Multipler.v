@@ -1,10 +1,10 @@
 // Create Date: 2023/01/29 16:32:12
-`define ysyx_22050133_MUL_BOOTH
+//`define ysyx_22050133_MUL_BOOTH
 //`define ysyx_22050133_MUL_WALLACE
 `ifdef ysyx_22050133_MUL_WALLACE
   `define ysyx_22050133_SEGMENTATION
 `endif
-//`define ysyx_22050133_MUL_CYCLE 0
+`define ysyx_22050133_MUL_CYCLE 0
 //
 module ysyx_22050133_Multipler(
     input              clk         ,   //时钟信号

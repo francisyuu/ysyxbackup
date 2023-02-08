@@ -33,7 +33,8 @@ wire EXREG_en  =raw_EXREG_en &(~block);
 wire MEMREG_en =raw_MEMREG_en&(~block);
 wire WBREG_en  =raw_WBREG_en &(~block);
 `else
-wire flush=pcSrc&(~block);
+//wire flush=pcSrc&(~block);
+wire flush=(Jresult^EXREG_Jpred)&(~block);
 //hazard:
 //ld a0 addr
 //add a0 a1 
@@ -48,7 +49,7 @@ wire WBREG_en  =~block;
 `endif
 
 always @(*)begin
-  set_pc(IDREG_pc,dnpc,IDREG_inst);
+  set_pc({32'd0,IDREG_pc},{32'd0,dnpc},IDREG_inst);
 end
 
 `ifdef ysyx_22050133_DEBUGINFO
@@ -57,13 +58,14 @@ always@(posedge clk)begin
 end
 `endif
 
-wire[63:0] pc;
-wire[63:0] pc1;
+wire[31:0] pc;
+wire[31:0] pc1;
 wire pcSrc;
 wire [31:0] inst;
 
-reg[63:0] IDREG_pc  ;
+reg[31:0] IDREG_pc  ;
 reg[31:0] IDREG_inst;
+reg       IDREG_Jpred;
 
 wire  [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb ;
 wire  [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
@@ -78,7 +80,8 @@ wire  [4:0]   rdout   ;
 reg[`ysyx_22050133_ctrl_wb_len :0] EXREG_ctrl_wb  ;
 reg[`ysyx_22050133_ctrl_mem_len:0] EXREG_ctrl_mem ;
 reg[`ysyx_22050133_ctrl_ex_len :0] EXREG_ctrl_ex  ;
-reg[63:0] EXREG_pc       ;
+reg[31:0] EXREG_pc       ;
+reg       EXREG_Jpred;
 reg[4:0]  EXREG_rs1      ;
 reg[4:0]  EXREG_rs2      ;
 reg[63:0] EXREG_rs1data  ;
@@ -87,7 +90,9 @@ reg[63:0] EXREG_csrdata  ;
 reg[63:0] EXREG_imm      ;
 reg[4:0]  EXREG_rd       ;
 
-wire  [63:0]   dnpc;
+wire  [31:0]   dnpc;
+wire  [63:0]   dnpc_EXU;
+wire  [31:0]   dnpc_pred;
 wire  [63:0]   result;
 wire  [63:0]   wdata;
 wire  [63:0]  csrdata ;
@@ -97,7 +102,6 @@ wire  [1:0]    forward_wdataSrc;
 
 reg[`ysyx_22050133_ctrl_wb_len :0]  MEMREG_ctrl_mem ;
 reg[`ysyx_22050133_ctrl_mem_len:0]  MEMREG_ctrl_wb  ;
-reg[63:0] MEMREG_dnpc      ;
 reg[63:0] MEMREG_result    ;
 reg[63:0] MEMREG_wdata    ;
 reg[63:0] MEMREG_csrdata    ;
@@ -146,6 +150,17 @@ begin
     raw_pcREG_en<=1;
   end
 end
+wire Jpred=0;
+assign dnpc=dnpc_EXU[31:0];
+assign pcSrc=Jresult;
+`else
+wire Jpred=0;
+//wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
+					 //||(inst[6:0]==`ysyx_22050133_OP_BXX))? 1:0;
+assign dnpc_pred=inst[3]?pc1+{{11{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
+	:pc1+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
+assign dnpc=Jpred ? dnpc_pred+4:dnpc_EXU[31:0];
+assign pcSrc=Jpred|flush;
 `endif
 
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
@@ -182,7 +197,8 @@ wire                              ifu_rw_block_i     ;
 
 //assign ifu_rw_addr_valid_i =ifu_rw_addr_valid_i;           
 //assign ifu_rw_addr_ready_o =ifu_rw_addr_ready_o;       
-assign ifu_rw_addr_i       =pc[31:0]           ;  
+assign ifu_rw_addr_i       =pc ;  
+//assign ifu_rw_addr_i       =Jpred ? dnpc_pred:pc ;  
 assign ifu_rw_we_i         =0                  ;  
 assign ifu_rw_len_i        =0                  ;  
 assign ifu_rw_size_i       =`ysyx_22050133_AXI_SIZE_BYTES_4;
@@ -328,15 +344,18 @@ begin
   if(rst|flush)begin
     IDREG_pc<=0;
     IDREG_inst<=0;
+    IDREG_Jpred<=0;
   end
   else if(IDREG_en)begin
     if(uncache)begin
     IDREG_pc<=pc;
     IDREG_inst<=ifu_r_data_o[31:0];
+    IDREG_Jpred<=0;
     end
     else begin
     IDREG_pc<=pc1;
     IDREG_inst<=inst;
+    IDREG_Jpred<=Jpred;
     end
   end
 end
@@ -365,7 +384,7 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
 reg EXU_valid_i;
 wire EXU_valid_o;
 wire block_EXU=~(~EXU_valid_i&EXU_valid_o);
-assign pcSrc=EXREG_ctrl_ex[17]|(EXREG_ctrl_ex[16]&result[0]);
+wire Jresult=EXREG_ctrl_ex[17]|(EXREG_ctrl_ex[16]&result[0]);
 
 always@(posedge clk)
 begin
@@ -380,6 +399,7 @@ begin
     EXREG_rs2data <=0;
     EXREG_imm     <=0;
     EXREG_rd      <=0;
+    EXREG_Jpred   <=0;
     EXU_valid_i   <=0;
   end
   else if(EXREG_en)begin
@@ -392,7 +412,8 @@ begin
     EXREG_rs1data <=rs1data ;
     EXREG_rs2data <=rs2data ;
     EXREG_imm     <=imm     ;
-    EXREG_rd   <=rdout   ;
+    EXREG_rd      <=rdout   ;
+    EXREG_Jpred   <=IDREG_Jpred;
     if(ctrl_ex[4])EXU_valid_i<=1;
     else EXU_valid_i<=0;
   end
@@ -404,7 +425,8 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .clk    (clk    ) ,
   .rst    (rst    ) ,
   .ctrl_ex(EXREG_ctrl_ex) ,
-  .pc     (EXREG_pc) ,
+  .pc64   ({32'd0,EXREG_pc}) ,
+  .Jpred  (EXREG_Jpred) ,
   .rs1data(EXREG_rs1data) ,
   .rs2data(EXREG_rs2data) ,
   .imm    (EXREG_imm    ) ,
@@ -415,7 +437,7 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .forward_data_wb(WBREG_rddata),
   .src_valid_i  (EXU_valid_i) ,
   .result_valid_o  (EXU_valid_o) ,
-  .dnpc   (dnpc   ) ,
+  .dnpc_EXU   (dnpc_EXU   ) ,
   .result (result ) ,
   .csrdata(csrdata) ,
   .wdata (wdata ) 

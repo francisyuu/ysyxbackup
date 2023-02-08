@@ -95,10 +95,10 @@ wire RAM_CEN=0;
 reg RAM_WEN[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
 wire [RW_DATA_WIDTH-1:0]maskb=
 	~S_IDLE_HIT ? 64'hffffffffffffffff
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'h00000000000000ff
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
-  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
+  :size==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'h00000000000000ff
+  :size==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
+  :size==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
+  :size==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
   :64'h0000000000000000;
 wire [6:0]shift={addr[3:0],3'd0};
 wire [127:0]RAM_BWEN=~({64'd0,maskb}<<shift);
