@@ -18,12 +18,12 @@ LDFLAGS   += --gc-sections -e _start
 CFLAGS += -DMAINARGS=\"$(mainargs)\"
 NEMUFLAGS += -d $(NEMU_HOME)/build/riscv64-nemu-interpreter-so
 #NEMUFLAGS += -d $(NEMU_HOME)/tools/spike-diff/build/riscv64-spike-so
-#NEMUFLAGS += -b
+NEMUFLAGS += -b
 NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt $(IMAGE).bin
 .PHONY: $(AM_HOME)/am/src/riscv/npc/trm.c
 
 image: $(IMAGE).elf
-	$(MAKE) clean -C $(AM_HOME)/../npc
+	#$(MAKE) clean -C $(AM_HOME)/../npc
 	$(MAKE) -C $(AM_HOME)/../npc
 	@$(OBJDUMP) -d $(IMAGE).elf > $(IMAGE).txt
 	@echo + OBJCOPY "->" $(IMAGE_REL).bin

@@ -28,8 +28,8 @@ void init_proc() {
 	/*naive_uload(NULL,"/bin/hello");*/
 	/*naive_uload(NULL,"/bin/dummy");*/
 	/*naive_uload(NULL,"/bin/bmp-test");*/
-	/*naive_uload(NULL,"/bin/nterm");*/
-	naive_uload(NULL,"/bin/pal");
+	naive_uload(NULL,"/bin/nterm");
+	/*naive_uload(NULL,"/bin/pal");*/
 
 }
 

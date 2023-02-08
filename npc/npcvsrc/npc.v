@@ -26,12 +26,12 @@ reg  raw_IDREG_en  ;
 reg  raw_EXREG_en  ;
 reg  raw_MEMREG_en ;
 reg  raw_WBREG_en  ;
-wire pcREG_en  =raw_pcREG_en &(~block);
-wire pc1REG_en =raw_pc1REG_en &(~block);
-wire IDREG_en  =raw_IDREG_en &(~block);
-wire EXREG_en  =raw_EXREG_en &(~block);
-wire MEMREG_en =raw_MEMREG_en&(~block);
-wire WBREG_en  =raw_WBREG_en &(~block);
+wire pcREG_en  =raw_pcREG_en ;
+wire pc1REG_en  =raw_pc1REG_en&(~ifu_rw_block_o) ;
+wire IDREG_en  =raw_IDREG_en ;
+wire EXREG_en  =raw_EXREG_en ;
+wire MEMREG_en =raw_MEMREG_en&(~block_EXU);
+wire WBREG_en  =raw_WBREG_en &(~mem_rw_block_o);
 `else
 //wire flush=pcSrc&(~block);
 wire flush=(Jresult^EXREG_Jpred)&(~block);
@@ -59,7 +59,7 @@ end
 `endif
 
 wire[31:0] pc;
-wire[31:0] pc1;
+wire[31:0] npc;
 wire pcSrc;
 wire [31:0] inst;
 
@@ -154,13 +154,13 @@ wire Jpred=0;
 assign dnpc=dnpc_EXU[31:0];
 assign pcSrc=Jresult;
 `else
-wire Jpred=0;
-//wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
-					 //||(inst[6:0]==`ysyx_22050133_OP_BXX))? 1:0;
-assign dnpc_pred=inst[3]?pc1+{{11{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
-	:pc1+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
-assign dnpc=Jpred ? dnpc_pred+4:dnpc_EXU[31:0];
-assign pcSrc=Jpred|flush;
+//wire Jpred=0;
+wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
+					 ||(inst[6:0]==`ysyx_22050133_OP_BXX))? 1:0;
+assign dnpc_pred=inst[3] ? pc+{{11{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
+	:pc+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
+assign dnpc=(Jresult^EXREG_Jpred) ? dnpc_EXU[31:0]:dnpc_pred;
+assign pcSrc=Jpred|(Jresult^EXREG_Jpred);
 `endif
 
 ysyx_22050133_IFU ysyx_22050133_IFU_dut(
@@ -174,7 +174,7 @@ ysyx_22050133_IFU ysyx_22050133_IFU_dut(
   .pc_ready_i(ifu_rw_addr_ready_o),
   .pc_valid_o(ifu_rw_addr_valid_i),
   .pc(pc),
-  .pc1(pc1),
+  .npc(npc),
   .inst(inst)
   );
 
@@ -197,7 +197,7 @@ wire                              ifu_rw_block_i     ;
 
 //assign ifu_rw_addr_valid_i =ifu_rw_addr_valid_i;           
 //assign ifu_rw_addr_ready_o =ifu_rw_addr_ready_o;       
-assign ifu_rw_addr_i       =pc ;  
+assign ifu_rw_addr_i       =npc ;  
 //assign ifu_rw_addr_i       =Jpred ? dnpc_pred:pc ;  
 assign ifu_rw_we_i         =0                  ;  
 assign ifu_rw_len_i        =0                  ;  
@@ -353,7 +353,7 @@ begin
     IDREG_Jpred<=0;
     end
     else begin
-    IDREG_pc<=pc1;
+    IDREG_pc<=pc;
     IDREG_inst<=inst;
     IDREG_Jpred<=Jpred;
     end
@@ -413,7 +413,8 @@ begin
     EXREG_rs2data <=rs2data ;
     EXREG_imm     <=imm     ;
     EXREG_rd      <=rdout   ;
-    EXREG_Jpred   <=IDREG_Jpred;
+		if(pop)EXREG_Jpred<=0;
+    else EXREG_Jpred   <=IDREG_Jpred;
     if(ctrl_ex[4])EXU_valid_i<=1;
     else EXU_valid_i<=0;
   end
@@ -942,7 +943,7 @@ ysyx_22050133_axi_slave ysyx_22050133_axi_slave(
 always@(posedge clk)
   begin
   $display("\
-    pc1=%h,inst=%h,pc=%h,inst64=%h\
+    pc=%h,inst=%h,npc=%h,inst64=%h\
 IDREG_en  =%h,     IDREG_pc  =%h,     IDREG_inst=%h,     \
     block_axi_ifu=%d,  block_axi_mem=%d,  block=%d,  \
 EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
@@ -952,7 +953,7 @@ EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
     EXREG_imm    =%h,  \
     EXREG_rd     =%d,  EXREG_npcSrc =%d,  EXREG_addSrc =%d,  \
     EXREG_ALUSrc1=%d,  EXREG_ALUSrc2=%d,  EXREG_ALUW   =%d,  \
-    EXREG_ALUop  =%d,  result       =%h,  dnpc         =%h,  \
+    EXREG_ALUop  =%d,  result       =%h,  dnpc_EXU     =%h,  \
     EXREG_CSRop  =%d,  EXREG_CSRsrc =%d,   \
     EXREG_pcSrcJ=%d,   EXREG_pcSrcB=%d,  pcSrc        =%d,  \
     forward_ALUSrc1=%h,forward_ALUSrc2=%h,forward_wdataSrc=%h,\
@@ -965,7 +966,7 @@ MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
 WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
     WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,\
 "
-         ,pc1,inst,pc,ifu_r_data_o
+         ,pc,inst,npc,ifu_r_data_o
          ,IDREG_en  ,IDREG_pc  ,IDREG_inst
          ,ifu_rw_block_o,mem_rw_block_o,block
 
@@ -976,7 +977,7 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
          ,EXREG_imm    
          ,EXREG_rd     ,EXREG_ctrl_ex[10],EXREG_ctrl_ex[9]
          ,EXREG_ctrl_ex[8],EXREG_ctrl_ex[7:6],EXREG_ctrl_ex[5]
-         ,EXREG_ctrl_ex[4:0],result,dnpc
+         ,EXREG_ctrl_ex[4:0],result,dnpc_EXU
          ,EXREG_ctrl_ex[15:13],EXREG_ctrl_ex[12:11]
          ,EXREG_ctrl_ex[17],EXREG_ctrl_ex[16],pcSrc
          ,forward_ALUSrc1,forward_ALUSrc2,forward_wdataSrc

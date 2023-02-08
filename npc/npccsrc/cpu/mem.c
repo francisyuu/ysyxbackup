@@ -3,7 +3,7 @@
 
 uint8_t pmem[CONFIG_MSIZE];
 
-uint64_t inst_inst,inst_mem,inst_memr,inst_memw;
+uint64_t inst_inst=-2,inst_mem,inst_memr,inst_memw;
 uint64_t inst_cache_hit,inst_cache_miss;
 uint64_t mem_cache_hit,mem_cache_miss,mem_cache_miss_dirty;
 extern "C" void cache_profiling(int inst,int we,int hit,int dirty){
@@ -41,7 +41,7 @@ extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush,ch
 	if(flush==1)npc_flush  ++;
 	if(jump ==1)npc_jump   ++;
 #ifndef MULTICYCLE
-	if(flush ==1)inst_inst-=3;
+	if(flush ==1)inst_inst-=2;
 #endif
 	if(inst==1&&alu==0&&mem==0)block_IXX++;
 	if(inst==0&&alu==1&&mem==0)block_XAX++;
