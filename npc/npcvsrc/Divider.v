@@ -1,6 +1,6 @@
 // Create Date: 2023/01/30 15:38:32
-`define ysyx_22050133_DIV_RADIX2
-//`define DIV_CYCLE 0
+//`define ysyx_22050133_DIV_RADIX2
+`define DIV_CYCLE 0
 module ysyx_22050133_Divider(
     input             clk        ,  //时钟信号
     input             rst        ,  //复位信号（高有效）

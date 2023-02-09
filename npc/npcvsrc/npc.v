@@ -347,16 +347,9 @@ begin
     IDREG_Jpred<=0;
   end
   else if(IDREG_en)begin
-    if(uncache)begin
-    IDREG_pc<=pc;
-    IDREG_inst<=ifu_r_data_o[31:0];
-    IDREG_Jpred<=0;
-    end
-    else begin
     IDREG_pc<=pc;
     IDREG_inst<=inst;
     IDREG_Jpred<=Jpred;
-    end
   end
 end
 
@@ -382,6 +375,7 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
 );
 
 reg EXU_valid_i;
+reg  mem_rw_addr_valid_i;         
 wire EXU_valid_o;
 wire block_EXU=~(~EXU_valid_i&EXU_valid_o);
 wire Jresult=EXREG_ctrl_ex[17]|(EXREG_ctrl_ex[16]&result[0]);
@@ -401,6 +395,7 @@ begin
     EXREG_rd      <=0;
     EXREG_Jpred   <=0;
     EXU_valid_i   <=0;
+    mem_rw_addr_valid_i<=0;
   end
   else if(EXREG_en)begin
     EXREG_ctrl_wb <=ctrl_wb ;
@@ -417,8 +412,13 @@ begin
     else EXREG_Jpred   <=IDREG_Jpred;
     if(ctrl_ex[4])EXU_valid_i<=1;
     else EXU_valid_i<=0;
+    if(ctrl_mem[9]|ctrl_mem[8])mem_rw_addr_valid_i<=1;
+    else mem_rw_addr_valid_i<=0;
   end
-  else if(EXU_valid_o)EXU_valid_i<=0;
+  else begin
+		if(mem_rw_addr_ready_o)mem_rw_addr_valid_i<=0;
+		if(EXU_valid_o)EXU_valid_i<=0;
+  end
 end
 
 
@@ -469,7 +469,6 @@ assign forward_wdataSrc= EXREG_rs2==0?0
     :0;
 `endif
 
-reg      mem_rw_addr_valid_i;         
 always@(posedge clk)
 begin
   if(rst)begin
@@ -481,7 +480,6 @@ begin
     MEMREG_imm    <=0;
     MEMREG_rs2      <=0;
     MEMREG_rd      <=0;
-    mem_rw_addr_valid_i<=0;
   end 
   else if(MEMREG_en)begin
     MEMREG_ctrl_mem<= EXREG_ctrl_mem;
@@ -492,10 +490,7 @@ begin
     MEMREG_imm     <= EXREG_imm;
     MEMREG_rs2      <= EXREG_rs2;
     MEMREG_rd      <= EXREG_rd;
-    if(EXREG_ctrl_mem[9]|EXREG_ctrl_mem[8])mem_rw_addr_valid_i<=1;
-    else mem_rw_addr_valid_i<=0;
   end
-  else if(mem_rw_addr_ready_o)mem_rw_addr_valid_i<=0;
 end
 
 wire                              mem_rw_addr_valid_i;         
@@ -517,17 +512,17 @@ wire                              mem_rw_block_i     ;
 
 //assign mem_rw_addr_valid_i = mem_rw_addr_valid_i;        
 //assign mem_rw_addr_ready_o = mem_rw_addr_ready_o;    
-assign mem_rw_addr_i       = MEMREG_result[31:0];
-assign mem_rw_we_i         = MEMREG_ctrl_mem[8] ;
+assign mem_rw_addr_i       = result[31:0];
+assign mem_rw_we_i         = EXREG_ctrl_mem[8] ;
 assign mem_rw_len_i        = 0                  ;
-assign mem_rw_size_i       = MEMREG_ctrl_mem[2:0];
+assign mem_rw_size_i       = EXREG_ctrl_mem[2:0];
 assign mem_rw_burst_i      = `ysyx_22050133_AXI_BURST_TYPE_FIXED;
 assign mem_rw_if_i         = 0                  ;
 assign mem_w_data_valid_i  = mem_rw_addr_valid_i&mem_rw_we_i;  
 //assign mem_w_data_ready_o  = mem_w_data_ready_o ;  
-assign mem_w_data_i        = MEMREG_wdata       ;
+assign mem_w_data_i        = wdata       ;
 //assign mem_r_data_valid_o  = mem_r_data_valid_o ;  
-assign mem_r_data_ready_i  = 1                  ;  
+assign mem_r_data_ready_i  = EXREG_ctrl_mem[8]|EXREG_ctrl_mem[9];  
 //assign mem_r_data_o        = din                ;
 assign mem_rw_block_i       = block                ;
 
@@ -954,14 +949,14 @@ EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
     EXREG_rd     =%d,  EXREG_npcSrc =%d,  EXREG_addSrc =%d,  \
     EXREG_ALUSrc1=%d,  EXREG_ALUSrc2=%d,  EXREG_ALUW   =%d,  \
     EXREG_ALUop  =%d,  result       =%h,  dnpc_EXU     =%h,  \
-    EXREG_CSRop  =%d,  EXREG_CSRsrc =%d,   \
-    EXREG_pcSrcJ=%d,   EXREG_pcSrcB=%d,  pcSrc        =%d,  \
     forward_ALUSrc1=%h,forward_ALUSrc2=%h,forward_wdataSrc=%h,\
+    EXREG_pcSrcJ=%d,   EXREG_pcSrcB=%d,  pcSrc        =%d,  \
+    EXREG_CSRop  =%d,  EXREG_CSRsrc =%d,  mem_w_data  =%h \
+    mem_read=%d,    mem_write=%d,   mem_rw_size=%h,  \
 MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
-    MEMREG_result=%h,  MEMREG_wdata =%h,  \
+    MEMREG_result=%h,  mem_data_o =%h,  \
     MEMREG_csrdata =%h,  \
     MEMREG_imm   =%h,  MEMREG_rs2    =%d, MEMREG_rd    =%d,  \
-    MEMREG_read=%d,    MEMREG_write=%d,   MEMREG_wmask=%h,  \
     WBREG_rdSrc    =%d,WBREG_rdSEXT   =%d,rddata      =%h \
 WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
     WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,\
@@ -978,15 +973,15 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
          ,EXREG_rd     ,EXREG_ctrl_ex[10],EXREG_ctrl_ex[9]
          ,EXREG_ctrl_ex[8],EXREG_ctrl_ex[7:6],EXREG_ctrl_ex[5]
          ,EXREG_ctrl_ex[4:0],result,dnpc_EXU
-         ,EXREG_ctrl_ex[15:13],EXREG_ctrl_ex[12:11]
-         ,EXREG_ctrl_ex[17],EXREG_ctrl_ex[16],pcSrc
          ,forward_ALUSrc1,forward_ALUSrc2,forward_wdataSrc
+         ,EXREG_ctrl_ex[17],EXREG_ctrl_ex[16],pcSrc
+         ,EXREG_ctrl_ex[15:13],EXREG_ctrl_ex[12:11],wdata
+         ,EXREG_ctrl_mem[9],EXREG_ctrl_mem[8],EXREG_ctrl_mem[2:0]
 
          ,MEMREG_en  ,MEMREG_ctrl_mem,MEMREG_ctrl_wb 
-         ,MEMREG_result,MEMREG_wdata 
+         ,MEMREG_result,mem_r_data_o 
          ,MEMREG_csrdata 
          ,MEMREG_imm   ,MEMREG_rs2    ,MEMREG_rd    
-         ,MEMREG_ctrl_mem[9],MEMREG_ctrl_mem[8],MEMREG_ctrl_mem[7:0]
          ,MEMREG_ctrl_wb[7:6],MEMREG_ctrl_wb[4:0],rddata
 
          ,WBREG_en  ,WBREG_ctrl_wb,WBREG_rddata 

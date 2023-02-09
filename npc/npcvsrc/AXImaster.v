@@ -416,6 +416,7 @@ always@(posedge clk)begin
       RS_RHS:if(next_rstate==RS_DHS)begin
           axi_r_ready_o<=0;
           r_data_valid_o<=1;
+					if(r_len==0)r_addr_ready_o<=1;
           r_data_o_reg<=axi_r_data_i_shift;
       end
       RS_DHS:if(next_rstate==RS_RHS)begin

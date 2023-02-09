@@ -89,21 +89,23 @@ always@(posedge clk)begin
   else random<=random+1;
 end
 
-wire S_IDLE_HIT=(state==S_IDLE)||(state==S_HIT);
+wire hit_flag=state==S_IDLE;
 wire [127:0]RAM_Q[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
 wire RAM_CEN=0;
-reg RAM_WEN[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
+reg RAM_WEN_REG[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
+wire RAM_WEN[WAY_DEPTH-1:0][RAM_DEPTH-1:0];
 wire [RW_DATA_WIDTH-1:0]maskb=
-	~S_IDLE_HIT ? 64'hffffffffffffffff
+	~hit_flag ? 64'hffffffffffffffff
   :size==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'h00000000000000ff
   :size==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
   :size==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
   :size==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
   :64'h0000000000000000;
 wire [6:0]shift={addr[3:0],3'd0};
+wire [6:0]wshift=hit_flag ? {rw_addr_i[3:0],3'd0}:{addr[3:0],3'd0};
 wire [127:0]RAM_BWEN=~({64'd0,maskb}<<shift);
-wire [5:0] RAM_A=S_IDLE_HIT?rw_addr_i[9:4]:addr[9:4];
-wire [127:0]RAM_D={64'd0,w_data}<<shift;
+wire [5:0] RAM_A=hit_flag ? rw_addr_i[9:4]:addr[9:4];
+wire [127:0]RAM_D=hit_flag ? {64'd0,w_data_i}<<wshift:{64'd0,w_data}<<wshift;
 wire [RAM_WIDTH-1:0]RAM_N_in=rw_addr_i[RAML:RAMR];
 wire [RAM_WIDTH-1:0]RAM_N=addr[RAML:RAMR];
 
@@ -114,6 +116,7 @@ generate
   for(i=0;i<WAY_DEPTH;i=i+1)begin
   assign hit_wayflag[i]=((tag[i][index_in]==tag_in)&&valid[i][index_in]);
     for(j=0;j<RAM_DEPTH;j=j+1)begin
+	    assign RAM_WEN[i][j]=|hit_wayflag ? ~((hit_waynum_in==i)&&(RAM_N_in==j)&&(rw_we_i)):RAM_WEN_REG[i][j];
       S011HD1P_X32Y2D128_BW S011HD1P_X32Y2D128_BW_U0
       (
         .Q(RAM_Q[i][j]),
@@ -148,15 +151,15 @@ always@(posedge clk)begin
   else state<=next_state;
 end
 
-assign rw_block_o=rw_if_i?~(|hit_wayflag)
-								:~(~rw_addr_valid_i&rw_addr_ready_o);
+assign rw_block_o=r_data_ready_i&(~(|hit_wayflag));
+//assign rw_block_o=~(|hit_wayflag);
+
 
 always@(*) begin
   if(rst)next_state=S_IDLE;
   else case(state)
     S_IDLE:if(rw_addr_valid_i&rw_addr_ready_o)begin
-            if(|hit_wayflag&rw_if_i)next_state=S_IDLE;
-            else if(|hit_wayflag)next_state=S_HIT;
+            if(|hit_wayflag)next_state=S_IDLE;
             else if(dirty[random][index_in])next_state=S_AW;
             else next_state=S_AR;
           end
@@ -168,7 +171,7 @@ always@(*) begin
       else next_state=S_W;
     S_AR:if(axi_rw_addr_valid_o&axi_rw_addr_ready_i)next_state=S_R;
       else next_state=S_AR;
-    S_R:if(axi_r_data_ready_o==0&(axi_rw_len_o==0))next_state=S_HIT;
+    S_R:if(axi_r_data_ready_o==0&(axi_rw_len_o==0))next_state=S_IDLE;
       else next_state=S_R;
     default:next_state=S_IDLE;
   endcase
@@ -201,7 +204,7 @@ always@(posedge clk)begin
     w_data0<=0;
   for(m=0;m<WAY_DEPTH;m=m+1)begin
     for(n=0;n<RAM_DEPTH;n=n+1)begin
-        RAM_WEN[m][n]<=1;
+        RAM_WEN_REG[m][n]<=1;
     end
     for(p=0;p<INDEX_DEPTH;p=p+1)begin
         tag[m][p]<=0;
@@ -212,7 +215,7 @@ always@(posedge clk)begin
   end
   else begin
     case(state)
-			S_IDLE:if(|hit_wayflag&rw_if_i)begin
+			S_IDLE:if(|hit_wayflag)begin
 				if(~rw_block_i)begin
           waynum<=hit_waynum_in;
           addr<=rw_addr_i;
@@ -223,24 +226,28 @@ always@(posedge clk)begin
 					`else
 					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
 				  `endif
+					if(rw_if==0)begin
+						if(rw_we_i)cache_rw({32'd0,rw_addr_i},w_data_i,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
+						else if(r_data_ready_i)cache_rw({32'd0,rw_addr_i},r_data_o,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
+					end
 				  `endif
 				end
 			end
-				else if(next_state==S_HIT)begin
-					rw_addr_ready_o<=1;
-          r_data_valid_o<=1;
-          waynum<=hit_waynum_in;
-          index<=index_in;
-          addr<=rw_addr_i;
-          we<=rw_we_i;
-          size<=rw_size_i;
-          rw_if<=rw_if_i;
-          w_data<=w_data_i;
-          RAM_WEN[hit_waynum_in][RAM_N_in]<=~rw_we_i;
-					`ifdef ysyx_22050133_DEBUGINFO
-					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
-				  `endif
-        end
+				//else if(next_state==S_HIT)begin
+					//rw_addr_ready_o<=1;
+          //r_data_valid_o<=1;
+          //waynum<=hit_waynum_in;
+          //index<=index_in;
+          //addr<=rw_addr_i;
+          //we<=rw_we_i;
+          //size<=rw_size_i;
+          //rw_if<=rw_if_i;
+          //w_data<=w_data_i;
+          //RAM_WEN_REG[hit_waynum_in][RAM_N_in]<=~rw_we_i;
+					//`ifdef ysyx_22050133_DEBUGINFO
+					//cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
+					//`endif
+        //end
         else if(next_state==S_AW)begin
 					rw_addr_ready_o<=0;
           waynum<=random;
@@ -298,23 +305,23 @@ always@(posedge clk)begin
 					axi_w_data_valid_o<=0;
 					axi_r_data_ready_o<=0;
         end
-      S_HIT:if(next_state==S_IDLE)begin
-					rw_addr_ready_o<=1;
-    			axi_rw_addr_valid_o<=0;
-					axi_w_data_valid_o<=0;
-					axi_r_data_ready_o<=0;
-					if(we)begin
-						dirty[waynum][index]<=1;
-						RAM_WEN[waynum][RAM_N]<=1;
-					end
-					r_data_valid_o<=0;
-					`ifdef ysyx_22050133_DEBUGINFO
-					if(rw_if==0)begin
-						if(we)cache_rw({32'd0,addr},w_data,{5'd0,size},{7'd0,we},{pro_way_0,waynum},{pro_index_0,index});
-						else cache_rw({32'd0,addr},r_data_o,{5'd0,size},{7'd0,we},{pro_way_0,waynum},{pro_index_0,index});
-					end
-					`endif
-				end
+      //S_HIT:if(next_state==S_IDLE)begin
+					//rw_addr_ready_o<=1;
+          //axi_rw_addr_valid_o<=0;
+					//axi_w_data_valid_o<=0;
+					//axi_r_data_ready_o<=0;
+					//if(we)begin
+						//dirty[waynum][index]<=1;
+						//RAM_WEN_REG[waynum][RAM_N]<=1;
+					//end
+					//r_data_valid_o<=0;
+					//`ifdef ysyx_22050133_DEBUGINFO
+					//if(rw_if==0)begin
+						//if(we)cache_rw({32'd0,addr},w_data,{5'd0,size},{7'd0,we},{pro_way_0,waynum},{pro_index_0,index});
+						//else cache_rw({32'd0,addr},r_data_o,{5'd0,size},{7'd0,we},{pro_way_0,waynum},{pro_index_0,index});
+					//end
+					//`endif
+				//end
       S_AW:if(next_state<=S_W)begin
           axi_rw_addr_valid_o<=0;
           axi_w_data_valid_o<=1;
@@ -355,20 +362,21 @@ always@(posedge clk)begin
             axi_r_data_ready_o<=1;
           end
       S_R:if(axi_r_data_valid_i&axi_r_data_ready_o)begin
-              RAM_WEN[waynum][RAM_N]<=0;
+              RAM_WEN_REG[waynum][RAM_N]<=0;
               w_data<=axi_r_data_i;
               axi_r_data_ready_o<=0;
           end
-          else if(next_state==S_HIT)begin
+          else if(next_state==S_IDLE)begin
+					    rw_addr_ready_o<=1;
               valid[waynum][index]=1;
-              RAM_WEN[waynum][RAM_N]<=~we;
+              RAM_WEN_REG[waynum][RAM_N]<=~we;
               w_data<=w_data0;
               addr<=addr0;
               r_data_valid_o<=0;
             end
           else if(axi_r_data_ready_o==0)begin
             axi_rw_len_o<=axi_rw_len_o-1;
-            RAM_WEN[waynum][RAM_N]<=1;
+            RAM_WEN_REG[waynum][RAM_N]<=1;
             addr<=addr+8;
             axi_r_data_ready_o<=1;
           end
