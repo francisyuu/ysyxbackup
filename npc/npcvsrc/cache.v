@@ -101,11 +101,18 @@ wire [RW_DATA_WIDTH-1:0]maskb=
   :size==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
   :size==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
   :64'h0000000000000000;
+wire [RW_DATA_WIDTH-1:0]maskb_i=
+	~hit_flag ? 64'hffffffffffffffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_1 ? 64'h00000000000000ff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_2 ? 64'h000000000000ffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_4 ? 64'h00000000ffffffff
+  :rw_size_i==`ysyx_22050133_AXI_SIZE_BYTES_8 ? 64'hffffffffffffffff
+  :64'h0000000000000000;
 wire [6:0]shift={addr[3:0],3'd0};
-wire [6:0]wshift=hit_flag ? {rw_addr_i[3:0],3'd0}:{addr[3:0],3'd0};
-wire [127:0]RAM_BWEN=~({64'd0,maskb}<<shift);
+wire [6:0]shift_i={rw_addr_i[3:0],3'd0};
+wire [127:0]RAM_BWEN=hit_flag? ~({64'd0,maskb_i}<<shift_i):~({64'd0,maskb}<<shift);
 wire [5:0] RAM_A=hit_flag ? rw_addr_i[9:4]:addr[9:4];
-wire [127:0]RAM_D=hit_flag ? {64'd0,w_data_i}<<wshift:{64'd0,w_data}<<wshift;
+wire [127:0]RAM_D=hit_flag ? {64'd0,w_data_i}<<shift_i:{64'd0,w_data}<<shift;
 wire [RAM_WIDTH-1:0]RAM_N_in=rw_addr_i[RAML:RAMR];
 wire [RAM_WIDTH-1:0]RAM_N=addr[RAML:RAMR];
 
@@ -116,7 +123,7 @@ generate
   for(i=0;i<WAY_DEPTH;i=i+1)begin
   assign hit_wayflag[i]=((tag[i][index_in]==tag_in)&&valid[i][index_in]);
     for(j=0;j<RAM_DEPTH;j=j+1)begin
-	    assign RAM_WEN[i][j]=|hit_wayflag ? ~((hit_waynum_in==i)&&(RAM_N_in==j)&&(rw_we_i)):RAM_WEN_REG[i][j];
+	    assign RAM_WEN[i][j]=hit_flag ? ~((hit_waynum_in==i)&&(RAM_N_in==j)&&(rw_we_i)):RAM_WEN_REG[i][j];
       S011HD1P_X32Y2D128_BW S011HD1P_X32Y2D128_BW_U0
       (
         .Q(RAM_Q[i][j]),
@@ -219,17 +226,28 @@ always@(posedge clk)begin
 				if(~rw_block_i)begin
           waynum<=hit_waynum_in;
           addr<=rw_addr_i;
+					size<=rw_size_i;
+					if(rw_we_i)dirty[hit_waynum_in][index_in]<=1;
 					`ifdef ysyx_22050133_DEBUGINFO
 					
 					`ifdef ysyx_22050133_MULTICYCLE
-					if(addr!=rw_addr_i)cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
-					`else
-					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
-				  `endif
+						//if(addr!=rw_addr_i)begin
+						begin
+							cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
 					if(rw_if==0)begin
 						if(rw_we_i)cache_rw({32'd0,rw_addr_i},w_data_i,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
 						else if(r_data_ready_i)cache_rw({32'd0,rw_addr_i},r_data_o,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
 					end
+						end
+					`else
+						begin
+					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
+					if(rw_if==0)begin
+						if(rw_we_i)cache_rw({32'd0,rw_addr_i},w_data_i,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
+						else if(r_data_ready_i)cache_rw({32'd0,rw_addr_i},r_data_o,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
+					end
+				end
+				  `endif
 				  `endif
 				end
 			end
@@ -391,8 +409,8 @@ always@(posedge clk)begin
 	if(rw_if_i)begin
 	$display("ICACHE:  addr = %h , addr0 = %h, \
   w_data = %h , w_data0 = %h ,\
-  tag_in = %h , index_in = %h , hit_wayflag = %h, hit_waynum_in=%h,\
-  tag=%h,index=%h,waynum=%d,\
+  tag_in = %h , index_in = %d , hit_wayflag = %h, hit_waynum_in=%h,\
+  tag=%h,index=%d,waynum=%d,\
   RAM_A=%h,\
   RAM_Q=%h,\
   RAM_D=%h,\
@@ -405,9 +423,9 @@ a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
 "
 	,addr,addr0,w_data,w_data0,
 		tag_in,index_in,hit_wayflag,hit_waynum_in,
-		tag[waynum][index],index,waynum,
+		tag[hit_waynum_in][index_in],index,waynum,
 		RAM_A,RAM_Q[waynum][RAM_N],RAM_D,
-		RAM_BWEN,RAM_N,RAM_WEN[waynum][RAM_N],
+		RAM_BWEN,RAM_N,RAM_WEN[hit_waynum_in][RAM_N_in],
 		axi_rw_addr_valid_o,axi_rw_addr_ready_i,axi_rw_addr_o,
 		axi_rw_we_o,axi_rw_len_o,axi_rw_size_o,axi_rw_burst_o,axi_rw_if_o,
 		axi_w_data_valid_o,axi_w_data_ready_i,axi_w_data_o,
@@ -419,11 +437,11 @@ end
 `ifdef ysyx_22050133_MCACHEINFO
 always@(posedge clk)begin
 	if(~rw_if_i)begin
-	$display("ICACHE:  addr = %h , addr0 = %h, \
+	$display("MCACHE:  addr = %h , addr0 = %h, \
   w_data = %h , w_data0 = %h ,\
-  tag_in = %h , index_in = %h , hit_wayflag = %h, hit_waynum_in=%h,\
-  tag=%h,index=%h,waynum=%d,\
-  RAM_A=%h,\
+  tag_in = %h , index_in = %d , hit_wayflag = %h, hit_waynum_in=%h,\
+  tag=%h,index=%d,waynum=%d,\
+  RAM_A=%d,\
   RAM_Q=%h,\
   RAM_D=%h,\
   RAM_BWEN=%h,\
@@ -435,9 +453,9 @@ a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
 "
 	,addr,addr0,w_data,w_data0,
 		tag_in,index_in,hit_wayflag,hit_waynum_in,
-		tag[waynum][index],index,waynum,
+		tag[hit_waynum_in][index_in],index,waynum,
 		RAM_A,RAM_Q[waynum][RAM_N],RAM_D,
-		RAM_BWEN,RAM_N,RAM_WEN[waynum][RAM_N],
+		RAM_BWEN,RAM_N,RAM_WEN[hit_waynum_in][RAM_N_in],
 		axi_rw_addr_valid_o,axi_rw_addr_ready_i,axi_rw_addr_o,
 		axi_rw_we_o,axi_rw_len_o,axi_rw_size_o,axi_rw_burst_o,axi_rw_if_o,
 		axi_w_data_valid_o,axi_w_data_ready_i,axi_w_data_o,

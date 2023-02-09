@@ -30,8 +30,8 @@ wire pcREG_en  =raw_pcREG_en ;
 wire pc1REG_en  =raw_pc1REG_en&(~ifu_rw_block_o) ;
 wire IDREG_en  =raw_IDREG_en ;
 wire EXREG_en  =raw_EXREG_en ;
-wire MEMREG_en =raw_MEMREG_en&(~block_EXU);
-wire WBREG_en  =raw_WBREG_en &(~mem_rw_block_o);
+wire MEMREG_en =raw_MEMREG_en&(~block_EXU)&(~mem_rw_block_o);
+wire WBREG_en  =raw_WBREG_en ;
 `else
 //wire flush=pcSrc&(~block);
 wire flush=(Jresult^EXREG_Jpred)&(~block);
@@ -663,9 +663,32 @@ begin
     WBREG_rd<=MEMREG_rd;
   end
 end
+
+reg mem_r_data_store;
+reg [63:0]mem_r_data_stored;
+always@(posedge clk)
+begin
+  if(rst)begin
+    mem_r_data_store<=0;
+    mem_r_data_stored<=0;
+  end
+  else if(WBREG_en)begin
+    mem_r_data_store<=0;
+    mem_r_data_stored<=0;
+  end
+  else if(mem_r_data_store==0)begin
+    mem_r_data_store<=1;
+    mem_r_data_stored<=mem_r_data_o;
+  end
+end
+`ifdef ysyx_22050133_MULTICYCLE
+wire[63:0] mem_r_data=mem_r_data_o;
+`else
+wire[63:0] mem_r_data=mem_r_data_store?mem_r_data_stored:mem_r_data_o;
+`endif
 wire[63:0] rddata_raw=
   MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_alu ? MEMREG_result
-  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_mem ? mem_r_data_o  
+  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_mem ? mem_r_data  
   :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_imm ? MEMREG_imm
   :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_csr ? MEMREG_csrdata
   :0;
@@ -979,7 +1002,7 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
          ,EXREG_ctrl_mem[9],EXREG_ctrl_mem[8],EXREG_ctrl_mem[2:0]
 
          ,MEMREG_en  ,MEMREG_ctrl_mem,MEMREG_ctrl_wb 
-         ,MEMREG_result,mem_r_data_o 
+         ,MEMREG_result,mem_r_data 
          ,MEMREG_csrdata 
          ,MEMREG_imm   ,MEMREG_rs2    ,MEMREG_rd    
          ,MEMREG_ctrl_wb[7:6],MEMREG_ctrl_wb[4:0],rddata

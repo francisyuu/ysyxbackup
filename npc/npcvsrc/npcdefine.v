@@ -14,7 +14,7 @@
 	`define ysyx_22050133_AXIINFOIFU 1
 	//`define ysyx_22050133_AXIINFOMEM 1
   //`define ysyx_22050133_ICACHEINFO 1
-	//`define ysyx_22050133_MCACHEINFO 1
+	`define ysyx_22050133_MCACHEINFO 1
 `endif
 
 `define ysyx_22050133_OP_LUI    7'b0110111
