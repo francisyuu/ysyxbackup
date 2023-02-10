@@ -154,9 +154,36 @@ wire Jpred=0;
 assign dnpc=dnpc_EXU[31:0];
 assign pcSrc=Jresult;
 `else
+	`ifdef ysyx_22050133_BHT
+parameter BHT_WIDTH=12;
+parameter BHT_LENTH=4096;
+//parameter BHT_LENTH=$pow(2,BHT_WIDTH);
+reg [BHT_LENTH-1:0] BHT[1:0];
+wire [BHT_WIDTH-1:0]BHTwi=EXREG_pc[BHT_WIDTH+2:3];
+wire [BHT_WIDTH-1:0]BHTri=pc[BHT_WIDTH+2:3];
+always@(posedge clk)begin
+	if(rst)begin
+		BHT[0]<=~(4096'd0);
+		BHT[1]<=~(4096'd0);
+		//BHT[2]<=~(4096'd0);
+		//BHT[3]<=~(4096'd0);
+	end
+	else begin
+		if(flush)begin
+			if(BHT[0][BHTwi]^Jresult)BHT[0][BHTwi]<=Jresult;
+			else if(BHT[1][BHTwi]^Jresult)BHT[1][BHTwi]<=Jresult;
+			//else if(BHT[2][BHTwi]^Jresult)BHT[2][BHTwi]<=Jresult;
+			//else if(BHT[3][BHTwi]^Jresult)BHT[3][BHTwi]<=Jresult;
+		end
+	end
+end
+wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
+					 ||(inst[6:0]==`ysyx_22050133_OP_BXX))? BHT[1][BHTri]:0;
+	`else
 //wire Jpred=0;
 wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
 					 ||(inst[6:0]==`ysyx_22050133_OP_BXX))? 1:0;
+	`endif
 assign dnpc_pred=inst[3] ? pc+{{11{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
 	:pc+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
 assign dnpc=(Jresult^EXREG_Jpred) ? dnpc_EXU[31:0]:dnpc_pred;
