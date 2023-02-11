@@ -228,9 +228,9 @@
 `define ysyx_22050133_forward_src_wb  1
 `define ysyx_22050133_forward_src_mem 2
 
-`define ysyx_22050133_ctrl_wb_len   12
-`define ysyx_22050133_ctrl_mem_len  12
-`define ysyx_22050133_ctrl_ex_len   18
+`define ysyx_22050133_ctrl_wb_len   1
+`define ysyx_22050133_ctrl_mem_len  6
+`define ysyx_22050133_ctrl_ex_len   22
 
 //// Burst types
 `define ysyx_22050133_AXI_BURST_TYPE_FIXED                 2'b00               //突发类型  FIFO
@@ -281,7 +281,7 @@
 
 
 function [63:0] SEXT;
-  input[63:0] din;
+  input[31:0] din;
   input[1:0] len;
 begin
   if(len==2'b00)SEXT={{56{din[7]}},din[7:0]};
@@ -291,9 +291,9 @@ end
 endfunction
 
 function [1:0] CSRi;
-  input[63:0] csr;
+  input[11:0] csr;
 begin
-	case(csr[11:0])
+	case(csr)
 		12'h300:CSRi=0;
 		12'h305:CSRi=1;
 		12'h341:CSRi=2;

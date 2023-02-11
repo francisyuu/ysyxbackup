@@ -1,127 +1,121 @@
 `include "npcvsrc/npcdefine.v"
-module ysyx_22050133 # (
-    parameter RW_DATA_WIDTH     = 64,
-    parameter RW_ADDR_WIDTH     = 32,
-    parameter AXI_DATA_WIDTH    = 64,
-    parameter AXI_ADDR_WIDTH    = 32,
-    parameter AXI_ID_WIDTH      = 4,
-    parameter AXI_STRB_WIDTH    = AXI_DATA_WIDTH/8,
-    parameter AXI_USER_WIDTH    = 1
-)(
-  input          clock             ,  
-  input          reset             ,
-  //
-  input          io_interrupt      ,
-  //AXI4 Master总线          
-  input          io_master_awready ,    
-  output         io_master_awvalid ,    
-  output[3:0]    io_master_awid    ,  
-  output[31:0]   io_master_awaddr  ,    
-  output[7:0]    io_master_awlen   ,  
-  output[2:0]    io_master_awsize  ,    
-  output[1:0]    io_master_awburst ,    
-  input          io_master_wready  ,    
-  output         io_master_wvalid  ,    
-  output[63:0]   io_master_wdata   ,  
-  output[7:0]    io_master_wstrb   ,  
-  output         io_master_wlast   ,  
-  output         io_master_bready  ,    
-  input          io_master_bvalid  ,    
-  input[3:0]     io_master_bid     ,
-  input[1:0]     io_master_bresp   ,  
-  input          io_master_arready ,    
-  output         io_master_arvalid ,    
-  output[3:0]    io_master_arid    ,  
-  output[31:0]   io_master_araddr  ,    
-  output[7:0]    io_master_arlen   ,  
-  output[2:0]    io_master_arsize  ,    
-  output[1:0]    io_master_arburst ,    
-  output         io_master_rready  ,    
-  input          io_master_rvalid  ,    
-  input[3:0]     io_master_rid     ,
-  input[1:0]     io_master_rresp   ,  
-  input[63:0]    io_master_rdata   ,  
-  input          io_master_rlast   ,  
-  //AXI4 Slave总线          
-  output         io_slave_awready  ,    
-  input          io_slave_awvalid  ,    
-  input[3:0]     io_slave_awid     ,
-  input[31:0]    io_slave_awaddr   ,  
-  input[7:0]     io_slave_awlen    ,  
-  input[2:0]     io_slave_awsize   ,  
-  input[1:0]     io_slave_awburst  ,    
-  output         io_slave_wready   ,  
-  input          io_slave_wvalid   ,  
-  input[63:0]    io_slave_wdata    ,  
-  input[7:0]     io_slave_wstrb    ,  
-  input          io_slave_wlast    ,  
-  input          io_slave_bready   ,  
-  output         io_slave_bvalid   ,  
-  output[3:0]    io_slave_bid      ,
-  output[1:0]    io_slave_bresp    ,  
-  output         io_slave_arready  ,    
-  input          io_slave_arvalid  ,    
-  input[3:0]     io_slave_arid     ,
-  input[31:0]    io_slave_araddr   ,  
-  input[7:0]     io_slave_arlen    ,  
-  input[2:0]     io_slave_arsize   ,  
-  input[1:0]     io_slave_arburst  ,    
-  input          io_slave_rready   ,  
-  output         io_slave_rvalid   ,  
-  output[3:0]    io_slave_rid      ,
-  output[1:0]    io_slave_rresp    ,  
-  output[63:0]   io_slave_rdata    ,  
-  output         io_slave_rlast    ,  
-  //SRAM接口          
-  output[5:0]    io_sram0_addr     ,
-  output         io_sram0_cen      ,
-  output         io_sram0_wen      ,
-  output[127:0]  io_sram0_wmask    ,  
-  output[127:0]  io_sram0_wdata    ,  
-  input[127:0]   io_sram0_rdata    ,  
-  output[5:0]    io_sram1_addr     ,
-  output         io_sram1_cen      ,
-  output         io_sram1_wen      ,
-  output[127:0]  io_sram1_wmask    ,  
-  output[127:0]  io_sram1_wdata    ,  
-  input[127:0]   io_sram1_rdata    ,  
-  output[5:0]    io_sram2_addr     ,
-  output         io_sram2_cen      ,
-  output         io_sram2_wen      ,
-  output[127:0]  io_sram2_wmask    ,  
-  output[127:0]  io_sram2_wdata    ,  
-  input[127:0]   io_sram2_rdata    ,  
-  output[5:0]    io_sram3_addr     ,
-  output         io_sram3_cen      ,
-  output         io_sram3_wen      ,
-  output[127:0]  io_sram3_wmask    ,  
-  output[127:0]  io_sram3_wdata    ,  
-  input[127:0]   io_sram3_rdata    ,  
-  output[5:0]    io_sram4_addr     ,
-  output         io_sram4_cen      ,
-  output         io_sram4_wen      ,
-  output[127:0]  io_sram4_wmask    ,  
-  output[127:0]  io_sram4_wdata    ,  
-  input[127:0]   io_sram4_rdata    ,  
-  output[5:0]    io_sram5_addr     ,
-  output         io_sram5_cen      ,
-  output         io_sram5_wen      ,
-  output[127:0]  io_sram5_wmask    ,  
-  output[127:0]  io_sram5_wdata    ,  
-  input[127:0]   io_sram5_rdata    ,  
-  output[5:0]    io_sram6_addr     ,
-  output         io_sram6_cen      ,
-  output         io_sram6_wen      ,
-  output[127:0]  io_sram6_wmask    ,  
-  output[127:0]  io_sram6_wdata    ,  
-  input[127:0]   io_sram6_rdata    ,  
-  output[5:0]    io_sram7_addr     ,
-  output         io_sram7_cen      ,
-  output         io_sram7_wen      ,
-  output[127:0]  io_sram7_wmask    ,  
-  output[127:0]  io_sram7_wdata    ,  
-  input[127:0]   io_sram7_rdata     
+module ysyx_22050133(
+  input           clock             ,  
+  input           reset             ,
+  input           io_interrupt      ,
+  input           io_master_awready ,    
+  output          io_master_awvalid ,    
+  output [3:0]    io_master_awid    ,  
+  output [31:0]   io_master_awaddr  ,    
+  output [7:0]    io_master_awlen   ,  
+  output [2:0]    io_master_awsize  ,    
+  output [1:0]    io_master_awburst ,    
+  input           io_master_wready  ,    
+  output          io_master_wvalid  ,    
+  output [63:0]   io_master_wdata   ,  
+  output [7:0]    io_master_wstrb   ,  
+  output          io_master_wlast   ,  
+  output          io_master_bready  ,    
+  input           io_master_bvalid  ,    
+  input [3:0]     io_master_bid     ,
+  input [1:0]     io_master_bresp   ,  
+  input           io_master_arready ,    
+  output          io_master_arvalid ,    
+  output [3:0]    io_master_arid    ,  
+  output [31:0]   io_master_araddr  ,    
+  output [7:0]    io_master_arlen   ,  
+  output [2:0]    io_master_arsize  ,    
+  output [1:0]    io_master_arburst ,    
+  output          io_master_rready  ,    
+  input           io_master_rvalid  ,    
+  input [3:0]     io_master_rid     ,
+  input [1:0]     io_master_rresp   ,  
+  input [63:0]    io_master_rdata   ,  
+  input           io_master_rlast   ,  
+  output          io_slave_awready  ,    
+  input           io_slave_awvalid  ,    
+  input [3:0]     io_slave_awid     ,
+  input [31:0]    io_slave_awaddr   ,  
+  input [7:0]     io_slave_awlen    ,  
+  input [2:0]     io_slave_awsize   ,  
+  input [1:0]     io_slave_awburst  ,    
+  output          io_slave_wready   ,  
+  input           io_slave_wvalid   ,  
+  input [63:0]    io_slave_wdata    ,  
+  input [7:0]     io_slave_wstrb    ,  
+  input           io_slave_wlast    ,  
+  input           io_slave_bready   ,  
+  output          io_slave_bvalid   ,  
+  output [3:0]    io_slave_bid      ,
+  output [1:0]    io_slave_bresp    ,  
+  output          io_slave_arready  ,    
+  input           io_slave_arvalid  ,    
+  input [3:0]     io_slave_arid     ,
+  input [31:0]    io_slave_araddr   ,  
+  input [7:0]     io_slave_arlen    ,  
+  input [2:0]     io_slave_arsize   ,  
+  input [1:0]     io_slave_arburst  ,    
+  input           io_slave_rready   ,  
+  output          io_slave_rvalid   ,  
+  output [3:0]    io_slave_rid      ,
+  output [1:0]    io_slave_rresp    ,  
+  output [63:0]   io_slave_rdata    ,  
+  output          io_slave_rlast    ,  
+  output [5:0]    io_sram0_addr     ,
+  output          io_sram0_cen      ,
+  output          io_sram0_wen      ,
+  output [127:0]  io_sram0_wmask    ,  
+  output [127:0]  io_sram0_wdata    ,  
+  input  [127:0]  io_sram0_rdata    ,  
+  output [5:0]    io_sram1_addr     ,
+  output          io_sram1_cen      ,
+  output          io_sram1_wen      ,
+  output [127:0]  io_sram1_wmask    ,  
+  output [127:0]  io_sram1_wdata    ,  
+  input  [127:0]  io_sram1_rdata    ,  
+  output [5:0]    io_sram2_addr     ,
+  output          io_sram2_cen      ,
+  output          io_sram2_wen      ,
+  output [127:0]  io_sram2_wmask    ,  
+  output [127:0]  io_sram2_wdata    ,  
+  input  [127:0]  io_sram2_rdata    ,  
+  output [5:0]    io_sram3_addr     ,
+  output          io_sram3_cen      ,
+  output          io_sram3_wen      ,
+  output [127:0]  io_sram3_wmask    ,  
+  output [127:0]  io_sram3_wdata    ,  
+  input  [127:0]  io_sram3_rdata    ,  
+  output [5:0]    io_sram4_addr     ,
+  output          io_sram4_cen      ,
+  output          io_sram4_wen      ,
+  output [127:0]  io_sram4_wmask    ,  
+  output [127:0]  io_sram4_wdata    ,  
+  input  [127:0]  io_sram4_rdata    ,  
+  output [5:0]    io_sram5_addr     ,
+  output          io_sram5_cen      ,
+  output          io_sram5_wen      ,
+  output [127:0]  io_sram5_wmask    ,  
+  output [127:0]  io_sram5_wdata    ,  
+  input  [127:0]  io_sram5_rdata    ,  
+  output [5:0]    io_sram6_addr     ,
+  output          io_sram6_cen      ,
+  output          io_sram6_wen      ,
+  output [127:0]  io_sram6_wmask    ,  
+  output [127:0]  io_sram6_wdata    ,  
+  input  [127:0]  io_sram6_rdata    ,  
+  output [5:0]    io_sram7_addr     ,
+  output          io_sram7_cen      ,
+  output          io_sram7_wen      ,
+  output [127:0]  io_sram7_wmask    ,  
+  output [127:0]  io_sram7_wdata    ,  
+  input  [127:0]  io_sram7_rdata     
   );
+
+parameter RW_DATA_WIDTH     = 64;
+parameter RW_ADDR_WIDTH     = 32;
+parameter AXI_DATA_WIDTH    = 64;
+parameter AXI_ADDR_WIDTH    = 32;
+parameter AXI_ID_WIDTH      = 4;
 
 assign  io_slave_awready =0;    
 assign  io_slave_wready  =0;  
@@ -161,7 +155,7 @@ wire flush=(Jresult^EXREG_Jpred)&(~block);
 //hazard:
 //ld a0 addr
 //add a0 a1 
-wire has_hazard=EXREG_ctrl_mem[9]&((EXREG_rd==rs1)|(EXREG_rd==rs2));
+wire has_hazard=EXREG_ctrl_ex[22]&((EXREG_rd==rs1)|(EXREG_rd==rs2));
 wire pop=has_hazard;
 wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
 wire pcREG_en  =~(block|pop);
@@ -209,12 +203,11 @@ reg[4:0]  EXREG_rs1      ;
 reg[4:0]  EXREG_rs2      ;
 reg[63:0] EXREG_rs1data  ;
 reg[63:0] EXREG_rs2data  ;
-reg[63:0] EXREG_csrdata  ;
 reg[63:0] EXREG_imm      ;
 reg[4:0]  EXREG_rd       ;
 
 wire  [31:0]   dnpc;
-wire  [63:0]   dnpc_EXU;
+wire  [31:0]   dnpc_EXU;
 wire  [31:0]   dnpc_pred;
 wire  [63:0]   result;
 wire  [63:0]   wdata;
@@ -223,13 +216,11 @@ wire  [1:0]    forward_ALUSrc1;
 wire  [1:0]    forward_ALUSrc2;
 wire  [1:0]    forward_wdataSrc;
 
-reg[`ysyx_22050133_ctrl_wb_len :0]  MEMREG_ctrl_mem ;
-reg[`ysyx_22050133_ctrl_mem_len:0]  MEMREG_ctrl_wb  ;
+reg[`ysyx_22050133_ctrl_wb_len:0]  MEMREG_ctrl_wb  ;
+reg[`ysyx_22050133_ctrl_mem_len:0] MEMREG_ctrl_mem ;
 reg[63:0] MEMREG_result    ;
-reg[63:0] MEMREG_wdata    ;
 reg[63:0] MEMREG_csrdata    ;
 reg[63:0] MEMREG_imm    ;
-reg[4:0]  MEMREG_rs2     ;
 reg[4:0]  MEMREG_rd     ;
 
 reg [`ysyx_22050133_ctrl_wb_len:0]WBREG_ctrl_wb;
@@ -274,7 +265,7 @@ begin
   end
 end
 wire Jpred=0;
-assign dnpc=dnpc_EXU[31:0];
+assign dnpc=dnpc_EXU;
 assign pcSrc=Jresult;
 `else
   `ifdef ysyx_22050133_BHT
@@ -309,7 +300,7 @@ wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
   `endif
 assign dnpc_pred=inst[3] ? pc+{{11{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
   :pc+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
-assign dnpc=(Jresult^EXREG_Jpred) ? dnpc_EXU[31:0]:dnpc_pred;
+assign dnpc=(Jresult^EXREG_Jpred) ? dnpc_EXU:dnpc_pred;
 assign pcSrc=Jpred|(Jresult^EXREG_Jpred);
 `endif
 
@@ -469,12 +460,6 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
     .axi_r_last_i     (ifu_axi_r_last_i)
 );
 
-`ifdef ysyx_22050133_NOCACHE
-wire uncache=1;
-`else
-wire uncache=((ifu_rw_addr_i<32'h80000000)||(ifu_rw_addr_i>32'h88000000))? 1:0;
-`endif
-
 always@(posedge clk)
 begin
   if(rst|flush)begin
@@ -493,9 +478,8 @@ end
 ysyx_22050133_IDU ysyx_22050133_IDU_dut(
   .clk      (clk),
   .rst      (rst),
-  .pc       (IDREG_pc     ),
   .inst     (IDREG_inst     ),
-  .rdwen    (WBREG_ctrl_wb[5]  ),
+  .rdwen    (WBREG_ctrl_wb[0]  ),
   .rdin     (WBREG_rd     ),
   .rddata   (WBREG_rddata   ),
   .has_hazard(has_hazard),
@@ -523,13 +507,13 @@ begin
     EXREG_ctrl_mem<=0;
     EXREG_ctrl_ex <=0;
     EXREG_pc      <=0;
+    EXREG_Jpred   <=0;
     EXREG_rs1     <=0;
     EXREG_rs2     <=0;
     EXREG_rs1data <=0;
     EXREG_rs2data <=0;
     EXREG_imm     <=0;
     EXREG_rd      <=0;
-    EXREG_Jpred   <=0;
     EXU_valid_i   <=0;
     mem_rw_addr_valid_i<=0;
   end
@@ -548,7 +532,7 @@ begin
     else EXREG_Jpred   <=IDREG_Jpred;
     if(ctrl_ex[4])EXU_valid_i<=1;
     else EXU_valid_i<=0;
-    if(ctrl_mem[9]|ctrl_mem[8])mem_rw_addr_valid_i<=1;
+    if(ctrl_ex[22]|ctrl_ex[21])mem_rw_addr_valid_i<=1;
     else mem_rw_addr_valid_i<=0;
   end
   else begin
@@ -561,7 +545,7 @@ end
 ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .clk    (clk    ) ,
   .rst    (rst    ) ,
-  .ctrl_ex(EXREG_ctrl_ex) ,
+  .ctrl_ex(EXREG_ctrl_ex[15:0]) ,
   .pc64   ({32'd0,EXREG_pc}) ,
   .Jpred  (EXREG_Jpred) ,
   .rs1data(EXREG_rs1data) ,
@@ -585,22 +569,22 @@ assign forward_ALUSrc1=0;
 assign forward_ALUSrc2=0;
 assign forward_wdataSrc=0;
 `else
-assign forward_ALUSrc1= EXREG_rs1==0?0
-                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs1)?
+assign forward_ALUSrc1= EXREG_rs1==0 ? 0
+                       :MEMREG_ctrl_wb[0]&(MEMREG_rd==EXREG_rs1) ? 
                          `ysyx_22050133_forward_src_mem
-                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs1)?
+                       :WBREG_ctrl_wb[0]&(WBREG_rd==EXREG_rs1) ? 
                          `ysyx_22050133_forward_src_wb
                        :0;
-assign forward_ALUSrc2= EXREG_rs2==0?0
-                       :MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?
+assign forward_ALUSrc2= EXREG_rs2==0 ? 0
+                       :MEMREG_ctrl_wb[0]&(MEMREG_rd==EXREG_rs2) ? 
                          `ysyx_22050133_forward_src_mem
-                       :WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?
+                       :WBREG_ctrl_wb[0]&(WBREG_rd==EXREG_rs2) ? 
                          `ysyx_22050133_forward_src_wb
                        :0;
-assign forward_wdataSrc= EXREG_rs2==0?0
-    :EXREG_ctrl_mem[8]&MEMREG_ctrl_wb[5]&(MEMREG_rd==EXREG_rs2)?
+assign forward_wdataSrc= EXREG_rs2==0 ? 0
+    :EXREG_ctrl_ex[21]&MEMREG_ctrl_wb[0]&(MEMREG_rd==EXREG_rs2) ? 
       `ysyx_22050133_forward_src_mem
-    :EXREG_ctrl_mem[8]&WBREG_ctrl_wb[5]&(WBREG_rd==EXREG_rs2)?
+    :EXREG_ctrl_ex[21]&WBREG_ctrl_wb[0]&(WBREG_rd==EXREG_rs2) ? 
       `ysyx_22050133_forward_src_wb
     :0;
 `endif
@@ -608,23 +592,19 @@ assign forward_wdataSrc= EXREG_rs2==0?0
 always@(posedge clk)
 begin
   if(rst)begin
-    MEMREG_ctrl_mem<=0;
     MEMREG_ctrl_wb <=0;
+    MEMREG_ctrl_mem <=0;
     MEMREG_result  <=0;
-    MEMREG_wdata    <=0;
     MEMREG_csrdata    <=0;
     MEMREG_imm    <=0;
-    MEMREG_rs2      <=0;
     MEMREG_rd      <=0;
   end 
   else if(MEMREG_en)begin
-    MEMREG_ctrl_mem<= EXREG_ctrl_mem;
     MEMREG_ctrl_wb <= EXREG_ctrl_wb ;
+    MEMREG_ctrl_mem <= EXREG_ctrl_mem ;
     MEMREG_result  <= result;
-    MEMREG_wdata    <= wdata;
     MEMREG_csrdata    <= csrdata;
     MEMREG_imm     <= EXREG_imm;
-    MEMREG_rs2      <= EXREG_rs2;
     MEMREG_rd      <= EXREG_rd;
   end
 end
@@ -649,16 +629,16 @@ wire                              mem_rw_block_i     ;
 //assign mem_rw_addr_valid_i = mem_rw_addr_valid_i;        
 //assign mem_rw_addr_ready_o = mem_rw_addr_ready_o;    
 assign mem_rw_addr_i       = result[31:0];
-assign mem_rw_we_i         = EXREG_ctrl_mem[8] ;
+assign mem_rw_we_i         = EXREG_ctrl_ex[21] ;
 assign mem_rw_len_i        = 0                  ;
-assign mem_rw_size_i       = EXREG_ctrl_mem[2:0];
+assign mem_rw_size_i       = EXREG_ctrl_ex[20:18];
 assign mem_rw_burst_i      = `ysyx_22050133_AXI_BURST_TYPE_FIXED;
 assign mem_rw_if_i         = 0                  ;
 assign mem_w_data_valid_i  = mem_rw_addr_valid_i&mem_rw_we_i;  
 //assign mem_w_data_ready_o  = mem_w_data_ready_o ;  
 assign mem_w_data_i        = wdata       ;
 //assign mem_r_data_valid_o  = mem_r_data_valid_o ;  
-assign mem_r_data_ready_i  = EXREG_ctrl_mem[8]|EXREG_ctrl_mem[9];  
+assign mem_r_data_ready_i  = EXREG_ctrl_ex[21]|EXREG_ctrl_ex[22];  
 //assign mem_r_data_o        = din                ;
 assign mem_rw_block_i       = block                ;
 
@@ -773,7 +753,9 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
 
 always@(posedge clk)
 begin
-  if(WBREG_ctrl_wb[8])stopsim();
+`ifdef ysyx_22050133_DEBUGINFO
+  if(WBREG_ctrl_wb[1])stopsim();
+`endif
   if(rst)begin
     WBREG_ctrl_wb <=0 ;
     WBREG_rddata<=0;
@@ -809,19 +791,19 @@ wire[63:0] mem_r_data=mem_r_data_o;
 wire[63:0] mem_r_data=mem_r_data_store?mem_r_data_stored:mem_r_data_o;
 `endif
 wire[63:0] rddata_raw=
-  MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_alu ? MEMREG_result
-  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_mem ? mem_r_data  
-  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_imm ? MEMREG_imm
-  :MEMREG_ctrl_wb[7:6]==`ysyx_22050133_rdSrc_csr ? MEMREG_csrdata
+   MEMREG_ctrl_mem[6:5]==`ysyx_22050133_rdSrc_alu ? MEMREG_result
+  :MEMREG_ctrl_mem[6:5]==`ysyx_22050133_rdSrc_mem ? mem_r_data  
+  :MEMREG_ctrl_mem[6:5]==`ysyx_22050133_rdSrc_imm ? MEMREG_imm
+  :MEMREG_ctrl_mem[6:5]==`ysyx_22050133_rdSrc_csr ? MEMREG_csrdata
   :0;
 assign rddata=
-    MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_b?SEXT(rddata_raw,0)
-    :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_bu?{{56'd0},rddata_raw[7:0]}
-    :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_h?SEXT(rddata_raw,1)
-    :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_hu?{{48'd0},rddata_raw[15:0]}
-    :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_w?SEXT(rddata_raw,2)
-    :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_wu?{{32'd0},rddata_raw[31:0]}
-    :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_d?rddata_raw
+     MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_b ? SEXT(rddata_raw[31:0],0)
+    :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_bu ? {{56'd0},rddata_raw[7:0]}
+    :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_h ? SEXT(rddata_raw[31:0],1)
+    :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_hu ? {{48'd0},rddata_raw[15:0]}
+    :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_w ? SEXT(rddata_raw[31:0],2)
+    :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_wu ? {{32'd0},rddata_raw[31:0]}
+    :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_d ? rddata_raw
     :0;
 
 ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
@@ -936,10 +918,10 @@ EXREG_en  =%h,     EXREG_ctrl_wb =%h, EXREG_ctrl_mem=%h, \
     EXREG_pcSrcJ=%d,   EXREG_pcSrcB=%d,  pcSrc        =%d,  \
     EXREG_CSRop  =%d,  EXREG_CSRsrc =%d,  mem_w_data  =%h \
     mem_read=%d,    mem_write=%d,   mem_rw_size=%h,  \
-MEMREG_en  =%h,    MEMREG_ctrl_mem=%h,MEMREG_ctrl_wb =%h,\
+MEMREG_en  =%h,    MEMREG_ctrl_wb =%h,\
     MEMREG_result=%h,  mem_data_o =%h,  \
     MEMREG_csrdata =%h,  \
-    MEMREG_imm   =%h,  MEMREG_rs2    =%d, MEMREG_rd    =%d,  \
+    MEMREG_imm   =%h,   MEMREG_rd    =%d,  \
     WBREG_rdSrc    =%d,WBREG_rdSEXT   =%d,rddata      =%h \
 WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
     WBREG_rd  =%d,     WBREG_ebreak =%d,  WBREG_rdWen    =%d,\
@@ -959,16 +941,16 @@ WBREG_en  =%h,     WBREG_ctrl_wb=%h,  WBREG_rddata =%h,   \
          ,forward_ALUSrc1,forward_ALUSrc2,forward_wdataSrc
          ,EXREG_ctrl_ex[17],EXREG_ctrl_ex[16],pcSrc
          ,EXREG_ctrl_ex[15:13],EXREG_ctrl_ex[12:11],wdata
-         ,EXREG_ctrl_mem[9],EXREG_ctrl_mem[8],EXREG_ctrl_mem[2:0]
+         ,EXREG_ctrl_ex[22],EXREG_ctrl_ex[21],EXREG_ctrl_ex[20:18]
 
-         ,MEMREG_en  ,MEMREG_ctrl_mem,MEMREG_ctrl_wb 
+         ,MEMREG_en  ,MEMREG_ctrl_wb 
          ,MEMREG_result,mem_r_data 
          ,MEMREG_csrdata 
-         ,MEMREG_imm   ,MEMREG_rs2    ,MEMREG_rd    
-         ,MEMREG_ctrl_wb[7:6],MEMREG_ctrl_wb[4:0],rddata
+         ,MEMREG_imm   ,MEMREG_rd    
+         ,MEMREG_ctrl_mem[6:5],MEMREG_ctrl_mem[4:0],rddata
 
          ,WBREG_en  ,WBREG_ctrl_wb,WBREG_rddata 
-         ,WBREG_rd    ,WBREG_ctrl_wb[8],WBREG_ctrl_wb[5]
+         ,WBREG_rd    ,WBREG_ctrl_wb[1],WBREG_ctrl_wb[0]
          );
 end
 `endif
@@ -1003,7 +985,7 @@ always@(posedge clk)begin
 mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
     w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
     r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
-    rw_wdata_i=%h, rw_addr_i =%h,  rw_size_i=%h,\
+    rw_size_i=%h,\
     \
     aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
     w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
@@ -1014,7 +996,7 @@ mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
          ,mem_rw_addr_valid_i,mem_rw_addr_ready_o,mem_rw_addr_i
          ,mem_w_data_valid_i,mem_w_data_ready_o,mem_w_data_i
          ,mem_r_data_valid_o,mem_r_data_ready_i,mem_r_data_o
-         ,MEMREG_wdata,MEMREG_result,MEMREG_ctrl_mem[7:0]
+         ,mem_rw_size_i
          ,mem_axi_aw_ready_i,mem_axi_aw_valid_o,mem_axi_aw_addr_o,mem_axi_aw_prot_o
          ,mem_axi_w_ready_i, mem_axi_w_valid_o, mem_axi_w_data_o, mem_axi_w_strb_o
          ,mem_axi_b_ready_o, mem_axi_b_valid_i, mem_axi_b_resp_i

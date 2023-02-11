@@ -1,9 +1,7 @@
 module ysyx_22050133_axi_arbiter # (
     parameter AXI_DATA_WIDTH    = 64,
     parameter AXI_ADDR_WIDTH    = 32,
-    parameter AXI_ID_WIDTH      = 4,
-    parameter AXI_STRB_WIDTH    = AXI_DATA_WIDTH/8,
-    parameter AXI_USER_WIDTH    = 1
+    parameter AXI_ID_WIDTH      = 4
 )(//IF&MEM输入信号
     input                               clk,
     input                               rst,

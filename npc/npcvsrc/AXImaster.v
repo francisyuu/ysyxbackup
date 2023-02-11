@@ -3,15 +3,13 @@ module ysyx_22050133_axi_master # (
     parameter RW_ADDR_WIDTH     = 32,
     parameter AXI_DATA_WIDTH    = 64,
     parameter AXI_ADDR_WIDTH    = 32,
-    parameter AXI_ID_WIDTH      = 4,
-    parameter AXI_STRB_WIDTH    = AXI_DATA_WIDTH/8,
-    parameter AXI_USER_WIDTH    = 1
+    parameter AXI_ID_WIDTH      = 4
 )(
     input                               clk,
     input                               rst,
 
     input                               rw_addr_valid_i,         
-    output reg                          rw_addr_ready_o,     
+    output                              rw_addr_ready_o,     
     input  [RW_ADDR_WIDTH-1:0]          rw_addr_i,    
     input                               rw_we_i,    
     input  [7:0]                        rw_len_i,    
@@ -87,8 +85,8 @@ wire[RW_DATA_WIDTH-1:0]din;
 wire [5:0]r_shift={rw_addr_i[2:0],3'd0};
 wire [RW_DATA_WIDTH-1:0]r_data_i_shift=(r_data>>r_shift)&maskb;
 
+assign    rw_addr_ready_o=1;
 always@(*)begin
-    rw_addr_ready_o=1;
     w_data_ready_o=1;
     r_data_valid_o=1;
     //$display("if=%d,addr=%h,shift=%d,mask=%h,data=%h",rw_if_i,rw_addr_i,r_shift,maskb,r_data);
@@ -96,9 +94,6 @@ end
 reg [RW_DATA_WIDTH-1:0]      r_data_o_reg;  
 assign r_data_o=r_data_o_reg;
 
-//always@(*)begin
-    //r_data_o=r_data_i_shift;
-//end
 always@(posedge clk)begin
     if(rw_addr_valid_i==1)r_data_o_reg<=r_data_i_shift;
 end
@@ -235,6 +230,7 @@ always@(posedge clk)begin
           axi_w_data_o<=0;
           axi_w_strb_o<=0;
           axi_w_last_o<=0;
+          axi_b_ready_o<=0;
   end
   else begin
     case(wstate)

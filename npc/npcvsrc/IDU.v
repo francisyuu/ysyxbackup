@@ -1,7 +1,6 @@
 module ysyx_22050133_IDU(
   input             clk    ,
   input             rst    ,
-  input     [31:0]  pc     ,
   input     [31:0]  inst     ,
   input             rdwen,
   input     [4:0]   rdin,
@@ -187,6 +186,21 @@ assign ctrl_wb_out=has_hazard ? 0:ctrl_wb;
 assign ctrl_mem_out=has_hazard ? 0:ctrl_mem;
 assign ctrl_ex_out=has_hazard ? 0:ctrl_ex;
 
+assign ctrl_ex[22]=OPLXX ? 1:0;
+assign ctrl_ex[21]=OPSXX ? 1:0;
+assign ctrl_ex[20:18]=OPSXX ?
+                      F3SB ? `ysyx_22050133_AXI_SIZE_BYTES_1
+                      :F3SH ? `ysyx_22050133_AXI_SIZE_BYTES_2
+                      :F3SW ? `ysyx_22050133_AXI_SIZE_BYTES_4
+                      :F3SD ? `ysyx_22050133_AXI_SIZE_BYTES_8
+                      :0
+                    :OPLXX ?
+                      F3LB|F3LBU ? `ysyx_22050133_AXI_SIZE_BYTES_1
+                      :F3LH|F3LHU ? `ysyx_22050133_AXI_SIZE_BYTES_2
+                      :F3LW|F3LWU ? `ysyx_22050133_AXI_SIZE_BYTES_4
+                      :F3LD ? `ysyx_22050133_AXI_SIZE_BYTES_8
+                      :0
+                    :0;
 assign ctrl_ex[17]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))) ? 1:0;
 assign ctrl_ex[16]=OPBXX ? 1:0;
 assign ctrl_ex[15:13]=OPSYS ?
@@ -254,29 +268,12 @@ assign ctrl_ex[4:0]=OPBXX ?
                       :`ysyx_22050133_ALUop_NOP
                     :(OPAUIPC|OPJAL|OPJALR|OPLXX|OPSXX)?`ysyx_22050133_ALUop_ADD
                     :`ysyx_22050133_ALUop_NOP;
-assign ctrl_mem[9]=OPLXX ? 1:0;
-assign ctrl_mem[8]=OPSXX ? 1:0;
-assign ctrl_mem[2:0]=OPSXX ?
-                      F3SB ? `ysyx_22050133_AXI_SIZE_BYTES_1
-                      :F3SH ? `ysyx_22050133_AXI_SIZE_BYTES_2
-                      :F3SW ? `ysyx_22050133_AXI_SIZE_BYTES_4
-                      :F3SD ? `ysyx_22050133_AXI_SIZE_BYTES_8
-                      :0
-                    :OPLXX ?
-                      F3LB|F3LBU ? `ysyx_22050133_AXI_SIZE_BYTES_1
-                      :F3LH|F3LHU ? `ysyx_22050133_AXI_SIZE_BYTES_2
-                      :F3LW|F3LWU ? `ysyx_22050133_AXI_SIZE_BYTES_4
-                      :F3LD ? `ysyx_22050133_AXI_SIZE_BYTES_8
-                      :0
-                    :0;
-assign ctrl_wb[8]=OPSYS&FEBREAK;
-assign ctrl_wb[7:6]=OPLUI ? `ysyx_22050133_rdSrc_imm
+assign ctrl_mem[6:5]=OPLUI ? `ysyx_22050133_rdSrc_imm
                     :OPLXX ? `ysyx_22050133_rdSrc_mem
                     :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu
                     :OPSYS&(F3CSRRW|F3CSRRS)? `ysyx_22050133_rdSrc_csr
                     :0;
-assign ctrl_wb[5]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX|OPSYS)? 1:0;
-assign ctrl_wb[4:0]=OPLXX ?
+assign ctrl_mem[4:0]=OPLXX ?
                       F3LB ? `ysyx_22050133_rdSEXT_b
                       :F3LH ? `ysyx_22050133_rdSEXT_h
                       :F3LW ? `ysyx_22050133_rdSEXT_w
@@ -286,10 +283,13 @@ assign ctrl_wb[4:0]=OPLXX ?
                       : `ysyx_22050133_rdSEXT_d
                     :(OPXXIW|OPRWX)? `ysyx_22050133_rdSEXT_w
                     :`ysyx_22050133_rdSEXT_d;
+assign ctrl_wb[1]=OPSYS&FEBREAK;
+assign ctrl_wb[0]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX|OPSYS)? 1:0;
 
 
 ysyx_22050133_RegisterFile ysyx_22050133_RegisterFile_dut(
   .clk    (clk    ),
+  .rst    (rst    ),
   .rddata (rddata ),
   .rd     (rdin   ),
   .wen    (rdwen  ),

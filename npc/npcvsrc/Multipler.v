@@ -63,7 +63,9 @@ wire [65:0] multiplier_sext=mul_signed[0]?
     if(rst|flush)next_state=S_IDLE;
     else case(state)
       S_IDLE:if(mul_valid&mul_ready)next_state=S_MUL;
+		else next_state=S_IDLE;
       S_MUL:if((|y==0)||(|x==0))next_state=S_IDLE;
+		else next_state=S_MUL;
       default:begin
         next_state=S_IDLE;
       end
@@ -74,6 +76,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
     if(rst)begin
       x<=0;
       y<=0;
+			result<=0;
       mul_ready<=0;
       out_valid<=0;
       result_hi<=0;

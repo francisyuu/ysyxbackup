@@ -95,6 +95,8 @@ reg rw_if;
 reg [RW_DATA_WIDTH-1:0] w_data;
 reg [RW_DATA_WIDTH-1:0] w_data0;
 reg [INDEX_WIDTH-1:0]index;
+reg [WAY_WIDTH-1:0]waynum;
+reg [WAY_WIDTH-1:0]random;
 
 reg [TAG_WIDTH-1:0] tag[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg valid[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
@@ -107,8 +109,6 @@ wire[WAY_DEPTH-1:0]hit_wayflag;
 wire[WAY_WIDTH-1:0]hit_waynum_in=hit_wayflag==2'b01 ? 0
                           :hit_wayflag==2'b10 ? 1
                           :0;
-reg[WAY_WIDTH-1:0]waynum;
-reg[WAY_WIDTH-1:0]random;
 always@(posedge clk)begin
   if(rst)random<=0;
   else random<=random+1;
@@ -199,6 +199,7 @@ always@(posedge clk)begin
 end
 
 assign rw_block_o=r_data_ready_i&(~(|hit_wayflag));
+assign axi_rw_block_o=0;
 
 
 always@(*) begin
@@ -391,7 +392,7 @@ always@(posedge clk)begin
           end
           else if(next_state==S_IDLE)begin
               rw_addr_ready_o<=1;
-              valid[waynum][index]=1;
+              valid[waynum][index]<=1;
               RAM_WEN_REG[waynum][RAM_N]<=1;
               w_data<=w_data0;
               addr<=addr0;

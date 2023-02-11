@@ -42,6 +42,7 @@ begin
   if(rst)begin
     pc<=32'h7ffffffc;
     pc_valid_o<=1;
+    inst_store<=0;
     inst_stored<=0;
   end
   else if(pcREG_en)begin

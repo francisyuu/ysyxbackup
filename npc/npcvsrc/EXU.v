@@ -2,7 +2,7 @@
 module ysyx_22050133_EXU(
   input            clk        ,
   input            rst        ,
-  input   [`ysyx_22050133_ctrl_ex_len:0]    ctrl_ex ,
+  input   [15:0]    ctrl_ex  ,
   input   [63:0]   pc64      ,
   input            Jpred   ,
   input   [63:0]   rs1data ,
@@ -13,9 +13,9 @@ module ysyx_22050133_EXU(
   input   [1:0]    forward_wdataSrc,
   input   [63:0]   forward_data_mem,
   input   [63:0]   forward_data_wb,
-  output           src_valid_i,
+  input            src_valid_i,
   output           result_valid_o,
-  output  [63:0]   dnpc_EXU,
+  output  [31:0]   dnpc_EXU,
   output  [63:0]   result,
   output  [63:0]   csrdata ,
   output  [63:0]   wdata
@@ -63,11 +63,11 @@ wire[63:0] Rsra  =  signed'(ALUdata1)>>>ALUdata2[5:0];
 //always@(*)begin
   //$display("Rsltu=%d %d %d %d",Rsltu,Rbltu, Rsubc, Rsub65);
 //end
-wire[63:0] Raddw  =  SEXT(Radd,3);
-wire[63:0] Rsubw  =  SEXT(Rsub,3);
-wire[63:0] Rsllw  =  SEXT(ALUdata1<<ALUdata2[4:0],3);
-wire[63:0] Rsrlw  =  SEXT({32'd0,ALUdata1[31:0]>>ALUdata2[4:0]},3);
-wire[63:0] Rsraw  =  SEXT({32'd0,signed'(ALUdata1[31:0])>>>ALUdata2[4:0]},3);
+wire[63:0] Raddw  =  SEXT(Radd[31:0],3);
+wire[63:0] Rsubw  =  SEXT(Rsub[31:0],3);
+wire[63:0] Rsllw  =  SEXT(ALUdata1[31:0]<<ALUdata2[4:0],3);
+wire[63:0] Rsrlw  =  SEXT({ALUdata1[31:0]>>ALUdata2[4:0]},3);
+wire[63:0] Rsraw  =  SEXT({signed'(ALUdata1[31:0])>>>ALUdata2[4:0]},3);
 
 wire[63:0] Rmul   =  result_lo;
 //wire[63:0] Rmul   =  0;
@@ -79,7 +79,7 @@ wire[63:0] Rdivu  =  quotient;
 wire[63:0] Rrem   =  remainder;
 wire[63:0] Rremu  =  remainder;
 
-wire[63:0] Rmulw  =  SEXT(Rmul,3);
+wire[63:0] Rmulw  =  SEXT(Rmul[31:0],3);
 wire[63:0] Rdivw  =  quotient;
 wire[63:0] Rdivuw =  quotient;
 wire[63:0] Rremw  =  remainder;
@@ -150,7 +150,8 @@ ysyx_22050133_Divider ysyx_22050133_Divider_dut(
     );
 
 
-assign dnpc_EXU=ctrl_ex[10] ? csrdata
+assign dnpc_EXU=dnpc_EXU64[31:0];
+wire[63:0] dnpc_EXU64=ctrl_ex[10] ? csrdata
 	          :Jpred ? pc64+4
 	          :imm+(ctrl_ex[9] ? rs1data_forward:pc64);
 assign result=  ctrl_ex[5] ? 
@@ -196,22 +197,29 @@ reg[63:0] csr[3:0];
 assign csrdata=
   ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mtvec ? csr[1]
   :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc ? csr[2]
-  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm ? csr[CSRi(imm)]
+  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm ? csr[CSRi(imm[11:0])]
   :0;
 
 always@(posedge clk)begin
-	if(rst)csr[0]<=64'ha00001800;
+	if(rst)begin
+		csr[0]<=64'ha00001800;
+		csr[1]<=0;
+		csr[2]<=0;
+		csr[3]<=0;
+	end
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_ecall)begin
 			////$monitor("hello\n");
+`ifdef ysyx_22050133_DEBUGINFO
       npc_etrace(pc64,64'hb);
+`endif
       csr[2]<=pc64;
       csr[3]<=64'hb;
   end
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrw)begin
-    csr[CSRi(imm)]<=rs1data_forward;
+    csr[CSRi(imm[11:0])]<=rs1data_forward;
   end
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrs)begin
-    csr[CSRi(imm)]<=csr[CSRi(imm)]|rs1data_forward;
+    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|rs1data_forward;
   end
 end
 
