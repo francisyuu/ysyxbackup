@@ -15,13 +15,13 @@
 #include <sdb.h>
 #include <device.h>
 
-#include "Vysyx_22050133_NPC.h"
+#include "Vysyx_22050133_NPC_top.h"
 //#include "Vysyx_22050133_NPC_ysyx_22050133_NPC.h"
 //#include "Vysyx_22050133_NPC_ysyx_22050133_RegisterFile.h"
 //#include "nvboard.h"
 #include "svdpi.h"
 #include "verilated_dpi.h"
-#include "Vysyx_22050133_NPC__Dpi.h"
+#include "Vysyx_22050133_NPC_top__Dpi.h"
 //#include "verilated.h"
 //#include "verilated_vcd_c.h" 
 
@@ -82,7 +82,7 @@ typedef struct CPU_state{
 enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 
 extern uint8_t pmem[];
-extern Vysyx_22050133_NPC* top;
+extern Vysyx_22050133_NPC_top* top;
 extern CPU_state cpu;
 extern const char *regs[];
 

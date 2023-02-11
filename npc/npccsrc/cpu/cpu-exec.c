@@ -4,7 +4,7 @@
 
 //static TOP_NAME ysyx_22050133_NPC;
     VerilatedContext* contextp = new VerilatedContext;
-    Vysyx_22050133_NPC* top = new Vysyx_22050133_NPC{contextp};
+    Vysyx_22050133_NPC_top* top = new Vysyx_22050133_NPC_top{contextp};
     //VerilatedVcdC* trace_object= new VerilatedVcdC;
     //contextp->commandArgs(argc, argv);
     //contextp->traceEverOn(true);

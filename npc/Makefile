@@ -1,4 +1,4 @@
-TOPNAME ?= ysyx_22050133_NPC
+TOPNAME ?= ysyx_22050133_NPC_top
 NXDC_FILES = constr/$(TOPNAME).nxdc
 INC_PATH ?= $(abspath ./npccsrc/include)
 

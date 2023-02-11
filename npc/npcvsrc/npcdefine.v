@@ -1,6 +1,7 @@
 `ifndef ysyx_22050133_NPCDEFINE_V
 `define ysyx_22050133_NPCDEFINE_V
 
+`timescale 1ns/1ns
 //`define ysyx_22050133_MULTICYCLE 1
 //`define ysyx_22050133_NOCACHE 1
 `define ysyx_22050133_BHT 1
@@ -304,6 +305,7 @@ begin
 end
 endfunction
 
+`ifdef ysyx_22050133_DEBUGINFO 
 import "DPI-C" function void IPC_profiling(
     input byte inst,input byte alu,input byte mem,input byte pop,input byte flush,input byte jump
 );
@@ -340,4 +342,5 @@ import "DPI-C" function void reg_info(
 import "DPI-C" function void npc_etrace(
     input longint pc,input longint NO
 );
+`endif 
 `endif 

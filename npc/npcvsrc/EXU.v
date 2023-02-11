@@ -1,5 +1,4 @@
 
-`include "npcvsrc/npcdefine.v"
 module ysyx_22050133_EXU(
   input            clk        ,
   input            rst        ,

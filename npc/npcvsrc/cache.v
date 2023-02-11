@@ -32,6 +32,31 @@ module ysyx_22050133_cache#(
   input                               rw_block_i,
   output                              rw_block_o,
 
+  output[5:0]    io_sram0_addr     ,
+  output         io_sram0_cen      ,
+  output         io_sram0_wen      ,
+  output[127:0]  io_sram0_wmask    ,  
+  output[127:0]  io_sram0_wdata    ,  
+  input[127:0]   io_sram0_rdata    ,  
+  output[5:0]    io_sram1_addr     ,
+  output         io_sram1_cen      ,
+  output         io_sram1_wen      ,
+  output[127:0]  io_sram1_wmask    ,  
+  output[127:0]  io_sram1_wdata    ,  
+  input[127:0]   io_sram1_rdata    ,  
+  output[5:0]    io_sram2_addr     ,
+  output         io_sram2_cen      ,
+  output         io_sram2_wen      ,
+  output[127:0]  io_sram2_wmask    ,  
+  output[127:0]  io_sram2_wdata    ,  
+  input[127:0]   io_sram2_rdata    ,  
+  output[5:0]    io_sram3_addr     ,
+  output         io_sram3_cen      ,
+  output         io_sram3_wen      ,
+  output[127:0]  io_sram3_wmask    ,  
+  output[127:0]  io_sram3_wdata    ,  
+  input[127:0]   io_sram3_rdata    ,  
+
   output  reg                         axi_rw_addr_valid_o,       
   input                               axi_rw_addr_ready_i,     
   output  reg[RW_ADDR_WIDTH-1:0]      axi_rw_addr_o,    
@@ -124,19 +149,34 @@ generate
   assign hit_wayflag[i]=((tag[i][index_in]==tag_in)&&valid[i][index_in]);
     for(j=0;j<RAM_DEPTH;j=j+1)begin
       assign RAM_WEN[i][j]=|hit_wayflag ? ~((hit_waynum_in==i)&&(RAM_N_in==j)&&(rw_we_i)):RAM_WEN_REG[i][j];
-      S011HD1P_X32Y2D128_BW S011HD1P_X32Y2D128_BW_U0
-      (
-        .Q(RAM_Q[i][j]),
-        .CLK(clk),
-        .CEN(RAM_CEN),
-        .WEN(RAM_WEN[i][j]),
-        .BWEN(RAM_BWEN),
-        .A(RAM_A),
-        .D(RAM_D)
-      );
     end
   end
 endgenerate
+
+assign io_sram0_addr    =RAM_A ;
+assign io_sram0_cen     =RAM_CEN;
+assign io_sram0_wen     =RAM_WEN[0][0];
+assign io_sram0_wmask   =RAM_BWEN ;  
+assign io_sram0_wdata   =RAM_D ;  
+assign RAM_Q[0][0]      =io_sram0_rdata;  
+assign io_sram1_addr    =RAM_A ;
+assign io_sram1_cen     =RAM_CEN;
+assign io_sram1_wen     =RAM_WEN[0][1];
+assign io_sram1_wmask   =RAM_BWEN ;  
+assign io_sram1_wdata   =RAM_D ;  
+assign RAM_Q[0][1]      =io_sram1_rdata;  
+assign io_sram2_addr    =RAM_A ;
+assign io_sram2_cen     =RAM_CEN;
+assign io_sram2_wen     =RAM_WEN[1][0];
+assign io_sram2_wmask   =RAM_BWEN ;  
+assign io_sram2_wdata   =RAM_D ;  
+assign RAM_Q[1][0]      =io_sram2_rdata;  
+assign io_sram3_addr    =RAM_A ;
+assign io_sram3_cen     =RAM_CEN;
+assign io_sram3_wen     =RAM_WEN[1][1];
+assign io_sram3_wmask   =RAM_BWEN ;  
+assign io_sram3_wdata   =RAM_D ;  
+assign RAM_Q[1][1]      =io_sram3_rdata;  
 
 wire[127:0]data_o=RAM_Q[waynum][RAM_N]>>shift;
 assign r_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
@@ -227,7 +267,6 @@ always@(posedge clk)begin
           size<=rw_size_i;
           if(rw_we_i)dirty[hit_waynum_in][index_in]<=1;
           `ifdef ysyx_22050133_DEBUGINFO
-          
           `ifdef ysyx_22050133_MULTICYCLE
             //if(addr!=rw_addr_i)begin
             begin

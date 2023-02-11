@@ -1,7 +1,5 @@
-`timescale 1ns/1ns
 `include "npcvsrc/npcdefine.v"
-//`include "npcdefine.v"
-module ysyx_22050133_NPC # (
+module ysyx_22050133 # (
     parameter RW_DATA_WIDTH     = 64,
     parameter RW_ADDR_WIDTH     = 32,
     parameter AXI_DATA_WIDTH    = 64,
@@ -10,10 +8,135 @@ module ysyx_22050133_NPC # (
     parameter AXI_STRB_WIDTH    = AXI_DATA_WIDTH/8,
     parameter AXI_USER_WIDTH    = 1
 )(
-  input               clk     ,
-  input               rst     
+  input          clock             ,  
+  input          reset             ,
+  //
+  input          io_interrupt      ,
+  //AXI4 Master总线          
+  input          io_master_awready ,    
+  output         io_master_awvalid ,    
+  output[3:0]    io_master_awid    ,  
+  output[31:0]   io_master_awaddr  ,    
+  output[7:0]    io_master_awlen   ,  
+  output[2:0]    io_master_awsize  ,    
+  output[1:0]    io_master_awburst ,    
+  input          io_master_wready  ,    
+  output         io_master_wvalid  ,    
+  output[63:0]   io_master_wdata   ,  
+  output[7:0]    io_master_wstrb   ,  
+  output         io_master_wlast   ,  
+  output         io_master_bready  ,    
+  input          io_master_bvalid  ,    
+  input[3:0]     io_master_bid     ,
+  input[1:0]     io_master_bresp   ,  
+  input          io_master_arready ,    
+  output         io_master_arvalid ,    
+  output[3:0]    io_master_arid    ,  
+  output[31:0]   io_master_araddr  ,    
+  output[7:0]    io_master_arlen   ,  
+  output[2:0]    io_master_arsize  ,    
+  output[1:0]    io_master_arburst ,    
+  output         io_master_rready  ,    
+  input          io_master_rvalid  ,    
+  input[3:0]     io_master_rid     ,
+  input[1:0]     io_master_rresp   ,  
+  input[63:0]    io_master_rdata   ,  
+  input          io_master_rlast   ,  
+  //AXI4 Slave总线          
+  output         io_slave_awready  ,    
+  input          io_slave_awvalid  ,    
+  input[3:0]     io_slave_awid     ,
+  input[31:0]    io_slave_awaddr   ,  
+  input[7:0]     io_slave_awlen    ,  
+  input[2:0]     io_slave_awsize   ,  
+  input[1:0]     io_slave_awburst  ,    
+  output         io_slave_wready   ,  
+  input          io_slave_wvalid   ,  
+  input[63:0]    io_slave_wdata    ,  
+  input[7:0]     io_slave_wstrb    ,  
+  input          io_slave_wlast    ,  
+  input          io_slave_bready   ,  
+  output         io_slave_bvalid   ,  
+  output[3:0]    io_slave_bid      ,
+  output[1:0]    io_slave_bresp    ,  
+  output         io_slave_arready  ,    
+  input          io_slave_arvalid  ,    
+  input[3:0]     io_slave_arid     ,
+  input[31:0]    io_slave_araddr   ,  
+  input[7:0]     io_slave_arlen    ,  
+  input[2:0]     io_slave_arsize   ,  
+  input[1:0]     io_slave_arburst  ,    
+  input          io_slave_rready   ,  
+  output         io_slave_rvalid   ,  
+  output[3:0]    io_slave_rid      ,
+  output[1:0]    io_slave_rresp    ,  
+  output[63:0]   io_slave_rdata    ,  
+  output         io_slave_rlast    ,  
+  //SRAM接口          
+  output[5:0]    io_sram0_addr     ,
+  output         io_sram0_cen      ,
+  output         io_sram0_wen      ,
+  output[127:0]  io_sram0_wmask    ,  
+  output[127:0]  io_sram0_wdata    ,  
+  input[127:0]   io_sram0_rdata    ,  
+  output[5:0]    io_sram1_addr     ,
+  output         io_sram1_cen      ,
+  output         io_sram1_wen      ,
+  output[127:0]  io_sram1_wmask    ,  
+  output[127:0]  io_sram1_wdata    ,  
+  input[127:0]   io_sram1_rdata    ,  
+  output[5:0]    io_sram2_addr     ,
+  output         io_sram2_cen      ,
+  output         io_sram2_wen      ,
+  output[127:0]  io_sram2_wmask    ,  
+  output[127:0]  io_sram2_wdata    ,  
+  input[127:0]   io_sram2_rdata    ,  
+  output[5:0]    io_sram3_addr     ,
+  output         io_sram3_cen      ,
+  output         io_sram3_wen      ,
+  output[127:0]  io_sram3_wmask    ,  
+  output[127:0]  io_sram3_wdata    ,  
+  input[127:0]   io_sram3_rdata    ,  
+  output[5:0]    io_sram4_addr     ,
+  output         io_sram4_cen      ,
+  output         io_sram4_wen      ,
+  output[127:0]  io_sram4_wmask    ,  
+  output[127:0]  io_sram4_wdata    ,  
+  input[127:0]   io_sram4_rdata    ,  
+  output[5:0]    io_sram5_addr     ,
+  output         io_sram5_cen      ,
+  output         io_sram5_wen      ,
+  output[127:0]  io_sram5_wmask    ,  
+  output[127:0]  io_sram5_wdata    ,  
+  input[127:0]   io_sram5_rdata    ,  
+  output[5:0]    io_sram6_addr     ,
+  output         io_sram6_cen      ,
+  output         io_sram6_wen      ,
+  output[127:0]  io_sram6_wmask    ,  
+  output[127:0]  io_sram6_wdata    ,  
+  input[127:0]   io_sram6_rdata    ,  
+  output[5:0]    io_sram7_addr     ,
+  output         io_sram7_cen      ,
+  output         io_sram7_wen      ,
+  output[127:0]  io_sram7_wmask    ,  
+  output[127:0]  io_sram7_wdata    ,  
+  input[127:0]   io_sram7_rdata     
   );
 
+assign  io_slave_awready =0;    
+assign  io_slave_wready  =0;  
+assign  io_slave_bvalid  =0;  
+assign  io_slave_bid     =0;
+assign  io_slave_bresp   =0;  
+assign  io_slave_arready =0;    
+assign  io_slave_rvalid  =0;  
+assign  io_slave_rid     =0;
+assign  io_slave_rresp   =0;  
+assign  io_slave_rdata   =0;  
+assign  io_slave_rlast   =0;  
+
+wire clk=clock;
+wire rst=reset;
 
 `ifdef ysyx_22050133_MULTICYCLE 
 wire flush=0;
@@ -48,11 +171,11 @@ wire MEMREG_en =~block;
 wire WBREG_en  =~block;
 `endif
 
+`ifdef ysyx_22050133_DEBUGINFO
 always @(*)begin
   set_pc({32'd0,IDREG_pc},{32'd0,dnpc},IDREG_inst);
 end
 
-`ifdef ysyx_22050133_DEBUGINFO
 always@(posedge clk)begin
   if(~rst)IPC_profiling({7'd0,ifu_rw_block_o},{7'd0,block_EXU},{7'd0,mem_rw_block_o},{7'd0,pop&(~block)},{7'd0,flush&(~block)},{7'd0,(EXREG_ctrl_ex[17]|EXREG_ctrl_ex[16])&(MEMREG_en)});
 end
@@ -154,7 +277,7 @@ wire Jpred=0;
 assign dnpc=dnpc_EXU[31:0];
 assign pcSrc=Jresult;
 `else
-	`ifdef ysyx_22050133_BHT
+  `ifdef ysyx_22050133_BHT
 parameter BHT_WIDTH=12;
 parameter BHT_LENTH=4096;
 //parameter BHT_LENTH=$pow(2,BHT_WIDTH);
@@ -162,30 +285,30 @@ reg [BHT_LENTH-1:0] BHT[1:0];
 wire [BHT_WIDTH-1:0]BHTwi=EXREG_pc[BHT_WIDTH+2:3];
 wire [BHT_WIDTH-1:0]BHTri=pc[BHT_WIDTH+2:3];
 always@(posedge clk)begin
-	if(rst)begin
-		BHT[0]<=~(4096'd0);
-		BHT[1]<=~(4096'd0);
-		//BHT[2]<=~(4096'd0);
-		//BHT[3]<=~(4096'd0);
-	end
-	else begin
-		if(flush)begin
-			if(BHT[0][BHTwi]^Jresult)BHT[0][BHTwi]<=Jresult;
-			else if(BHT[1][BHTwi]^Jresult)BHT[1][BHTwi]<=Jresult;
-			//else if(BHT[2][BHTwi]^Jresult)BHT[2][BHTwi]<=Jresult;
-			//else if(BHT[3][BHTwi]^Jresult)BHT[3][BHTwi]<=Jresult;
-		end
-	end
+  if(rst)begin
+    BHT[0]<=~(4096'd0);
+    BHT[1]<=~(4096'd0);
+    //BHT[2]<=~(4096'd0);
+    //BHT[3]<=~(4096'd0);
+  end
+  else begin
+    if(flush)begin
+      if(BHT[0][BHTwi]^Jresult)BHT[0][BHTwi]<=Jresult;
+      else if(BHT[1][BHTwi]^Jresult)BHT[1][BHTwi]<=Jresult;
+      //else if(BHT[2][BHTwi]^Jresult)BHT[2][BHTwi]<=Jresult;
+      //else if(BHT[3][BHTwi]^Jresult)BHT[3][BHTwi]<=Jresult;
+    end
+  end
 end
 wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
-					 ||(inst[6:0]==`ysyx_22050133_OP_BXX))? BHT[1][BHTri]:0;
-	`else
+           ||(inst[6:0]==`ysyx_22050133_OP_BXX))? BHT[1][BHTri]:0;
+  `else
 //wire Jpred=0;
 wire Jpred=((inst[6:0]==`ysyx_22050133_OP_JAL)
-					 ||(inst[6:0]==`ysyx_22050133_OP_BXX))? 1:0;
-	`endif
+           ||(inst[6:0]==`ysyx_22050133_OP_BXX))? 1:0;
+  `endif
 assign dnpc_pred=inst[3] ? pc+{{11{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
-	:pc+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
+  :pc+{{19{inst[31]}},inst[31],inst[7],inst[30:25],inst[11:8],1'b0};
 assign dnpc=(Jresult^EXREG_Jpred) ? dnpc_EXU[31:0]:dnpc_pred;
 assign pcSrc=Jpred|(Jresult^EXREG_Jpred);
 `endif
@@ -242,52 +365,33 @@ assign ifu_rw_block_i       = block                ;
 // Advanced eXtensible Interface
 wire                               ifu_axi_aw_ready_i;             
 wire                               ifu_axi_aw_valid_o;
+wire [AXI_ID_WIDTH-1:0]            ifu_axi_aw_id_o;
 wire [AXI_ADDR_WIDTH-1:0]          ifu_axi_aw_addr_o;
-wire [2:0]                         ifu_axi_aw_prot_o;
-//wire [AXI_ID_WIDTH-1:0]           ifu_axi_aw_id_o;
-//wire [AXI_USER_WIDTH-1:0]         ifu_axi_aw_user_o;
-wire [7:0]                        ifu_axi_aw_len_o;
-wire [2:0]                        ifu_axi_aw_size_o;
-wire [1:0]                        ifu_axi_aw_burst_o;
-//wire                              ifu_axi_aw_lock_o;
-//wire [3:0]                        ifu_axi_aw_cache_o;
-//wire [3:0]                        ifu_axi_aw_qos_o;
-//wire [3:0]                        ifu_axi_aw_region_o;
-
+wire [7:0]                         ifu_axi_aw_len_o;
+wire [2:0]                         ifu_axi_aw_size_o;
+wire [1:0]                         ifu_axi_aw_burst_o;
 wire                               ifu_axi_w_ready_i;              
 wire                               ifu_axi_w_valid_o;
 wire [AXI_DATA_WIDTH-1:0]          ifu_axi_w_data_o;
 wire [AXI_DATA_WIDTH/8-1:0]        ifu_axi_w_strb_o;
-wire                              ifu_axi_w_last_o;
-//wire [AXI_USER_WIDTH-1:0]         ifu_axi_w_user_o;
-
+wire                               ifu_axi_w_last_o;
 wire                               ifu_axi_b_ready_o;          
 wire                               ifu_axi_b_valid_i;
-wire  [1:0]                        ifu_axi_b_resp_i;               
-//wire  [AXI_ID_WIDTH-1:0]           ifu_axi_b_id_i;
-//wire  [AXI_USER_WIDTH-1:0]         ifu_axi_b_user_i;
-
+wire [AXI_ID_WIDTH-1:0]            ifu_axi_b_id_i;
+wire [1:0]                         ifu_axi_b_resp_i;               
 wire                               ifu_axi_ar_ready_i;             
 wire                               ifu_axi_ar_valid_o;
+wire [AXI_ID_WIDTH-1:0]            ifu_axi_ar_id_o;
 wire [AXI_ADDR_WIDTH-1:0]          ifu_axi_ar_addr_o;
-wire [2:0]                         ifu_axi_ar_prot_o;
-//wire [AXI_ID_WIDTH-1:0]           ifu_axi_ar_id_o;
-//wire [AXI_USER_WIDTH-1:0]         ifu_axi_ar_user_o;
-wire [7:0]                        ifu_axi_ar_len_o;
-wire [2:0]                        ifu_axi_ar_size_o;
-wire [1:0]                        ifu_axi_ar_burst_o;
-//wire                              ifu_axi_ar_lock_o;
-//wire [3:0]                        ifu_axi_ar_cache_o;
-//wire [3:0]                        ifu_axi_ar_qos_o;
-//wire [3:0]                        ifu_axi_ar_region_o;
-
+wire [7:0]                         ifu_axi_ar_len_o;
+wire [2:0]                         ifu_axi_ar_size_o;
+wire [1:0]                         ifu_axi_ar_burst_o;
 wire                               ifu_axi_r_ready_o;          
 wire                               ifu_axi_r_valid_i;             
-wire  [1:0]                        ifu_axi_r_resp_i;
-wire  [AXI_DATA_WIDTH-1:0]         ifu_axi_r_data_i;
+wire [AXI_ID_WIDTH-1:0]            ifu_axi_r_id_i;
+wire [1:0]                         ifu_axi_r_resp_i;
+wire [AXI_DATA_WIDTH-1:0]          ifu_axi_r_data_i;
 wire                               ifu_axi_r_last_i;
-//wire  [AXI_ID_WIDTH-1:0]           ifu_axi_r_id_i;
-//wire  [AXI_USER_WIDTH-1:0]         ifu_axi_r_user_i
 
 ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
     .clk              (clk),
@@ -309,55 +413,60 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
     .r_data_o         (ifu_r_data_o       ),
     .rw_block_o       (ifu_rw_block_o     ),
     .rw_block_i       (ifu_rw_block_i     ),
+    .io_sram0_addr     (io_sram0_addr     ),
+    .io_sram0_cen      (io_sram0_cen      ),
+    .io_sram0_wen      (io_sram0_wen      ),
+    .io_sram0_wmask    (io_sram0_wmask    ),  
+    .io_sram0_wdata    (io_sram0_wdata    ),  
+    .io_sram0_rdata    (io_sram0_rdata    ),  
+    .io_sram1_addr     (io_sram1_addr     ),
+    .io_sram1_cen      (io_sram1_cen      ),
+    .io_sram1_wen      (io_sram1_wen      ),
+    .io_sram1_wmask    (io_sram1_wmask    ),  
+    .io_sram1_wdata    (io_sram1_wdata    ),  
+    .io_sram1_rdata    (io_sram1_rdata    ),  
+    .io_sram2_addr     (io_sram2_addr     ),
+    .io_sram2_cen      (io_sram2_cen      ),
+    .io_sram2_wen      (io_sram2_wen      ),
+    .io_sram2_wmask    (io_sram2_wmask    ),  
+    .io_sram2_wdata    (io_sram2_wdata    ),  
+    .io_sram2_rdata    (io_sram2_rdata    ),  
+    .io_sram3_addr     (io_sram3_addr     ),
+    .io_sram3_cen      (io_sram3_cen      ),
+    .io_sram3_wen      (io_sram3_wen      ),
+    .io_sram3_wmask    (io_sram3_wmask    ),  
+    .io_sram3_wdata    (io_sram3_wdata    ),  
+    .io_sram3_rdata    (io_sram3_rdata    ),  
     // Advanced eXtensible Intenterface
     .axi_aw_ready_i   (ifu_axi_aw_ready_i),               
     .axi_aw_valid_o   (ifu_axi_aw_valid_o),
+	  .axi_aw_id_o      (ifu_axi_aw_id_o),
     .axi_aw_addr_o    (ifu_axi_aw_addr_o),
-    .axi_aw_prot_o    (ifu_axi_aw_prot_o),
-  //.axi_aw_id_o      (ifu_axi_aw_id_o),
-  //.axi_aw_user_o    (ifu_axi_aw_user_o),
     .axi_aw_len_o     (ifu_axi_aw_len_o),
     .axi_aw_size_o    (ifu_axi_aw_size_o),
     .axi_aw_burst_o   (ifu_axi_aw_burst_o),
-  //.axi_aw_lock_o    (ifu_axi_aw_lock_o),
-  //.axi_aw_cache_o   (ifu_axi_aw_cache_o),
-  //.axi_aw_qos_o     (ifu_axi_aw_qos_o),
-  //.axi_aw_region_o  (ifu_axi_aw_region_o),
-                                           
     .axi_w_ready_i    (ifu_axi_w_ready_i),                
     .axi_w_valid_o    (ifu_axi_w_valid_o),
     .axi_w_data_o     (ifu_axi_w_data_o),
     .axi_w_strb_o     (ifu_axi_w_strb_o),
-    .axi_w_last_o   (ifu_axi_w_last_o),
-    //.axi_w_user_o   (ifu_axi_w_user_o),
-                                           
+    .axi_w_last_o     (ifu_axi_w_last_o),
     .axi_b_ready_o    (ifu_axi_b_ready_o),            
     .axi_b_valid_i    (ifu_axi_b_valid_i),
+		.axi_b_id_i       (ifu_axi_b_id_i),
     .axi_b_resp_i     (ifu_axi_b_resp_i),                 
-    //.axi_b_id_i     (ifu_axi_b_id_i),
-    //.axi_b_user_i   (ifu_axi_b_user_i),
-                                           
     .axi_ar_ready_i   (ifu_axi_ar_ready_i),               
     .axi_ar_valid_o   (ifu_axi_ar_valid_o),
+  	.axi_ar_id_o      (ifu_axi_ar_id_o),
     .axi_ar_addr_o    (ifu_axi_ar_addr_o),
-    .axi_ar_prot_o    (ifu_axi_ar_prot_o),
-  //.axi_ar_id_o      (ifu_axi_ar_id_o),
-  //.axi_ar_user_o    (ifu_axi_ar_user_o),
     .axi_ar_len_o     (ifu_axi_ar_len_o),
     .axi_ar_size_o    (ifu_axi_ar_size_o),
     .axi_ar_burst_o   (ifu_axi_ar_burst_o),
-  //.axi_ar_lock_o    (ifu_axi_ar_lock_o),
-  //.axi_ar_cache_o   (ifu_axi_ar_cache_o),
-  //.axi_ar_qos_o     (ifu_axi_ar_qos_o),
-  //.axi_ar_region_o  (ifu_axi_ar_region_o),
-                                           
     .axi_r_ready_o    (ifu_axi_r_ready_o),            
     .axi_r_valid_i    (ifu_axi_r_valid_i),                
+	  .axi_r_id_i       (ifu_axi_r_id_i),
     .axi_r_resp_i     (ifu_axi_r_resp_i),
     .axi_r_data_i     (ifu_axi_r_data_i),
     .axi_r_last_i     (ifu_axi_r_last_i)
-  //.axi_r_id_i       (ifu_axi_r_id_i),
-  //.axi_r_user_i     (ifu_axi_r_user_i)           
 );
 
 `ifdef ysyx_22050133_NOCACHE
@@ -435,7 +544,7 @@ begin
     EXREG_rs2data <=rs2data ;
     EXREG_imm     <=imm     ;
     EXREG_rd      <=rdout   ;
-		if(pop)EXREG_Jpred<=0;
+    if(pop)EXREG_Jpred<=0;
     else EXREG_Jpred   <=IDREG_Jpred;
     if(ctrl_ex[4])EXU_valid_i<=1;
     else EXU_valid_i<=0;
@@ -443,8 +552,8 @@ begin
     else mem_rw_addr_valid_i<=0;
   end
   else begin
-		if(mem_rw_addr_ready_o)mem_rw_addr_valid_i<=0;
-		if(EXU_valid_o)EXU_valid_i<=0;
+    if(mem_rw_addr_ready_o)mem_rw_addr_valid_i<=0;
+    if(EXU_valid_o)EXU_valid_i<=0;
   end
 end
 
@@ -556,52 +665,33 @@ assign mem_rw_block_i       = block                ;
 // Advanced eXtensible Interface
 wire                               mem_axi_aw_ready_i;             
 wire                               mem_axi_aw_valid_o;
+wire [AXI_ID_WIDTH-1:0]            mem_axi_aw_id_o;
 wire [AXI_ADDR_WIDTH-1:0]          mem_axi_aw_addr_o;
-wire [2:0]                         mem_axi_aw_prot_o;
-//wire [AXI_ID_WIDTH-1:0]           mem_axi_aw_id_o;
-//wire [AXI_USER_WIDTH-1:0]         mem_axi_aw_user_o;
-wire [7:0]                        mem_axi_aw_len_o;
-wire [2:0]                        mem_axi_aw_size_o;
-wire [1:0]                        mem_axi_aw_burst_o;
-//wire                              mem_axi_aw_lock_o;
-//wire [3:0]                        mem_axi_aw_cache_o;
-//wire [3:0]                        mem_axi_aw_qos_o;
-//wire [3:0]                        mem_axi_aw_region_o;
-
+wire [7:0]                         mem_axi_aw_len_o;
+wire [2:0]                         mem_axi_aw_size_o;
+wire [1:0]                         mem_axi_aw_burst_o;
 wire                               mem_axi_w_ready_i;              
 wire                               mem_axi_w_valid_o;
 wire [AXI_DATA_WIDTH-1:0]          mem_axi_w_data_o;
 wire [AXI_DATA_WIDTH/8-1:0]        mem_axi_w_strb_o;
-wire                              mem_axi_w_last_o;
-//wire [AXI_USER_WIDTH-1:0]         mem_axi_w_user_o;
-
+wire                               mem_axi_w_last_o;
 wire                               mem_axi_b_ready_o;          
 wire                               mem_axi_b_valid_i;
-wire  [1:0]                        mem_axi_b_resp_i;               
-//wire  [AXI_ID_WIDTH-1:0]           mem_axi_b_id_i;
-//wire  [AXI_USER_WIDTH-1:0]         mem_axi_b_user_i;
-
+wire [AXI_ID_WIDTH-1:0]            mem_axi_b_id_i;
+wire [1:0]                         mem_axi_b_resp_i;               
 wire                               mem_axi_ar_ready_i;             
 wire                               mem_axi_ar_valid_o;
+wire [AXI_ID_WIDTH-1:0]            mem_axi_ar_id_o;
 wire [AXI_ADDR_WIDTH-1:0]          mem_axi_ar_addr_o;
-wire [2:0]                         mem_axi_ar_prot_o;
-//wire [AXI_ID_WIDTH-1:0]           mem_axi_ar_id_o;
-//wire [AXI_USER_WIDTH-1:0]         mem_axi_ar_user_o;
-wire [7:0]                        mem_axi_ar_len_o;
-wire [2:0]                        mem_axi_ar_size_o;
-wire [1:0]                        mem_axi_ar_burst_o;
-//wire                              mem_axi_ar_lock_o;
-//wire [3:0]                        mem_axi_ar_cache_o;
-//wire [3:0]                        mem_axi_ar_qos_o;
-//wire [3:0]                        mem_axi_ar_region_o;
-
+wire [7:0]                         mem_axi_ar_len_o;
+wire [2:0]                         mem_axi_ar_size_o;
+wire [1:0]                         mem_axi_ar_burst_o;
 wire                               mem_axi_r_ready_o;          
 wire                               mem_axi_r_valid_i;             
-wire  [1:0]                        mem_axi_r_resp_i;
-wire  [AXI_DATA_WIDTH-1:0]         mem_axi_r_data_i;
+wire [AXI_ID_WIDTH-1:0]            mem_axi_r_id_i;
+wire [1:0]                         mem_axi_r_resp_i;
+wire [AXI_DATA_WIDTH-1:0]          mem_axi_r_data_i;
 wire                               mem_axi_r_last_i;
-//wire  [AXI_ID_WIDTH-1:0]           mem_axi_r_id_i;
-//wire  [AXI_USER_WIDTH-1:0]         mem_axi_r_user_i
 
 ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .clk              (clk),
@@ -623,55 +713,60 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .r_data_o         (mem_r_data_o       ),
     .rw_block_o       (mem_rw_block_o     ),
     .rw_block_i       (mem_rw_block_i     ),
+    .io_sram0_addr     (io_sram4_addr     ),
+    .io_sram0_cen      (io_sram4_cen      ),
+    .io_sram0_wen      (io_sram4_wen      ),
+    .io_sram0_wmask    (io_sram4_wmask    ),  
+    .io_sram0_wdata    (io_sram4_wdata    ),  
+    .io_sram0_rdata    (io_sram4_rdata    ),  
+    .io_sram1_addr     (io_sram5_addr     ),
+    .io_sram1_cen      (io_sram5_cen      ),
+    .io_sram1_wen      (io_sram5_wen      ),
+    .io_sram1_wmask    (io_sram5_wmask    ),  
+    .io_sram1_wdata    (io_sram5_wdata    ),  
+    .io_sram1_rdata    (io_sram5_rdata    ),  
+    .io_sram2_addr     (io_sram6_addr     ),
+    .io_sram2_cen      (io_sram6_cen      ),
+    .io_sram2_wen      (io_sram6_wen      ),
+    .io_sram2_wmask    (io_sram6_wmask    ),  
+    .io_sram2_wdata    (io_sram6_wdata    ),  
+    .io_sram2_rdata    (io_sram6_rdata    ),  
+    .io_sram3_addr     (io_sram7_addr     ),
+    .io_sram3_cen      (io_sram7_cen      ),
+    .io_sram3_wen      (io_sram7_wen      ),
+    .io_sram3_wmask    (io_sram7_wmask    ),  
+    .io_sram3_wdata    (io_sram7_wdata    ),  
+    .io_sram3_rdata    (io_sram7_rdata    ),  
     // Advanced eXtensible Intenterface
     .axi_aw_ready_i   (mem_axi_aw_ready_i),               
     .axi_aw_valid_o   (mem_axi_aw_valid_o),
+	  .axi_aw_id_o      (mem_axi_aw_id_o),
     .axi_aw_addr_o    (mem_axi_aw_addr_o),
-    .axi_aw_prot_o    (mem_axi_aw_prot_o),
-  //.axi_aw_id_o      (mem_axi_aw_id_o),
-  //.axi_aw_user_o    (mem_axi_aw_user_o),
     .axi_aw_len_o     (mem_axi_aw_len_o),
     .axi_aw_size_o    (mem_axi_aw_size_o),
     .axi_aw_burst_o   (mem_axi_aw_burst_o),
-  //.axi_aw_lock_o    (mem_axi_aw_lock_o),
-  //.axi_aw_cache_o   (mem_axi_aw_cache_o),
-  //.axi_aw_qos_o     (mem_axi_aw_qos_o),
-  //.axi_aw_region_o  (mem_axi_aw_region_o),
-                                           
     .axi_w_ready_i    (mem_axi_w_ready_i),                
     .axi_w_valid_o    (mem_axi_w_valid_o),
     .axi_w_data_o     (mem_axi_w_data_o),
     .axi_w_strb_o     (mem_axi_w_strb_o),
-    .axi_w_last_o   (mem_axi_w_last_o),
-    //.axi_w_user_o   (mem_axi_w_user_o),
-                                           
+    .axi_w_last_o     (mem_axi_w_last_o),
     .axi_b_ready_o    (mem_axi_b_ready_o),            
     .axi_b_valid_i    (mem_axi_b_valid_i),
+		.axi_b_id_i       (mem_axi_b_id_i),
     .axi_b_resp_i     (mem_axi_b_resp_i),                 
-    //.axi_b_id_i     (mem_axi_b_id_i),
-    //.axi_b_user_i   (mem_axi_b_user_i),
-                                           
     .axi_ar_ready_i   (mem_axi_ar_ready_i),               
     .axi_ar_valid_o   (mem_axi_ar_valid_o),
+  	.axi_ar_id_o      (mem_axi_ar_id_o),
     .axi_ar_addr_o    (mem_axi_ar_addr_o),
-    .axi_ar_prot_o    (mem_axi_ar_prot_o),
-  //.axi_ar_id_o      (mem_axi_ar_id_o),
-  //.axi_ar_user_o    (mem_axi_ar_user_o),
     .axi_ar_len_o     (mem_axi_ar_len_o),
     .axi_ar_size_o    (mem_axi_ar_size_o),
     .axi_ar_burst_o   (mem_axi_ar_burst_o),
-  //.axi_ar_lock_o    (mem_axi_ar_lock_o),
-  //.axi_ar_cache_o   (mem_axi_ar_cache_o),
-  //.axi_ar_qos_o     (mem_axi_ar_qos_o),
-  //.axi_ar_region_o  (mem_axi_ar_region_o),
-                                           
     .axi_r_ready_o    (mem_axi_r_ready_o),            
     .axi_r_valid_i    (mem_axi_r_valid_i),                
+	  .axi_r_id_i       (mem_axi_r_id_i),
     .axi_r_resp_i     (mem_axi_r_resp_i),
     .axi_r_data_i     (mem_axi_r_data_i),
     .axi_r_last_i     (mem_axi_r_last_i)
-  //.axi_r_id_i       (mem_axi_r_id_i),
-  //.axi_r_user_i     (mem_axi_r_user_i)           
 );
 
 
@@ -729,261 +824,99 @@ assign rddata=
     :MEMREG_ctrl_wb[4:0]==`ysyx_22050133_rdSEXT_d?rddata_raw
     :0;
 
-// Advanced eXtensible Interface
-wire                               axi_aw_ready_i;             
-wire                               axi_aw_valid_o;
-wire [AXI_ADDR_WIDTH-1:0]          axi_aw_addr_o;
-wire [2:0]                         axi_aw_prot_o;
-//wire [AXI_ID_WIDTH-1:0]          axi_aw_id_o;
-//wire [AXI_USER_WIDTH-1:0]        axi_aw_user_o;
-wire [7:0]                         axi_aw_len_o;
-wire [2:0]                         axi_aw_size_o;
-wire [1:0]                         axi_aw_burst_o;
-//wire                             axi_aw_lock_o;
-//wire [3:0]                       axi_aw_cache_o;
-//wire [3:0]                       axi_aw_qos_o;
-//wire [3:0]                       axi_aw_region_o;
-
-wire                               axi_w_ready_i;              
-wire                               axi_w_valid_o;
-wire [AXI_DATA_WIDTH-1:0]          axi_w_data_o;
-wire [AXI_DATA_WIDTH/8-1:0]        axi_w_strb_o;
-wire                               axi_w_last_o;
-//wire [AXI_USER_WIDTH-1:0]        axi_w_user_o;
-
-wire                               axi_b_ready_o;          
-wire                               axi_b_valid_i;
-wire  [1:0]                        axi_b_resp_i;               
-//wire  [AXI_ID_WIDTH-1:0]         axi_b_id_i;
-//wire  [AXI_USER_WIDTH-1:0]       axi_b_user_i;
-
-wire                               axi_ar_ready_i;             
-wire                               axi_ar_valid_o;
-wire [AXI_ADDR_WIDTH-1:0]          axi_ar_addr_o;
-wire [2:0]                         axi_ar_prot_o;
-//wire [AXI_ID_WIDTH-1:0]          axi_ar_id_o;
-//wire [AXI_USER_WIDTH-1:0]        axi_ar_user_o;
-wire [7:0]                         axi_ar_len_o;
-wire [2:0]                         axi_ar_size_o;
-wire [1:0]                         axi_ar_burst_o;
-//wire                             axi_ar_lock_o;
-//wire [3:0]                       axi_ar_cache_o;
-//wire [3:0]                       axi_ar_qos_o;
-//wire [3:0]                       axi_ar_region_o;
-
-wire                               axi_r_ready_o;          
-wire                               axi_r_valid_i;             
-wire  [1:0]                        axi_r_resp_i;
-wire  [AXI_DATA_WIDTH-1:0]         axi_r_data_i;
-wire                               axi_r_last_i;
-//wire  [AXI_ID_WIDTH-1:0]         axi_r_id_i;
-//wire  [AXI_USER_WIDTH-1:0]       axi_r_user_i
-
 ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .clk               (clk),               
     .rst               (rst),
-                       
     .s1_axi_aw_ready_o    (ifu_axi_aw_ready_i),                
     .s1_axi_aw_valid_i    (ifu_axi_aw_valid_o),
+		.s1_axi_aw_id_i       (ifu_axi_aw_id_o),
     .s1_axi_aw_addr_i     (ifu_axi_aw_addr_o),
-    .s1_axi_aw_prot_i     (ifu_axi_aw_prot_o),
-    //.s1_axi_aw_id_i       (ifu_axi_aw_id_o),
-    //.s1_axi_aw_user_i     (ifu_axi_aw_user_o),
     .s1_axi_aw_len_i      (ifu_axi_aw_len_o),
     .s1_axi_aw_size_i     (ifu_axi_aw_size_o),
     .s1_axi_aw_burst_i    (ifu_axi_aw_burst_o),
-    //.s1_axi_aw_lock_i     (ifu_axi_aw_lock_o),
-    //.s1_axi_aw_cache_i    (ifu_axi_aw_cache_o),
-    //.s1_axi_aw_qos_i      (ifu_axi_aw_qos_o),
-    //.s1_axi_aw_region_i   (ifu_axi_aw_region_o),
-                                            
     .s1_axi_w_ready_o     (ifu_axi_w_ready_i),                  
     .s1_axi_w_valid_i     (ifu_axi_w_valid_o),
     .s1_axi_w_data_i      (ifu_axi_w_data_o),
     .s1_axi_w_strb_i      (ifu_axi_w_strb_o),
     .s1_axi_w_last_i      (ifu_axi_w_last_o),
-    //.s1_axi_w_user_i      (ifu_axi_w_user_o),
-                       
     .s1_axi_b_ready_i     (ifu_axi_b_ready_o),                  
     .s1_axi_b_valid_o     (ifu_axi_b_valid_i),
+		.s1_axi_b_id_o        (ifu_axi_b_id_i),
     .s1_axi_b_resp_o      (ifu_axi_b_resp_i),                   
-    //.s1_axi_b_id_o        (ifu_axi_b_id_i),
-    //.s1_axi_b_user_o      (ifu_axi_b_user_i),
-                                            
     .s1_axi_ar_ready_o    (ifu_axi_ar_ready_i),                  
     .s1_axi_ar_valid_i    (ifu_axi_ar_valid_o),
+		.s1_axi_ar_id_i       (ifu_axi_ar_id_o),
     .s1_axi_ar_addr_i     (ifu_axi_ar_addr_o),
-    .s1_axi_ar_prot_i     (ifu_axi_ar_prot_o),
-    //.s1_axi_ar_id_i       (ifu_axi_ar_id_o),
-    //.s1_axi_ar_user_i     (ifu_axi_ar_user_o),
     .s1_axi_ar_len_i      (ifu_axi_ar_len_o),
     .s1_axi_ar_size_i     (ifu_axi_ar_size_o),
     .s1_axi_ar_burst_i    (ifu_axi_ar_burst_o),
-    //.s1_axi_ar_lock_i     (ifu_axi_ar_lock_o),
-    //.s1_axi_ar_cache_i    (ifu_axi_ar_cache_o),
-    //.s1_axi_ar_qos_i      (ifu_axi_ar_qos_o),
-    //.s1_axi_ar_region_i   (ifu_axi_ar_region_o),
-                       
     .s1_axi_r_ready_i     (ifu_axi_r_ready_o),                   
     .s1_axi_r_valid_o     (ifu_axi_r_valid_i),                  
+		.s1_axi_r_id_o        (ifu_axi_r_id_i),
     .s1_axi_r_resp_o      (ifu_axi_r_resp_i),
     .s1_axi_r_data_o      (ifu_axi_r_data_i),
     .s1_axi_r_last_o      (ifu_axi_r_last_i),
-    //.s1_axi_r_id_o        (ifu_axi_r_id_i),
-    //.s1_axi_r_user_o      (ifu_axi_r_user_i)          
 
     .s2_axi_aw_ready_o    (mem_axi_aw_ready_i),                
     .s2_axi_aw_valid_i    (mem_axi_aw_valid_o),
+		.s2_axi_aw_id_i       (mem_axi_aw_id_o),
     .s2_axi_aw_addr_i     (mem_axi_aw_addr_o),
-    .s2_axi_aw_prot_i     (mem_axi_aw_prot_o),
-    //.s2_axi_aw_id_i       (mem_axi_aw_id_o),
-    //.s2_axi_aw_user_i     (mem_axi_aw_user_o),
     .s2_axi_aw_len_i      (mem_axi_aw_len_o),
     .s2_axi_aw_size_i     (mem_axi_aw_size_o),
     .s2_axi_aw_burst_i    (mem_axi_aw_burst_o),
-    //.s2_axi_aw_lock_i     (mem_axi_aw_lock_o),
-    //.s2_axi_aw_cache_i    (mem_axi_aw_cache_o),
-    //.s2_axi_aw_qos_i      (mem_axi_aw_qos_o),
-    //.s2_axi_aw_region_i   (mem_axi_aw_region_o),
-                                            
     .s2_axi_w_ready_o     (mem_axi_w_ready_i),                  
     .s2_axi_w_valid_i     (mem_axi_w_valid_o),
     .s2_axi_w_data_i      (mem_axi_w_data_o),
     .s2_axi_w_strb_i      (mem_axi_w_strb_o),
     .s2_axi_w_last_i      (mem_axi_w_last_o),
-    //.s2_axi_w_user_i      (mem_axi_w_user_o),
-                       
     .s2_axi_b_ready_i     (mem_axi_b_ready_o),                  
     .s2_axi_b_valid_o     (mem_axi_b_valid_i),
+		.s2_axi_b_id_o        (mem_axi_b_id_i),
     .s2_axi_b_resp_o      (mem_axi_b_resp_i),                   
-    //.s2_axi_b_id_o        (mem_axi_b_id_i),
-    //.s2_axi_b_user_o      (mem_axi_b_user_i),
-                                            
     .s2_axi_ar_ready_o    (mem_axi_ar_ready_i),                  
     .s2_axi_ar_valid_i    (mem_axi_ar_valid_o),
+		.s2_axi_ar_id_i       (mem_axi_ar_id_o),
     .s2_axi_ar_addr_i     (mem_axi_ar_addr_o),
-    .s2_axi_ar_prot_i     (mem_axi_ar_prot_o),
-    //.s2_axi_ar_id_i       (mem_axi_ar_id_o),
-    //.s2_axi_ar_user_i     (mem_axi_ar_user_o),
     .s2_axi_ar_len_i      (mem_axi_ar_len_o),
     .s2_axi_ar_size_i     (mem_axi_ar_size_o),
     .s2_axi_ar_burst_i    (mem_axi_ar_burst_o),
-    //.s2_axi_ar_lock_i     (mem_axi_ar_lock_o),
-    //.s2_axi_ar_cache_i    (mem_axi_ar_cache_o),
-    //.s2_axi_ar_qos_i      (mem_axi_ar_qos_o),
-    //.s2_axi_ar_region_i   (mem_axi_ar_region_o),
-                       
     .s2_axi_r_ready_i     (mem_axi_r_ready_o),                   
     .s2_axi_r_valid_o     (mem_axi_r_valid_i),                  
+		.s2_axi_r_id_o        (mem_axi_r_id_i),
     .s2_axi_r_resp_o      (mem_axi_r_resp_i),
     .s2_axi_r_data_o      (mem_axi_r_data_i),
     .s2_axi_r_last_o      (mem_axi_r_last_i),
-    //.s2_axi_r_id_o        (mem_axi_r_id_i),
-    //.s2_axi_r_user_o      (mem_axi_r_user_i)          
     //
-    .axi_aw_ready_i   (axi_aw_ready_i),               
-    .axi_aw_valid_o   (axi_aw_valid_o),
-    .axi_aw_addr_o    (axi_aw_addr_o),
-    .axi_aw_prot_o    (axi_aw_prot_o),
-  //.axi_aw_id_o      (axi_aw_id_o),
-  //.axi_aw_user_o    (axi_aw_user_o),
-  .axi_aw_len_o     (axi_aw_len_o),
-  .axi_aw_size_o    (axi_aw_size_o),
-  .axi_aw_burst_o   (axi_aw_burst_o),
-  //.axi_aw_lock_o    (axi_aw_lock_o),
-  //.axi_aw_cache_o   (axi_aw_cache_o),
-  //.axi_aw_qos_o     (axi_aw_qos_o),
-  //.axi_aw_region_o  (axi_aw_region_o),
-                                       
-    .axi_w_ready_i    (axi_w_ready_i),                
-    .axi_w_valid_o    (axi_w_valid_o),
-    .axi_w_data_o     (axi_w_data_o),
-    .axi_w_strb_o     (axi_w_strb_o),
-    .axi_w_last_o   (axi_w_last_o),
-    //.axi_w_user_o   (axi_w_user_o),
-                                       
-    .axi_b_ready_o    (axi_b_ready_o),            
-    .axi_b_valid_i    (axi_b_valid_i),
-    .axi_b_resp_i     (axi_b_resp_i),                 
-    //.axi_b_id_i     (axi_b_id_i),
-    //.axi_b_user_i   (axi_b_user_i),
-                                       
-    .axi_ar_ready_i   (axi_ar_ready_i),               
-    .axi_ar_valid_o   (axi_ar_valid_o),
-    .axi_ar_addr_o    (axi_ar_addr_o),
-    .axi_ar_prot_o    (axi_ar_prot_o),
-  //.axi_ar_id_o      (axi_ar_id_o),
-  //.axi_ar_user_o    (axi_ar_user_o),
-  .axi_ar_len_o     (axi_ar_len_o),
-  .axi_ar_size_o    (axi_ar_size_o),
-  .axi_ar_burst_o   (axi_ar_burst_o),
-  //.axi_ar_lock_o    (axi_ar_lock_o),
-  //.axi_ar_cache_o   (axi_ar_cache_o),
-  //.axi_ar_qos_o     (axi_ar_qos_o),
-  //.axi_ar_region_o  (axi_ar_region_o),
-                                       
-    .axi_r_ready_o    (axi_r_ready_o),            
-    .axi_r_valid_i    (axi_r_valid_i),                
-    .axi_r_resp_i     (axi_r_resp_i),
-    .axi_r_data_i     (axi_r_data_i),
-  .axi_r_last_i     (axi_r_last_i)
-  //.axi_r_id_i       (axi_r_id_i),
-  //.axi_r_user_i     (axi_r_user_i)           
+    .axi_aw_ready_i       (io_master_awready ),   
+    .axi_aw_valid_o       (io_master_awvalid ),   
+	  .axi_aw_id_o          (io_master_awid    ),  
+    .axi_aw_addr_o        (io_master_awaddr  ),   
+    .axi_aw_len_o         (io_master_awlen   ),  
+    .axi_aw_size_o        (io_master_awsize  ),   
+    .axi_aw_burst_o       (io_master_awburst ),   
+    .axi_w_ready_i        (io_master_wready  ),   
+    .axi_w_valid_o        (io_master_wvalid  ),   
+    .axi_w_data_o         (io_master_wdata   ),  
+    .axi_w_strb_o         (io_master_wstrb   ),  
+    .axi_w_last_o         (io_master_wlast   ),  
+    .axi_b_ready_o        (io_master_bready  ),   
+    .axi_b_valid_i        (io_master_bvalid  ),   
+		.axi_b_id_i           (io_master_bid     ),
+    .axi_b_resp_i         (io_master_bresp   ),  
+    .axi_ar_ready_i       (io_master_arready ),   
+    .axi_ar_valid_o       (io_master_arvalid ),   
+  	.axi_ar_id_o          (io_master_arid    ),  
+    .axi_ar_addr_o        (io_master_araddr  ),   
+    .axi_ar_len_o         (io_master_arlen   ),  
+    .axi_ar_size_o        (io_master_arsize  ),   
+    .axi_ar_burst_o       (io_master_arburst ),   
+    .axi_r_ready_o        (io_master_rready  ),   
+    .axi_r_valid_i        (io_master_rvalid  ),   
+	  .axi_r_id_i           (io_master_rid     ),
+    .axi_r_resp_i         (io_master_rresp   ),  
+    .axi_r_data_i         (io_master_rdata   ),  
+    .axi_r_last_i         (io_master_rlast   )  
 );
-ysyx_22050133_axi_slave ysyx_22050133_axi_slave(
-    .clk               (clk),               
-    .rst               (rst),
-                       
-    .axi_aw_ready_o    (axi_aw_ready_i),                
-    .axi_aw_valid_i    (axi_aw_valid_o),
-    .axi_aw_addr_i     (axi_aw_addr_o),
-    .axi_aw_prot_i     (axi_aw_prot_o),
-    //.axi_aw_id_i       (axi_aw_id_o),
-    //.axi_aw_user_i     (axi_aw_user_o),
-    .axi_aw_len_i      (axi_aw_len_o),
-    .axi_aw_size_i     (axi_aw_size_o),
-    .axi_aw_burst_i    (axi_aw_burst_o),
-    //.axi_aw_lock_i     (axi_aw_lock_o),
-    //.axi_aw_cache_i    (axi_aw_cache_o),
-    //.axi_aw_qos_i      (axi_aw_qos_o),
-    //.axi_aw_region_i   (axi_aw_region_o),
-                                            
-    .axi_w_ready_o     (axi_w_ready_i),                  
-    .axi_w_valid_i     (axi_w_valid_o),
-    .axi_w_data_i      (axi_w_data_o),
-    .axi_w_strb_i      (axi_w_strb_o),
-    .axi_w_last_i      (axi_w_last_o),
-    //.axi_w_user_i      (axi_w_user_o),
-                       
-    .axi_b_ready_i     (axi_b_ready_o),                  
-    .axi_b_valid_o     (axi_b_valid_i),
-    .axi_b_resp_o      (axi_b_resp_i),                   
-    //.axi_b_id_o        (axi_b_id_i),
-    //.axi_b_user_o      (axi_b_user_i),
-                                            
-    .axi_ar_ready_o    (axi_ar_ready_i),                  
-    .axi_ar_valid_i    (axi_ar_valid_o),
-    .axi_ar_addr_i     (axi_ar_addr_o),
-    .axi_ar_prot_i     (axi_ar_prot_o),
-    //.axi_ar_id_i       (axi_ar_id_o),
-    //.axi_ar_user_i     (axi_ar_user_o),
-    .axi_ar_len_i      (axi_ar_len_o),
-    .axi_ar_size_i     (axi_ar_size_o),
-    .axi_ar_burst_i    (axi_ar_burst_o),
-    //.axi_ar_lock_i     (axi_ar_lock_o),
-    //.axi_ar_cache_i    (axi_ar_cache_o),
-    //.axi_ar_qos_i      (axi_ar_qos_o),
-    //.axi_ar_region_i   (axi_ar_region_o),
-                       
-    .axi_r_ready_i     (axi_r_ready_o),                   
-    .axi_r_valid_o     (axi_r_valid_i),                  
-    .axi_r_resp_o      (axi_r_resp_i),
-    .axi_r_data_o      (axi_r_data_i),
-    .axi_r_last_o      (axi_r_last_i)
-    //.axi_r_id_o        (axi_r_id_i),
-    //.axi_r_user_o      (axi_r_user_i)          
-);
-
 `ifdef ysyx_22050133_REGINFO
 always@(posedge clk)
   begin
