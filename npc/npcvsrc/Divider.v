@@ -11,7 +11,7 @@ module ysyx_22050133_Divider(
     input      [63:0] dividend   ,  //xlen 被除数（ xlen 表示要实现的位数，ysyx 中是 64）
     input      [63:0] divisor    ,  //xlen 除数
     output reg        div_ready  ,  //为高表示除法器空闲，可以输入数据
-    output reg        out_valid  ,  //为高表示除法器输出了有效结果
+    //output reg        out_valid  ,  //为高表示除法器输出了有效结果
     output reg [63:0] quotient   ,  //xlen 商
     output reg [63:0] remainder     //xlen 余数
     );
@@ -72,7 +72,7 @@ module ysyx_22050133_Divider(
       R_signal<=0;
       clk_cnt<=0;
       div_ready<=0;
-      out_valid<=0;
+      //out_valid<=0;
       quotient<=0;
       remainder<=0;
     end
@@ -83,7 +83,7 @@ module ysyx_22050133_Divider(
             div_cycle_profiling();
         `endif
         div_ready<=0;
-        out_valid<=0;
+        //out_valid<=0;
         B<=divisor_ext;
         S<=0;
         R<=0;
@@ -127,7 +127,7 @@ module ysyx_22050133_Divider(
         remainder<=R_out;
         //remainder<=0;
         div_ready<=1;
-        out_valid<=1;
+        //out_valid<=1;
         clk_cnt<=0;
         end
         else begin
@@ -189,7 +189,7 @@ module ysyx_22050133_Divider(
     if(rst)begin
       clk_cnt<=0;
       div_ready<=0;
-      out_valid<=0;
+      //out_valid<=0;
       quotient<=0;
       remainder<=0;
     end
@@ -200,7 +200,7 @@ module ysyx_22050133_Divider(
             div_cycle_profiling();
         `endif
         div_ready<=0;
-        out_valid<=0;
+        //out_valid<=0;
         clk_cnt<=0;
       end
       else begin
@@ -213,7 +213,7 @@ module ysyx_22050133_Divider(
         `endif
         if(next_state==S_IDLE)begin
         clk_cnt<=0;
-        out_valid<=1;
+        //out_valid<=1;
         quotient<=result_quotient[63:0];
         remainder<=result_remainder[63:0];
         end

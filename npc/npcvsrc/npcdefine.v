@@ -187,6 +187,10 @@
 `define ysyx_22050133_CSRop_ecall  1
 `define ysyx_22050133_CSRop_csrrw  2
 `define ysyx_22050133_CSRop_csrrs  3
+`define ysyx_22050133_CSRop_csrrc  4
+`define ysyx_22050133_CSRop_csrrwi 5
+`define ysyx_22050133_CSRop_csrrsi 6
+`define ysyx_22050133_CSRop_csrrci 7
 
 `define ysyx_22050133_ALUop_NOP     5'b00000
 `define ysyx_22050133_ALUop_BEQ     5'b00001

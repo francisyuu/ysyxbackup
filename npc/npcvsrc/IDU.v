@@ -35,10 +35,10 @@ wire OPXXI    =  opcode==`ysyx_22050133_OP_XXI   ;
 wire OPXXIW   =  opcode==`ysyx_22050133_OP_XXIW  ; 
 wire OPRXX    =  opcode==`ysyx_22050133_OP_RXX   ; 
 wire OPRWX    =  opcode==`ysyx_22050133_OP_RWX   ; 
-wire OPFXX    =  opcode==`ysyx_22050133_OP_FXX   ; 
+//wire OPFXX    =  opcode==`ysyx_22050133_OP_FXX   ; 
 wire OPSYS    =  opcode==`ysyx_22050133_OP_SYS   ; 
 
-wire F3JALR    =  funct3==`ysyx_22050133_F3_JALR     ; 
+//wire F3JALR    =  funct3==`ysyx_22050133_F3_JALR     ; 
 wire F3BEQ     =  funct3==`ysyx_22050133_F3_BEQ      ; 
 wire F3BNE     =  funct3==`ysyx_22050133_F3_BNE      ; 
 wire F3BLT     =  funct3==`ysyx_22050133_F3_BLT      ; 
@@ -61,15 +61,15 @@ wire F3ORI     =  funct3==`ysyx_22050133_F3_ORI      ;
 wire F3ANDI    =  funct3==`ysyx_22050133_F3_ANDI     ; 
 wire F3SLLI    =  funct3==`ysyx_22050133_F3_SLLI     ; 
 wire F3SRLI    =  funct3==`ysyx_22050133_F3_SRLI     ; 
-wire F3SRAI    =  funct3==`ysyx_22050133_F3_SRAI     ; 
+//wire F3SRAI    =  funct3==`ysyx_22050133_F3_SRAI     ; 
 wire F3ADD     =  funct3==`ysyx_22050133_F3_ADD      ; 
-wire F3SUB     =  funct3==`ysyx_22050133_F3_SUB      ; 
+//wire F3SUB     =  funct3==`ysyx_22050133_F3_SUB      ; 
 wire F3SLL     =  funct3==`ysyx_22050133_F3_SLL      ; 
 wire F3SLT     =  funct3==`ysyx_22050133_F3_SLT      ; 
 wire F3SLTU    =  funct3==`ysyx_22050133_F3_SLTU     ; 
 wire F3XOR     =  funct3==`ysyx_22050133_F3_XOR      ; 
 wire F3SRL     =  funct3==`ysyx_22050133_F3_SRL      ; 
-wire F3SRA     =  funct3==`ysyx_22050133_F3_SRA      ; 
+//wire F3SRA     =  funct3==`ysyx_22050133_F3_SRA      ; 
 wire F3OR      =  funct3==`ysyx_22050133_F3_OR       ; 
 wire F3AND     =  funct3==`ysyx_22050133_F3_AND      ; 
 
@@ -78,16 +78,16 @@ wire F3LD      =  funct3==`ysyx_22050133_F3_LD       ;
 wire F3SD      =  funct3==`ysyx_22050133_F3_SD       ; 
 wire F3SLLI    =  funct3==`ysyx_22050133_F3_SLLI     ; 
 wire F3SRLI    =  funct3==`ysyx_22050133_F3_SRLI     ; 
-wire F3SRAI    =  funct3==`ysyx_22050133_F3_SRAI     ; 
-wire F3ADDIW   =  funct3==`ysyx_22050133_F3_ADDIW    ; 
-wire F3SLLIW   =  funct3==`ysyx_22050133_F3_SLLIW    ; 
-wire F3SRLIW   =  funct3==`ysyx_22050133_F3_SRLIW    ; 
-wire F3SRAIW   =  funct3==`ysyx_22050133_F3_SRAIW    ; 
-wire F3ADDW    =  funct3==`ysyx_22050133_F3_ADDW     ; 
-wire F3SUBW    =  funct3==`ysyx_22050133_F3_SUBW     ; 
-wire F3SLLW    =  funct3==`ysyx_22050133_F3_SLLW     ; 
-wire F3SRLW    =  funct3==`ysyx_22050133_F3_SRLW     ; 
-wire F3SRAW    =  funct3==`ysyx_22050133_F3_SRAW     ; 
+//wire F3SRAI    =  funct3==`ysyx_22050133_F3_SRAI     ; 
+//wire F3ADDIW   =  funct3==`ysyx_22050133_F3_ADDIW    ; 
+//wire F3SLLIW   =  funct3==`ysyx_22050133_F3_SLLIW    ; 
+//wire F3SRLIW   =  funct3==`ysyx_22050133_F3_SRLIW    ; 
+//wire F3SRAIW   =  funct3==`ysyx_22050133_F3_SRAIW    ; 
+//wire F3ADDW    =  funct3==`ysyx_22050133_F3_ADDW     ; 
+//wire F3SUBW    =  funct3==`ysyx_22050133_F3_SUBW     ; 
+//wire F3SLLW    =  funct3==`ysyx_22050133_F3_SLLW     ; 
+//wire F3SRLW    =  funct3==`ysyx_22050133_F3_SRLW     ; 
+//wire F3SRAW    =  funct3==`ysyx_22050133_F3_SRAW     ; 
 
 wire F3CSRRW   =  funct3==`ysyx_22050133_F3_CSRRW    ; 
 wire F3CSRRS   =  funct3==`ysyx_22050133_F3_CSRRS    ; 
@@ -105,58 +105,58 @@ wire F3DIVU    =  funct3==`ysyx_22050133_F3_DIVU     ;
 wire F3REM     =  funct3==`ysyx_22050133_F3_REM      ; 
 wire F3REMU    =  funct3==`ysyx_22050133_F3_REMU     ; 
 
-wire F3MULW    =  funct3==`ysyx_22050133_F3_MULW     ; 
-wire F3DIVW    =  funct3==`ysyx_22050133_F3_DIVW     ; 
-wire F3DIVUW   =  funct3==`ysyx_22050133_F3_DIVUW    ; 
-wire F3REMW    =  funct3==`ysyx_22050133_F3_REMW     ; 
-wire F3REMUW   =  funct3==`ysyx_22050133_F3_REMUW    ; 
+//wire F3MULW    =  funct3==`ysyx_22050133_F3_MULW     ; 
+//wire F3DIVW    =  funct3==`ysyx_22050133_F3_DIVW     ; 
+//wire F3DIVUW   =  funct3==`ysyx_22050133_F3_DIVUW    ; 
+//wire F3REMW    =  funct3==`ysyx_22050133_F3_REMW     ; 
+//wire F3REMUW   =  funct3==`ysyx_22050133_F3_REMUW    ; 
 
-wire F6SLLI    =  funct7[6:1]==`ysyx_22050133_F6_SLLI    ; 
+//wire F6SLLI    =  funct7[6:1]==`ysyx_22050133_F6_SLLI    ; 
 wire F6SRLI    =  funct7[6:1]==`ysyx_22050133_F6_SRLI    ; 
-wire F6SRAI    =  funct7[6:1]==`ysyx_22050133_F6_SRAI    ; 
+//wire F6SRAI    =  funct7[6:1]==`ysyx_22050133_F6_SRAI    ; 
 
 wire F7ADD     =  funct7==`ysyx_22050133_F7_ADD     ; 
-wire F7SUB     =  funct7==`ysyx_22050133_F7_SUB     ; 
-wire F7SLL     =  funct7==`ysyx_22050133_F7_SLL     ; 
-wire F7SLT     =  funct7==`ysyx_22050133_F7_SLT     ; 
-wire F7SLTU    =  funct7==`ysyx_22050133_F7_SLTU    ; 
-wire F7XOR     =  funct7==`ysyx_22050133_F7_XOR     ; 
+//wire F7SUB     =  funct7==`ysyx_22050133_F7_SUB     ; 
+//wire F7SLL     =  funct7==`ysyx_22050133_F7_SLL     ; 
+//wire F7SLT     =  funct7==`ysyx_22050133_F7_SLT     ; 
+//wire F7SLTU    =  funct7==`ysyx_22050133_F7_SLTU    ; 
+//wire F7XOR     =  funct7==`ysyx_22050133_F7_XOR     ; 
 wire F7SRL     =  funct7==`ysyx_22050133_F7_SRL     ; 
-wire F7SRA     =  funct7==`ysyx_22050133_F7_SRA     ; 
-wire F7OR      =  funct7==`ysyx_22050133_F7_OR      ; 
-wire F7AND     =  funct7==`ysyx_22050133_F7_AND     ; 
+//wire F7SRA     =  funct7==`ysyx_22050133_F7_SRA     ; 
+//wire F7OR      =  funct7==`ysyx_22050133_F7_OR      ; 
+//wire F7AND     =  funct7==`ysyx_22050133_F7_AND     ; 
 
-wire F7SLLIW   =  funct7==`ysyx_22050133_F7_SLLIW   ; 
-wire F7SRLIW   =  funct7==`ysyx_22050133_F7_SRLIW   ; 
-wire F7SRAIW   =  funct7==`ysyx_22050133_F7_SRAIW   ; 
-wire F7ADDW    =  funct7==`ysyx_22050133_F7_ADDW    ; 
-wire F7SUBW    =  funct7==`ysyx_22050133_F7_SUBW    ; 
-wire F7SLLW    =  funct7==`ysyx_22050133_F7_SLLW    ; 
-wire F7SRLW    =  funct7==`ysyx_22050133_F7_SRLW    ; 
-wire F7SRAW    =  funct7==`ysyx_22050133_F7_SRAW    ; 
+//wire F7SLLIW   =  funct7==`ysyx_22050133_F7_SLLIW   ; 
+//wire F7SRLIW   =  funct7==`ysyx_22050133_F7_SRLIW   ; 
+//wire F7SRAIW   =  funct7==`ysyx_22050133_F7_SRAIW   ; 
+//wire F7ADDW    =  funct7==`ysyx_22050133_F7_ADDW    ; 
+//wire F7SUBW    =  funct7==`ysyx_22050133_F7_SUBW    ; 
+//wire F7SLLW    =  funct7==`ysyx_22050133_F7_SLLW    ; 
+//wire F7SRLW    =  funct7==`ysyx_22050133_F7_SRLW    ; 
+//wire F7SRAW    =  funct7==`ysyx_22050133_F7_SRAW    ; 
 
-wire F7RXX1    =  funct7==`ysyx_22050133_F7_RXX1    ; 
-wire F7RXX2    =  funct7==`ysyx_22050133_F7_RXX2    ; 
+//wire F7RXX1    =  funct7==`ysyx_22050133_F7_RXX1    ; 
+//wire F7RXX2    =  funct7==`ysyx_22050133_F7_RXX2    ; 
 
 wire F7MUL     =  funct7==`ysyx_22050133_F7_MUL     ; 
-wire F7MULH    =  funct7==`ysyx_22050133_F7_MULH    ; 
-wire F7MULHSU  =  funct7==`ysyx_22050133_F7_MULHSU  ; 
-wire F7MULHU   =  funct7==`ysyx_22050133_F7_MULHU   ; 
-wire F7DIV     =  funct7==`ysyx_22050133_F7_DIV     ; 
-wire F7DIVU    =  funct7==`ysyx_22050133_F7_DIVU    ; 
-wire F7REM     =  funct7==`ysyx_22050133_F7_REM     ; 
-wire F7REMU    =  funct7==`ysyx_22050133_F7_REMU    ; 
+//wire F7MULH    =  funct7==`ysyx_22050133_F7_MULH    ; 
+//wire F7MULHSU  =  funct7==`ysyx_22050133_F7_MULHSU  ; 
+//wire F7MULHU   =  funct7==`ysyx_22050133_F7_MULHU   ; 
+//wire F7DIV     =  funct7==`ysyx_22050133_F7_DIV     ; 
+//wire F7DIVU    =  funct7==`ysyx_22050133_F7_DIVU    ; 
+//wire F7REM     =  funct7==`ysyx_22050133_F7_REM     ; 
+//wire F7REMU    =  funct7==`ysyx_22050133_F7_REMU    ; 
 
-wire F7MULW    =  funct7==`ysyx_22050133_F7_MULW    ; 
-wire F7DIVW    =  funct7==`ysyx_22050133_F7_DIVW    ; 
-wire F7DIVUW   =  funct7==`ysyx_22050133_F7_DIVUW   ; 
-wire F7REMW    =  funct7==`ysyx_22050133_F7_REMW    ; 
-wire F7REMUW   =  funct7==`ysyx_22050133_F7_REMUW   ; 
+//wire F7MULW    =  funct7==`ysyx_22050133_F7_MULW    ; 
+//wire F7DIVW    =  funct7==`ysyx_22050133_F7_DIVW    ; 
+//wire F7DIVUW   =  funct7==`ysyx_22050133_F7_DIVUW   ; 
+//wire F7REMW    =  funct7==`ysyx_22050133_F7_REMW    ; 
+//wire F7REMUW   =  funct7==`ysyx_22050133_F7_REMUW   ; 
 
-wire F7RXX3    =  funct7==`ysyx_22050133_F7_RXX3    ; 
+//wire F7RXX3    =  funct7==`ysyx_22050133_F7_RXX3    ; 
 
-wire FFENCE  =  inst[31:7]==`ysyx_22050133_F_FENCE;
-wire FPAUSE  =  inst[31:7]==`ysyx_22050133_F_PAUSE;
+//wire FFENCE  =  inst[31:7]==`ysyx_22050133_F_FENCE;
+//wire FPAUSE  =  inst[31:7]==`ysyx_22050133_F_PAUSE;
 wire FECALL  =  inst[31:7]==`ysyx_22050133_F_ECALL; 
 wire FEBREAK =  inst[31:7]==`ysyx_22050133_F_EBREAK;
 wire FMRET   =  inst[31:7]==`ysyx_22050133_F_MRET; 
@@ -207,13 +207,16 @@ assign ctrl_ex[15:13]=OPSYS ?
                        FECALL ?`ysyx_22050133_CSRop_ecall
                        :F3CSRRW ?`ysyx_22050133_CSRop_csrrw
                        :F3CSRRS ?`ysyx_22050133_CSRop_csrrs
+                       :F3CSRRC ?`ysyx_22050133_CSRop_csrrc
+                       :F3CSRRWI ?`ysyx_22050133_CSRop_csrrwi
+                       :F3CSRRSI ?`ysyx_22050133_CSRop_csrrsi
+                       :F3CSRRCI ?`ysyx_22050133_CSRop_csrrci
                        :0
                       :0;
 assign ctrl_ex[12:11]=OPSYS ?
                        FECALL ?`ysyx_22050133_CSRSrc_mtvec
                        :FMRET ?`ysyx_22050133_CSRSrc_mepc
-                       :(F3CSRRW|F3CSRRS) ?`ysyx_22050133_CSRSrc_imm
-                       :0
+                       :`ysyx_22050133_CSRSrc_imm
                       :0;
 assign ctrl_ex[10]=(OPSYS&(FECALL|FMRET)) ? 1:0;
 assign ctrl_ex[9]=OPJALR ? 1:0;

@@ -16,7 +16,7 @@ module ysyx_22050133_Multipler(
     input   [63:0]     multiplicand,   //被乘数，xlen 表示乘法器位数
     input   [63:0]     multiplier  ,   //乘数
     output  reg        mul_ready   ,   //为高表示乘法器准备好，表示可以输入数据
-    output  reg        out_valid   ,   //为高表示乘法器输出的结果有效
+    //output  reg        out_valid   ,   //为高表示乘法器输出的结果有效
     output  reg [63:0] result_hi   ,   //高 xlen bits 结果
     output  reg [63:0] result_lo       //低 xlen bits 结果
     );
@@ -78,7 +78,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
       y<=0;
 			result<=0;
       mul_ready<=0;
-      out_valid<=0;
+      //out_valid<=0;
       result_hi<=0;
       result_lo<=0;
     end
@@ -87,7 +87,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         x<=multiplicand_sext;
         y<={multiplier_sext,1'd0};
         mul_ready<=0;
-        out_valid<=0;
+        //out_valid<=0;
         result<=0;
         `ifdef ysyx_22050133_DEBUGINFO
             mul_inst_profiling();
@@ -104,7 +104,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         if(next_state==S_IDLE)begin
         result_hi<=result[127:64];
         result_lo<=result[63:0];
-        out_valid<=1;
+        //out_valid<=1;
         mul_ready<=1;
       end
       else begin
@@ -193,7 +193,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
       x<=0;
       y<=0;
       mul_ready<=0;
-      out_valid<=0;
+      //out_valid<=0;
       result_hi<=0;
       result_lo<=0;
     end
@@ -202,7 +202,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         x<=multiplicand_sext;
         y<={multiplier_sext,1'd0};
         mul_ready<=0;
-        out_valid<=0;
+        //out_valid<=0;
         clk_cnt<=0;
         `ifdef ysyx_22050133_DEBUGINFO
             mul_inst_profiling();
@@ -219,7 +219,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         `endif
         if(next_state==S_IDLE)begin
         clk_cnt<=0;
-        out_valid<=1;
+        //out_valid<=1;
         result_hi<=result[127:64];
         result_lo<=result[63:0];
         end
@@ -259,14 +259,14 @@ wire [65:0] multiplier_sext=mul_signed[0]?
     if(rst)begin
       clk_cnt<=0;
       mul_ready<=0;
-      out_valid<=0;
+      //out_valid<=0;
       result_hi<=0;
       result_lo<=0;
     end
     else case(state)
       S_IDLE:if(next_state==S_MUL)begin
         mul_ready<=0;
-        out_valid<=0;
+        //out_valid<=0;
         clk_cnt<=0;
         `ifdef ysyx_22050133_DEBUGINFO
             mul_inst_profiling();
@@ -283,7 +283,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
         `endif
         if(next_state==S_IDLE)begin
         clk_cnt<=0;
-        out_valid<=1;
+        //out_valid<=1;
         result_hi<=result[127:64];
         result_lo<=result[63:0];
         end

@@ -3,11 +3,9 @@ module ysyx_22050133_IFU(
   input clk          ,
   input rst          ,
   input pcREG_en          ,
-  input flush          ,
   input     [31:0] dnpc,
   input            pcSrc,
-  input     [63:0] inst64,
-  input            pc_ready_i,
+  input     [31:0] instin,
   output reg pc_valid_o,
   output reg[31:0] pc,
   output [31:0] npc,
@@ -30,7 +28,7 @@ begin
     pc_valid_o<=0;
   end
 end
-assign inst=pc==32'h7ffffffc ? 0 : inst64[31:0];
+assign inst=pc==32'h7ffffffc ? 0 : instin[31:0];
 
 `else
 
@@ -54,9 +52,9 @@ begin
   else if(inst_store==0)begin
     pc_valid_o<=0;
     inst_store<=1;
-    inst_stored<=inst64[31:0];
+    inst_stored<=instin[31:0];
   end
 end
-assign inst=pc==32'h7ffffffc ? 0:inst_store ? inst_stored:inst64[31:0];
+assign inst=pc==32'h7ffffffc ? 0:inst_store ? inst_stored:instin[31:0];
 `endif
 endmodule

@@ -89,7 +89,6 @@ assign w_data_ready_o=1;
 
 reg [RW_ADDR_WIDTH-1:0] addr;
 reg [RW_ADDR_WIDTH-1:0] addr0;
-reg we;
 reg [2:0] size;
 reg rw_if;
 reg [RW_DATA_WIDTH-1:0] w_data;
@@ -243,7 +242,6 @@ always@(posedge clk)begin
     index<=0;
     addr<=0;
     addr0<=0;
-    we<=0;
     size<=0;
     rw_if<=0;
     w_data<=0;
@@ -295,7 +293,6 @@ always@(posedge clk)begin
           index<=index_in;
           addr<={tag[random][index_in],index_in,OFFSET0};
           addr0<=rw_addr_i;
-          we<=rw_we_i;
           size<=rw_size_i;
           rw_if<=rw_if_i;
           w_data<=w_data_i;
@@ -319,7 +316,6 @@ always@(posedge clk)begin
           index<=index_in;
           addr<={rw_addr_i[TAGL:INDEXR],OFFSET0};
           addr0<=rw_addr_i;
-          we<=rw_we_i;
           size<=rw_size_i;
           rw_if<=rw_if_i;
           w_data<=w_data_i;

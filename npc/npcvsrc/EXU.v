@@ -3,8 +3,9 @@ module ysyx_22050133_EXU(
   input            clk        ,
   input            rst        ,
   input   [15:0]    ctrl_ex  ,
-  input   [63:0]   pc64      ,
+  input   [31:0]   pc      ,
   input            Jpred   ,
+  input   [4:0]    rs1     ,
   input   [63:0]   rs1data ,
   input   [63:0]   rs2data ,
   input   [63:0]   imm     ,
@@ -29,7 +30,7 @@ wire[63:0] rs2data_forward=forward_ALUSrc2==0 ? rs2data
 :forward_ALUSrc2==`ysyx_22050133_forward_src_wb ? forward_data_wb
 :forward_ALUSrc2==`ysyx_22050133_forward_src_mem ? forward_data_mem
 :0;
-wire[63:0] ALUdata1=ctrl_ex[8] ? pc64:rs1data_forward;
+wire[63:0] ALUdata1=ctrl_ex[8] ? {32'd0,pc}:rs1data_forward;
 wire[63:0] ALUdata2=ctrl_ex[7] ? 4
                     :ctrl_ex[6] ? imm
                     :rs2data_forward;
@@ -107,7 +108,7 @@ wire[1:0]  mul_signed  =ctrl_ex[1:0];
 wire[63:0] multiplicand=ALUdata1;
 wire[63:0] multiplier  =ALUdata2;
 wire       mul_ready ;
-wire       mul_out_valid ;
+//wire       mul_out_valid ;
 wire[63:0] result_hi ;
 wire[63:0] result_lo ;
 ysyx_22050133_Multipler ysyx_22050133_Multipler_dut(
@@ -120,7 +121,7 @@ ysyx_22050133_Multipler ysyx_22050133_Multipler_dut(
     .multiplicand(multiplicand),   //被乘数，xlen 表示乘法器位数
     .multiplier  (multiplier  ),   //乘数
     .mul_ready   (mul_ready   ),   //为高表示乘法器准备好，表示可以输入数据
-    .out_valid   (mul_out_valid),   //为高表示乘法器输出的结果有效
+    //.out_valid   (mul_out_valid),   //为高表示乘法器输出的结果有效
     .result_hi   (result_hi   ),   //高 xlen bits 结果
     .result_lo   (result_lo   )    //低 xlen bits 结果
     );
@@ -131,7 +132,7 @@ wire       div_signed  =ctrl_ex[0];
 wire[63:0] dividend=ALUdata1;
 wire[63:0] divisor  =ALUdata2;
 wire       div_ready ;
-wire       div_out_valid ;
+//wire       div_out_valid ;
 wire[63:0] quotient ;
 wire[63:0] remainder ;
 ysyx_22050133_Divider ysyx_22050133_Divider_dut(
@@ -144,16 +145,15 @@ ysyx_22050133_Divider ysyx_22050133_Divider_dut(
     .dividend    (dividend    ),   //被乘数，xlen 表示乘法器位数
     .divisor     (divisor     ),   //乘数
     .div_ready   (div_ready   ),   //为高表示乘法器准备好，表示可以输入数据
-    .out_valid   (div_out_valid),   //为高表示乘法器输出的结果有效
+    //.out_valid   (div_out_valid),   //为高表示乘法器输出的结果有效
     .quotient    (quotient    ),   //高 xlen bits 结果
     .remainder   (remainder   )    //低 xlen bits 结果
     );
 
 
-assign dnpc_EXU=dnpc_EXU64[31:0];
-wire[63:0] dnpc_EXU64=ctrl_ex[10] ? csrdata
-	          :Jpred ? pc64+4
-	          :imm+(ctrl_ex[9] ? rs1data_forward:pc64);
+assign dnpc_EXU=ctrl_ex[10] ? csrdata[31:0]
+	          :Jpred ? pc+4
+	          :imm[31:0]+(ctrl_ex[9] ? rs1data_forward[31:0]:pc);
 assign result=  ctrl_ex[5] ? 
                   ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD ? Raddw
                   :ctrl_ex[4:0]==`ysyx_22050133_ALUop_SUB ? Rsubw
@@ -210,9 +210,9 @@ always@(posedge clk)begin
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_ecall)begin
 			////$monitor("hello\n");
 `ifdef ysyx_22050133_DEBUGINFO
-      npc_etrace(pc64,64'hb);
+      npc_etrace({32'd0,pc},64'hb);
 `endif
-      csr[2]<=pc64;
+      csr[2]<={32'd0,pc};
       csr[3]<=64'hb;
   end
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrw)begin
@@ -220,6 +220,18 @@ always@(posedge clk)begin
   end
 	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrs)begin
     csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|rs1data_forward;
+  end
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrc)begin
+    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]&~rs1data_forward;
+  end
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrwi)begin
+    csr[CSRi(imm[11:0])]<={59'd0,rs1};
+  end
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrsi)begin
+    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|{59'd0,rs1};
+  end
+	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrci)begin
+    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]&~{59'd0,rs1};
   end
 end
 
