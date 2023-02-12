@@ -642,35 +642,36 @@ assign mem_r_data_ready_i  = EXREG_ctrl_ex[21]|EXREG_ctrl_ex[22];
 assign mem_rw_block_i       = block                ;
 
 // Advanced eXtensible Interface
-wire                               mem_axi_aw_ready_i;             
-wire                               mem_axi_aw_valid_o;
-wire [AXI_ID_WIDTH-1:0]            mem_axi_aw_id_o;
-wire [AXI_ADDR_WIDTH-1:0]          mem_axi_aw_addr_o;
-wire [7:0]                         mem_axi_aw_len_o;
-wire [2:0]                         mem_axi_aw_size_o;
-wire [1:0]                         mem_axi_aw_burst_o;
-wire                               mem_axi_w_ready_i;              
-wire                               mem_axi_w_valid_o;
-wire [AXI_DATA_WIDTH-1:0]          mem_axi_w_data_o;
-wire [AXI_DATA_WIDTH/8-1:0]        mem_axi_w_strb_o;
-wire                               mem_axi_w_last_o;
-wire                               mem_axi_b_ready_o;          
-wire                               mem_axi_b_valid_i;
-wire [AXI_ID_WIDTH-1:0]            mem_axi_b_id_i;
-wire [1:0]                         mem_axi_b_resp_i;               
-wire                               mem_axi_ar_ready_i;             
-wire                               mem_axi_ar_valid_o;
-wire [AXI_ID_WIDTH-1:0]            mem_axi_ar_id_o;
-wire [AXI_ADDR_WIDTH-1:0]          mem_axi_ar_addr_o;
-wire [7:0]                         mem_axi_ar_len_o;
-wire [2:0]                         mem_axi_ar_size_o;
-wire [1:0]                         mem_axi_ar_burst_o;
-wire                               mem_axi_r_ready_o;          
-wire                               mem_axi_r_valid_i;             
-wire [AXI_ID_WIDTH-1:0]            mem_axi_r_id_i;
-wire [1:0]                         mem_axi_r_resp_i;
-wire [AXI_DATA_WIDTH-1:0]          mem_axi_r_data_i;
-wire                               mem_axi_r_last_i;
+
+wire                               mem_aw_ready_i;             
+wire                               mem_aw_valid_o;
+wire [AXI_ID_WIDTH-1:0]            mem_aw_id_o;
+wire [AXI_ADDR_WIDTH-1:0]          mem_aw_addr_o;
+wire [7:0]                         mem_aw_len_o;
+wire [2:0]                         mem_aw_size_o;
+wire [1:0]                         mem_aw_burst_o;
+wire                               mem_w_ready_i;              
+wire                               mem_w_valid_o;
+wire [AXI_DATA_WIDTH-1:0]          mem_w_data_o;
+wire [AXI_DATA_WIDTH/8-1:0]        mem_w_strb_o;
+wire                               mem_w_last_o;
+wire                               mem_b_ready_o;          
+wire                               mem_b_valid_i;
+wire [AXI_ID_WIDTH-1:0]            mem_b_id_i;
+wire [1:0]                         mem_b_resp_i;               
+wire                               mem_ar_ready_i;             
+wire                               mem_ar_valid_o;
+wire [AXI_ID_WIDTH-1:0]            mem_ar_id_o;
+wire [AXI_ADDR_WIDTH-1:0]          mem_ar_addr_o;
+wire [7:0]                         mem_ar_len_o;
+wire [2:0]                         mem_ar_size_o;
+wire [1:0]                         mem_ar_burst_o;
+wire                               mem_r_ready_o;          
+wire                               mem_r_valid_i;             
+wire [AXI_ID_WIDTH-1:0]            mem_r_id_i;
+wire [1:0]                         mem_r_resp_i;
+wire [AXI_DATA_WIDTH-1:0]          mem_r_data_i;
+wire                               mem_r_last_i;
 
 ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .clk              (clk),
@@ -717,35 +718,35 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .io_sram3_wdata    (io_sram7_wdata    ),  
     .io_sram3_rdata    (io_sram7_rdata    ),  
     // Advanced eXtensible Intenterface
-    .axi_aw_ready_i   (mem_axi_aw_ready_i),               
-    .axi_aw_valid_o   (mem_axi_aw_valid_o),
-	  .axi_aw_id_o      (mem_axi_aw_id_o),
-    .axi_aw_addr_o    (mem_axi_aw_addr_o),
-    .axi_aw_len_o     (mem_axi_aw_len_o),
-    .axi_aw_size_o    (mem_axi_aw_size_o),
-    .axi_aw_burst_o   (mem_axi_aw_burst_o),
-    .axi_w_ready_i    (mem_axi_w_ready_i),                
-    .axi_w_valid_o    (mem_axi_w_valid_o),
-    .axi_w_data_o     (mem_axi_w_data_o),
-    .axi_w_strb_o     (mem_axi_w_strb_o),
-    .axi_w_last_o     (mem_axi_w_last_o),
-    .axi_b_ready_o    (mem_axi_b_ready_o),            
-    .axi_b_valid_i    (mem_axi_b_valid_i),
-		.axi_b_id_i       (mem_axi_b_id_i),
-    .axi_b_resp_i     (mem_axi_b_resp_i),                 
-    .axi_ar_ready_i   (mem_axi_ar_ready_i),               
-    .axi_ar_valid_o   (mem_axi_ar_valid_o),
-  	.axi_ar_id_o      (mem_axi_ar_id_o),
-    .axi_ar_addr_o    (mem_axi_ar_addr_o),
-    .axi_ar_len_o     (mem_axi_ar_len_o),
-    .axi_ar_size_o    (mem_axi_ar_size_o),
-    .axi_ar_burst_o   (mem_axi_ar_burst_o),
-    .axi_r_ready_o    (mem_axi_r_ready_o),            
-    .axi_r_valid_i    (mem_axi_r_valid_i),                
-	  .axi_r_id_i       (mem_axi_r_id_i),
-    .axi_r_resp_i     (mem_axi_r_resp_i),
-    .axi_r_data_i     (mem_axi_r_data_i),
-    .axi_r_last_i     (mem_axi_r_last_i)
+    .axi_aw_ready_i   (mem_aw_ready_i),               
+    .axi_aw_valid_o   (mem_aw_valid_o),
+	  .axi_aw_id_o      (mem_aw_id_o),
+    .axi_aw_addr_o    (mem_aw_addr_o),
+    .axi_aw_len_o     (mem_aw_len_o),
+    .axi_aw_size_o    (mem_aw_size_o),
+    .axi_aw_burst_o   (mem_aw_burst_o),
+    .axi_w_ready_i    (mem_w_ready_i),                
+    .axi_w_valid_o    (mem_w_valid_o),
+    .axi_w_data_o     (mem_w_data_o),
+    .axi_w_strb_o     (mem_w_strb_o),
+    .axi_w_last_o     (mem_w_last_o),
+    .axi_b_ready_o    (mem_b_ready_o),            
+    .axi_b_valid_i    (mem_b_valid_i),
+		.axi_b_id_i       (mem_b_id_i),
+    .axi_b_resp_i     (mem_b_resp_i),                 
+    .axi_ar_ready_i   (mem_ar_ready_i),               
+    .axi_ar_valid_o   (mem_ar_valid_o),
+  	.axi_ar_id_o      (mem_ar_id_o),
+    .axi_ar_addr_o    (mem_ar_addr_o),
+    .axi_ar_len_o     (mem_ar_len_o),
+    .axi_ar_size_o    (mem_ar_size_o),
+    .axi_ar_burst_o   (mem_ar_burst_o),
+    .axi_r_ready_o    (mem_r_ready_o),            
+    .axi_r_valid_i    (mem_r_valid_i),                
+	  .axi_r_id_i       (mem_r_id_i),
+    .axi_r_resp_i     (mem_r_resp_i),
+    .axi_r_data_i     (mem_r_data_i),
+    .axi_r_last_i     (mem_r_last_i)
 );
 
 
@@ -805,6 +806,160 @@ assign rddata=
     :MEMREG_ctrl_mem[4:0]==`ysyx_22050133_rdSEXT_d ? rddata_raw
     :0;
 
+wire                        clint_axi_aw_ready_i ;               
+wire                        clint_axi_aw_valid_o ;  
+wire [AXI_ID_WIDTH-1:0]     clint_axi_aw_id_o    ;  
+wire [AXI_ADDR_WIDTH-1:0]   clint_axi_aw_addr_o  ;  
+wire [7:0]                  clint_axi_aw_len_o   ;  
+wire [2:0]                  clint_axi_aw_size_o  ;  
+wire [1:0]                  clint_axi_aw_burst_o ;  
+wire                        clint_axi_w_ready_i  ;               
+wire                        clint_axi_w_valid_o  ;  
+wire [AXI_DATA_WIDTH-1:0]   clint_axi_w_data_o   ;  
+wire [AXI_DATA_WIDTH/8-1:0] clint_axi_w_strb_o   ;  
+wire                        clint_axi_w_last_o   ;  
+wire                        clint_axi_b_ready_o  ;           
+wire                        clint_axi_b_valid_i  ;  
+wire [AXI_ID_WIDTH-1:0]     clint_axi_b_id_i     ;  
+wire [1:0]                  clint_axi_b_resp_i   ;               
+wire                        clint_axi_ar_ready_i ;               
+wire                        clint_axi_ar_valid_o ;  
+wire [AXI_ID_WIDTH-1:0]     clint_axi_ar_id_o    ;  
+wire [AXI_ADDR_WIDTH-1:0]   clint_axi_ar_addr_o  ;  
+wire [7:0]                  clint_axi_ar_len_o   ;  
+wire [2:0]                  clint_axi_ar_size_o  ;  
+wire [1:0]                  clint_axi_ar_burst_o ;  
+wire                        clint_axi_r_ready_o  ;           
+wire                        clint_axi_r_valid_i  ;              
+wire [AXI_ID_WIDTH-1:0]     clint_axi_r_id_i     ;  
+wire [1:0]                  clint_axi_r_resp_i   ;  
+wire [AXI_DATA_WIDTH-1:0]   clint_axi_r_data_i   ;  
+wire                        clint_axi_r_last_i   ;  
+
+wire                        mem_axi_aw_ready_i ;               
+wire                        mem_axi_aw_valid_o ;  
+wire [AXI_ID_WIDTH-1:0]     mem_axi_aw_id_o    ;  
+wire [AXI_ADDR_WIDTH-1:0]   mem_axi_aw_addr_o  ;  
+wire [7:0]                  mem_axi_aw_len_o   ;  
+wire [2:0]                  mem_axi_aw_size_o  ;  
+wire [1:0]                  mem_axi_aw_burst_o ;  
+wire                        mem_axi_w_ready_i  ;               
+wire                        mem_axi_w_valid_o  ;  
+wire [AXI_DATA_WIDTH-1:0]   mem_axi_w_data_o   ;  
+wire [AXI_DATA_WIDTH/8-1:0] mem_axi_w_strb_o   ;  
+wire                        mem_axi_w_last_o   ;  
+wire                        mem_axi_b_ready_o  ;           
+wire                        mem_axi_b_valid_i  ;  
+wire [AXI_ID_WIDTH-1:0]     mem_axi_b_id_i     ;  
+wire [1:0]                  mem_axi_b_resp_i   ;               
+wire                        mem_axi_ar_ready_i ;               
+wire                        mem_axi_ar_valid_o ;  
+wire [AXI_ID_WIDTH-1:0]     mem_axi_ar_id_o    ;  
+wire [AXI_ADDR_WIDTH-1:0]   mem_axi_ar_addr_o  ;  
+wire [7:0]                  mem_axi_ar_len_o   ;  
+wire [2:0]                  mem_axi_ar_size_o  ;  
+wire [1:0]                  mem_axi_ar_burst_o ;  
+wire                        mem_axi_r_ready_o  ;           
+wire                        mem_axi_r_valid_i  ;              
+wire [AXI_ID_WIDTH-1:0]     mem_axi_r_id_i     ;  
+wire [1:0]                  mem_axi_r_resp_i   ;  
+wire [AXI_DATA_WIDTH-1:0]   mem_axi_r_data_i   ;  
+wire                        mem_axi_r_last_i   ;  
+
+//wire clint=(EXREG_ctrl_ex[22]|EXREG_ctrl_ex[21])&&(mem_rw_addr_i>32'h1ffffff&&mem_rw_addr_i<32'h2010000);
+wire clint=(EXREG_ctrl_ex[22]|EXREG_ctrl_ex[21])&&(mem_rw_addr_i<32'h10000000);
+
+assign mem_aw_ready_i = clint ? clint_axi_aw_ready_i:mem_axi_aw_ready_i;  ; 
+//assign mem_aw_valid_o = clint ? clint_axi_aw_valid_o:mem_axi_aw_valid_o;  ; 
+//assign mem_aw_id_o    = clint ? clint_axi_aw_id_o   :mem_axi_aw_id_o;     ; 
+//assign mem_aw_addr_o  = clint ? clint_axi_aw_addr_o :mem_axi_aw_addr_o;   ; 
+//assign mem_aw_len_o   = clint ? clint_axi_aw_len_o  :mem_axi_aw_len_o;    ;  
+//assign mem_aw_size_o  = clint ? clint_axi_aw_size_o :mem_axi_aw_size_o;   ;  
+//assign mem_aw_burst_o = clint ? clint_axi_aw_burst_o:mem_axi_aw_burst_o;  ;   
+assign mem_w_ready_i  = clint ? clint_axi_w_ready_i :mem_axi_w_ready_i;   ;             
+//assign mem_w_valid_o  = clint ? clint_axi_w_valid_o :mem_axi_w_valid_o;   ;  
+//assign mem_w_data_o   = clint ? clint_axi_w_data_o  :mem_axi_w_data_o;    ;  
+//assign mem_w_strb_o   = clint ? clint_axi_w_strb_o  :mem_axi_w_strb_o;    ;  
+//assign mem_w_last_o   = clint ? clint_axi_w_last_o  :mem_axi_w_last_o;    ;  
+//assign mem_b_ready_o  = clint ? clint_axi_b_ready_o :mem_axi_b_ready_o;   ;             
+assign mem_b_valid_i  = clint ? clint_axi_b_valid_i :mem_axi_b_valid_i;   ;   
+assign mem_b_id_i     = clint ? clint_axi_b_id_i    :mem_axi_b_id_i;      ;
+assign mem_b_resp_i   = clint ? clint_axi_b_resp_i  :mem_axi_b_resp_i;    ;                 
+assign mem_ar_ready_i = clint ? clint_axi_ar_ready_i:mem_axi_ar_ready_i;  ;             
+//assign mem_ar_valid_o = clint ? clint_axi_ar_valid_o:mem_axi_ar_valid_o;  ;    
+//assign mem_ar_id_o    = clint ? clint_axi_ar_id_o   :mem_axi_ar_id_o;     ; 
+//assign mem_ar_addr_o  = clint ? clint_axi_ar_addr_o :mem_axi_ar_addr_o;   ;   
+//assign mem_ar_len_o   = clint ? clint_axi_ar_len_o  :mem_axi_ar_len_o;    ;  
+//assign mem_ar_size_o  = clint ? clint_axi_ar_size_o :mem_axi_ar_size_o;   ;   
+//assign mem_ar_burst_o = clint ? clint_axi_ar_burst_o:mem_axi_ar_burst_o;  ;    
+//assign mem_r_ready_o  = clint ? clint_axi_r_ready_o :mem_axi_r_ready_o;   ;             
+assign mem_r_valid_i  = clint ? clint_axi_r_valid_i :mem_axi_r_valid_i;   ;                
+assign mem_r_id_i     = clint ? clint_axi_r_id_i    :mem_axi_r_id_i;      ;    
+assign mem_r_resp_i   = clint ? clint_axi_r_resp_i  :mem_axi_r_resp_i;    ;  
+assign mem_r_data_i   = clint ? clint_axi_r_data_i  :mem_axi_r_data_i;    ;  
+assign mem_r_last_i   = clint ? clint_axi_r_last_i  :mem_axi_r_last_i;    ;     
+
+
+//assign mem_axi_aw_ready_i = clint ? 0 : mem_aw_ready_i ;        
+assign mem_axi_aw_valid_o = clint ? 0 : mem_aw_valid_o ;  
+assign mem_axi_aw_id_o    = clint ? 0 : mem_aw_id_o    ;  
+assign mem_axi_aw_addr_o  = clint ? 0 : mem_aw_addr_o  ;  
+assign mem_axi_aw_len_o   = clint ? 0 : mem_aw_len_o   ;  
+assign mem_axi_aw_size_o  = clint ? 0 : mem_aw_size_o  ;  
+assign mem_axi_aw_burst_o = clint ? 0 : mem_aw_burst_o ;  
+//assign mem_axi_w_ready_i  = clint ? 0 : mem_w_ready_i  ;        
+assign mem_axi_w_valid_o  = clint ? 0 : mem_w_valid_o  ;  
+assign mem_axi_w_data_o   = clint ? 0 : mem_w_data_o   ;  
+assign mem_axi_w_strb_o   = clint ? 0 : mem_w_strb_o   ;  
+assign mem_axi_w_last_o   = clint ? 0 : mem_w_last_o   ;  
+assign mem_axi_b_ready_o  = clint ? 0 : mem_b_ready_o  ;           
+//assign mem_axi_b_valid_i  = clint ? 0 : mem_b_valid_i  ;  
+//assign mem_axi_b_id_i     = clint ? 0 : mem_b_id_i     ;  
+//assign mem_axi_b_resp_i   = clint ? 0 : mem_b_resp_i   ;       
+//assign mem_axi_ar_ready_i = clint ? 0 : mem_ar_ready_i ;       
+assign mem_axi_ar_valid_o = clint ? 0 : mem_ar_valid_o ;  
+assign mem_axi_ar_id_o    = clint ? 0 : mem_ar_id_o    ;  
+assign mem_axi_ar_addr_o  = clint ? 0 : mem_ar_addr_o  ;  
+assign mem_axi_ar_len_o   = clint ? 0 : mem_ar_len_o   ;  
+assign mem_axi_ar_size_o  = clint ? 0 : mem_ar_size_o  ;  
+assign mem_axi_ar_burst_o = clint ? 0 : mem_ar_burst_o ;  
+assign mem_axi_r_ready_o  = clint ? 0 : mem_r_ready_o  ;           
+//assign mem_axi_r_valid_i  = clint ? 0 : mem_r_valid_i  ;         
+//assign mem_axi_r_id_i     = clint ? 0 : mem_r_id_i     ;  
+//assign mem_axi_r_resp_i   = clint ? 0 : mem_r_resp_i   ;  
+//assign mem_axi_r_data_i   = clint ? 0 : mem_r_data_i   ;  
+//assign mem_axi_r_last_i   = clint ? 0 : mem_r_last_i   ;  
+
+//assign clint_axi_aw_ready_i = clint ?mem_aw_ready_i  :0;    
+assign clint_axi_aw_valid_o = clint ?mem_aw_valid_o  :0;  
+assign clint_axi_aw_id_o    = clint ?mem_aw_id_o     :0;  
+assign clint_axi_aw_addr_o  = clint ?mem_aw_addr_o   :0;  
+assign clint_axi_aw_len_o   = clint ?mem_aw_len_o    :0;  
+assign clint_axi_aw_size_o  = clint ?mem_aw_size_o   :0;  
+assign clint_axi_aw_burst_o = clint ?mem_aw_burst_o  :0;  
+//assign clint_axi_w_ready_i  = clint ?mem_w_ready_i   :0; 
+assign clint_axi_w_valid_o  = clint ?mem_w_valid_o   :0;  
+assign clint_axi_w_data_o   = clint ?mem_w_data_o    :0;  
+assign clint_axi_w_strb_o   = clint ?mem_w_strb_o    :0;  
+assign clint_axi_w_last_o   = clint ?mem_w_last_o    :0;
+assign clint_axi_b_ready_o  = clint ?mem_b_ready_o   :0;      
+//assign clint_axi_b_valid_i  = clint ?mem_b_valid_i   :0;  
+//assign clint_axi_b_id_i     = clint ?mem_b_id_i      :0;  
+//assign clint_axi_b_resp_i   = clint ?mem_b_resp_i    :0;    
+//assign clint_axi_ar_ready_i = clint ?mem_ar_ready_i  :0;    
+assign clint_axi_ar_valid_o = clint ?mem_ar_valid_o  :0;  
+assign clint_axi_ar_id_o    = clint ?mem_ar_id_o     :0;  
+assign clint_axi_ar_addr_o  = clint ?mem_ar_addr_o   :0;  
+assign clint_axi_ar_len_o   = clint ?mem_ar_len_o    :0;  
+assign clint_axi_ar_size_o  = clint ?mem_ar_size_o   :0;  
+assign clint_axi_ar_burst_o = clint ?mem_ar_burst_o  :0;  
+assign clint_axi_r_ready_o  = clint ?mem_r_ready_o   :0;      
+//assign clint_axi_r_valid_i  = clint ?mem_r_valid_i   :0;     
+//assign clint_axi_r_id_i     = clint ?mem_r_id_i      :0;  
+//assign clint_axi_r_resp_i   = clint ?mem_r_resp_i    :0;  
+//assign clint_axi_r_data_i   = clint ?mem_r_data_i    :0;  
+//assign clint_axi_r_last_i   = clint ?mem_r_last_i    :0;  
+//
 ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .clk               (clk),               
     .rst               (rst),
@@ -898,6 +1053,40 @@ ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .axi_r_data_i         (io_master_rdata   ),  
     .axi_r_last_i         (io_master_rlast   )  
 );
+ysyx_22050133_CLINT ysyx_22050133_CLINT_dut(
+    .clk               (clk),               
+    .rst               (rst),
+    .axi_aw_ready_o    (clint_axi_aw_ready_i ),                   
+    .axi_aw_valid_i    (clint_axi_aw_valid_o ),  
+		.axi_aw_id_i       (clint_axi_aw_id_o    ),  
+    .axi_aw_addr_i     (clint_axi_aw_addr_o  ),  
+    .axi_aw_len_i      (clint_axi_aw_len_o   ),  
+    .axi_aw_size_i     (clint_axi_aw_size_o  ),  
+    .axi_aw_burst_i    (clint_axi_aw_burst_o ),  
+    .axi_w_ready_o     (clint_axi_w_ready_i  ),                    
+    .axi_w_valid_i     (clint_axi_w_valid_o  ),  
+    .axi_w_data_i      (clint_axi_w_data_o   ),  
+    .axi_w_strb_i      (clint_axi_w_strb_o   ),  
+    .axi_w_last_i      (clint_axi_w_last_o   ),  
+    .axi_b_ready_i     (clint_axi_b_ready_o  ),                    
+    .axi_b_valid_o     (clint_axi_b_valid_i  ),  
+		.axi_b_id_o        (clint_axi_b_id_i     ),  
+    .axi_b_resp_o      (clint_axi_b_resp_i   ),                    
+    .axi_ar_ready_o    (clint_axi_ar_ready_i ),                    
+    .axi_ar_valid_i    (clint_axi_ar_valid_o ),  
+		.axi_ar_id_i       (clint_axi_ar_id_o    ),  
+    .axi_ar_addr_i     (clint_axi_ar_addr_o  ),  
+    .axi_ar_len_i      (clint_axi_ar_len_o   ),  
+    .axi_ar_size_i     (clint_axi_ar_size_o  ),  
+    .axi_ar_burst_i    (clint_axi_ar_burst_o ),  
+    .axi_r_ready_i     (clint_axi_r_ready_o  ),                    
+    .axi_r_valid_o     (clint_axi_r_valid_i  ),                    
+		.axi_r_id_o        (clint_axi_r_id_i     ),  
+    .axi_r_resp_o      (clint_axi_r_resp_i   ),  
+    .axi_r_data_o      (clint_axi_r_data_i   ),  
+    .axi_r_last_o      (clint_axi_r_last_i   )  
+);
+
 `ifdef ysyx_22050133_REGINFO
 always@(posedge clk)
   begin

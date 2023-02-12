@@ -169,18 +169,20 @@ assign s1_axi_r_data_o=~r_channel ? axi_r_data_i:0;
 assign s1_axi_r_last_o=~r_channel ? axi_r_last_i:0;
 
 parameter RS_IDLE = 1;
-parameter RS_S2 = 2;//address handshake
+parameter RS_S1 = 2;
+parameter RS_S2 = 3;
 parameter WS_IDLE = 1;
-parameter WS_S2 = 2;
+parameter WS_S1 = 2;
+parameter WS_S2 = 3;
 
 reg r_channel;
 reg w_channel;
 
-reg[15:0] rstate;
-reg[15:0] next_rstate;
+reg[2:0] rstate;
+reg[2:0] next_rstate;
 
-reg[15:0] wstate;
-reg[15:0] next_wstate;
+reg[2:0] wstate;
+reg[2:0] next_wstate;
 
     //// ------------------State Machine------------------TODO
     //// 写通道状态切换
@@ -193,27 +195,33 @@ end
 always@(*) begin
   if(rst)next_wstate=WS_IDLE;
   else case(wstate)
-    WS_IDLE:if(axi_aw_ready_i&s2_axi_aw_valid_i&(~s1_axi_aw_valid_i))next_wstate=WS_S2;
+		WS_IDLE:if(s2_axi_aw_valid_i)next_wstate=WS_S2;
+	  else if(s1_axi_aw_valid_i)next_wstate=WS_S1;
     else next_wstate=RS_IDLE;
-    WS_S2:if(axi_aw_ready_i&s1_axi_aw_valid_i&(~s2_axi_aw_valid_i))next_wstate=WS_IDLE;
+    WS_S2:if(s2_axi_b_ready_i&axi_b_valid_i)next_wstate=WS_IDLE;
     else next_wstate=WS_S2;
+    WS_S1:if(s1_axi_b_ready_i&axi_b_valid_i)next_wstate=WS_IDLE;
+    else next_wstate=WS_S1;
     default:next_wstate=WS_IDLE;
   endcase
 end
 always@(posedge clk)begin
   if(rst)begin
-        w_channel<=0;
+        w_channel<=1;
   end
   else begin
     case(wstate)
-      WS_IDLE:if(next_wstate==WS_S2)begin
-        w_channel<=1;
+      WS_IDLE:if(next_wstate==WS_S1)begin
+        w_channel<=0;
       end
       else begin
-        w_channel<=0;
+        w_channel<=1;
+      end
+      WS_S1:if(next_wstate==WS_IDLE)begin
+        w_channel<=1;
       end
       WS_S2:if(next_wstate==WS_IDLE)begin
-        w_channel<=0;
+        w_channel<=1;
       end
     default:begin
     end
@@ -230,16 +238,19 @@ end
 always@(*) begin
   if(rst)next_rstate=RS_IDLE;
   else case(rstate)
-    RS_IDLE:if(axi_ar_ready_i&s2_axi_ar_valid_i&(~s1_axi_ar_valid_i))next_rstate=RS_S2;
+    RS_IDLE:if(s1_axi_ar_valid_i)next_rstate=RS_S1;
+		  else if(s2_axi_ar_valid_i)next_rstate=RS_S2;
       else next_rstate=RS_IDLE;
-    RS_S2:if(axi_ar_ready_i&s1_axi_ar_valid_i&(~s2_axi_ar_valid_i))next_rstate=RS_IDLE;
+		RS_S1:if(s1_axi_r_ready_i&axi_r_last_i)next_rstate=RS_IDLE;
+	    else next_rstate=RS_S1;
+		RS_S2:if(s2_axi_r_ready_i&axi_r_last_i)next_rstate=RS_IDLE;
     else next_rstate=RS_S2;
     default:next_rstate=RS_IDLE;
   endcase
 end
 always@(posedge clk)begin
   if(rst)begin
-        r_channel<=1;
+        r_channel<=0;
   end
   else begin
     case(rstate)
@@ -248,6 +259,9 @@ always@(posedge clk)begin
         r_channel<=1;
       end
       else begin
+        r_channel<=0;
+      end
+      RS_S1:if(next_rstate==RS_IDLE)begin
         r_channel<=0;
       end
       RS_S2:if(next_rstate==RS_IDLE)begin

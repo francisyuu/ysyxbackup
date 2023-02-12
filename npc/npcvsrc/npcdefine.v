@@ -1,7 +1,7 @@
 `ifndef ysyx_22050133_NPCDEFINE_V
 `define ysyx_22050133_NPCDEFINE_V
 
-`timescale 1ns/1ns
+//`timescale 1ns/1ns
 //`define ysyx_22050133_MULTICYCLE 1
 //`define ysyx_22050133_NOCACHE 1
 `define ysyx_22050133_BHT 1

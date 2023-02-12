@@ -101,6 +101,9 @@ reg [TAG_WIDTH-1:0] tag[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg valid[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg dirty[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 
+reg fence;
+reg [INDEX_DEPTH+1:0]fence_index_cnt;
+
 wire[TAG_WIDTH-1:0] tag_in=rw_addr_i[TAGL:TAGR];
 wire[INDEX_WIDTH-1:0] index_in=rw_addr_i[INDEXL:INDEXR];
 wire[OFFSET_WIDTH-1:0] OFFSET0=0;
@@ -183,14 +186,14 @@ assign axi_w_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 
 
 parameter S_IDLE =1;
-parameter S_HIT  =2;
+parameter S_FENCE  =2;
 parameter S_AW   =3;
 parameter S_W    =4;
 parameter S_AR   =5;
 parameter S_R    =6;
 
-reg[15:0] state;
-reg[15:0] next_state;
+reg[3:0] state;
+reg[3:0] next_state;
 
 always@(posedge clk)begin
   if(rst)state<=S_IDLE;
@@ -210,15 +213,20 @@ always@(*) begin
             else next_state=S_AR;
           end
         else next_state=S_IDLE;
-    S_HIT:next_state=S_IDLE;
     S_AW:if(axi_rw_addr_valid_o&axi_rw_addr_ready_i)next_state=S_W;
       else next_state=S_AW;
-    S_W:if(axi_w_data_ready_i&axi_w_data_valid_o&(axi_rw_len_o==0))next_state=S_AR;
+			S_W:if(axi_w_data_ready_i&axi_w_data_valid_o&(axi_rw_len_o==0))begin
+				if(fence)next_state=S_FENCE;
+				else next_state=S_AR;
+			end
       else next_state=S_W;
     S_AR:if(axi_rw_addr_valid_o&axi_rw_addr_ready_i)next_state=S_R;
       else next_state=S_AR;
     S_R:if(axi_r_data_ready_o==0&(axi_rw_len_o==0))next_state=S_IDLE;
       else next_state=S_R;
+		S_FENCE:if(dirty[fence_index_cnt[5]][fence_index_cnt[4:0]])next_state=S_AW;
+			else if(fence_index_cnt[6])next_state=S_IDLE;
+			else next_state=S_FENCE;
     default:next_state=S_IDLE;
   endcase
 end
@@ -246,6 +254,8 @@ always@(posedge clk)begin
     rw_if<=0;
     w_data<=0;
     w_data0<=0;
+		fence<=0;
+		fence_index_cnt<=0;
   for(m=0;m<WAY_DEPTH;m=m+1)begin
     for(n=0;n<RAM_DEPTH;n=n+1)begin
         RAM_WEN_REG[m][n]<=1;
@@ -335,6 +345,9 @@ always@(posedge clk)begin
           if(rw_if_i==0)cache_rw({32'd0,{rw_addr_i[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,random},{pro_index_0,index_in});
           `endif
         end
+				else if(next_state==S_FENCE)begin
+					//fence_index_cnt<=0;
+        end
         else begin
           rw_addr_ready_o<=1;
           r_data_valid_o<=0;
@@ -400,6 +413,12 @@ always@(posedge clk)begin
             addr<=addr+8;
             axi_r_data_ready_o<=1;
           end
+			S_FENCE:if(next_state==S_AW)begin
+					end
+					else if(next_state==S_IDLE)begin
+					end
+					else begin
+					end
       default:begin
       end
     endcase

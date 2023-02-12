@@ -43,7 +43,7 @@ module ysyx_22050133_Divider(
   localparam S_IDLE = 0;
   localparam S_DIV = 1;
 
-  reg [15:0] state,next_state;
+  reg [3:0] state,next_state;
 
   always@(posedge clk)begin
     if(rst)state<=S_IDLE;
@@ -167,7 +167,7 @@ module ysyx_22050133_Divider(
   localparam S_IDLE = 0;
   localparam S_DIV = 1;
 
-  reg [15:0] state,next_state;
+  reg [3:0] state,next_state;
   always@(posedge clk)begin
     if(rst)state<=S_IDLE;
     else state<=next_state;

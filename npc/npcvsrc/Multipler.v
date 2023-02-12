@@ -53,7 +53,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
   localparam S_IDLE = 0;
   localparam S_MUL = 1;
 
-  reg [15:0] state,next_state;
+  reg [3:0] state,next_state;
   always@(posedge clk)begin
     if(rst)state<=S_IDLE;
     else state<=next_state;
@@ -164,7 +164,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
   localparam S_IDLE = 0;
   localparam S_MUL = 1;
 
-  reg [15:0] state,next_state;
+  reg [3:0] state,next_state;
   always@(posedge clk)begin
     if(rst)state<=S_IDLE;
     else state<=next_state;
@@ -236,7 +236,7 @@ wire [65:0] multiplier_sext=mul_signed[0]?
   localparam S_IDLE = 0;
   localparam S_MUL = 1;
 
-  reg [15:0] state,next_state;
+  reg [3:0] state,next_state;
   always@(posedge clk)begin
     if(rst)state<=S_IDLE;
     else state<=next_state;

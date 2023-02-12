@@ -130,14 +130,14 @@ parameter RS_DHS = 4;//address handshake
 assign rw_addr_ready_o=r_addr_ready_o&w_addr_ready_o;
 //assign rw_ready_o=r_ready_o;
 
-reg[15:0] rstate;
-reg[15:0] next_rstate;
+reg[3:0] rstate;
+reg[3:0] next_rstate;
 
-reg[15:0] awstate;
-reg[15:0] next_awstate;
+reg[3:0] awstate;
+reg[3:0] next_awstate;
 
-reg[15:0] wstate;
-reg[15:0] next_wstate;
+reg[3:0] wstate;
+reg[3:0] next_wstate;
 
     //// ------------------State Machine------------------TODO
     //// 写通道状态切换
