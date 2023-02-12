@@ -183,6 +183,9 @@ wire [31:0] inst;
 reg[31:0] IDREG_pc  ;
 reg[31:0] IDREG_inst;
 reg       IDREG_Jpred;
+reg       IDREG_clkint;
+reg       clkint_reg;
+reg       clkint_last;
 
 wire  [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb ;
 wire  [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
@@ -199,6 +202,7 @@ reg[`ysyx_22050133_ctrl_mem_len:0] EXREG_ctrl_mem ;
 reg[`ysyx_22050133_ctrl_ex_len :0] EXREG_ctrl_ex  ;
 reg[31:0] EXREG_pc       ;
 reg       EXREG_Jpred;
+reg       EXREG_clkint;
 reg[4:0]  EXREG_rs1      ;
 reg[4:0]  EXREG_rs2      ;
 reg[63:0] EXREG_rs1data  ;
@@ -333,6 +337,8 @@ wire                              ifu_r_data_ready_i ;
 wire [RW_DATA_WIDTH-1:0]          ifu_r_data_o       ;
 wire                              ifu_rw_block_o     ;   
 wire                              ifu_rw_block_i     ;   
+wire                              ifu_fence_i        ;   
+wire                              ifu_fence_o        ;   
 
 //assign ifu_rw_addr_valid_i =ifu_rw_addr_valid_i;           
 //assign ifu_rw_addr_ready_o =ifu_rw_addr_ready_o;       
@@ -350,6 +356,7 @@ assign ifu_w_data_i        =0                  ;
 assign ifu_r_data_ready_i  =1                  ;     
 //assign ifu_r_data_o        =ifu_r_data_o       ;  
 assign ifu_rw_block_i       = block                ;
+assign ifu_fence_i          = mem_fence_o          ;
 
 // Advanced eXtensible Interface
 wire                               ifu_axi_aw_ready_i;             
@@ -402,6 +409,8 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
     .r_data_o         (ifu_r_data_o       ),
     .rw_block_o       (ifu_rw_block_o     ),
     .rw_block_i       (ifu_rw_block_i     ),
+    .fence_i          (ifu_fence_i        ),
+    .fence_o          (ifu_fence_o        ),
     .io_sram0_addr     (io_sram0_addr     ),
     .io_sram0_cen      (io_sram0_cen      ),
     .io_sram0_wen      (io_sram0_wen      ),
@@ -460,15 +469,34 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
 
 always@(posedge clk)
 begin
+  if(rst)begin
+    clkint_reg<=0;
+    clkint_last<=0;
+  end
+  else begin
+		clkint_last<=clkint;
+		if(IDREG_en&clkint_reg)begin
+			clkint_reg<=0;
+		end
+		else if(~clkint_reg&clkint)begin
+			clkint_reg<=1;
+		end
+  end
+end
+
+always@(posedge clk)
+begin
   if(rst|flush)begin
     IDREG_pc<=0;
     IDREG_inst<=0;
     IDREG_Jpred<=0;
+		IDREG_clkint<=0;
   end
   else if(IDREG_en)begin
     IDREG_pc<=pc;
-    IDREG_inst<=inst;
+    IDREG_inst<=clkint_reg?32'h00000073:inst;
     IDREG_Jpred<=Jpred;
+		IDREG_clkint<=clkint_reg;
   end
 end
 
@@ -506,6 +534,7 @@ begin
     EXREG_ctrl_ex <=0;
     EXREG_pc      <=0;
     EXREG_Jpred   <=0;
+    EXREG_clkint  <=0;
     EXREG_rs1     <=0;
     EXREG_rs2     <=0;
     EXREG_rs1data <=0;
@@ -526,6 +555,7 @@ begin
     EXREG_rs2data <=rs2data ;
     EXREG_imm     <=imm     ;
     EXREG_rd      <=rdout   ;
+    EXREG_clkint  <=IDREG_clkint;
     if(pop)EXREG_Jpred<=0;
     else EXREG_Jpred   <=IDREG_Jpred;
     if(ctrl_ex[4])EXU_valid_i<=1;
@@ -546,6 +576,8 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .ctrl_ex(EXREG_ctrl_ex[15:0]) ,
   .pc   (EXREG_pc) ,
   .Jpred  (EXREG_Jpred) ,
+  .clkint (EXREG_clkint) ,
+  .fence  (EXREG_ctrl_mem[7]) ,
   .rs1    (EXREG_rs1) ,
   .rs1data(EXREG_rs1data) ,
   .rs2data(EXREG_rs2data) ,
@@ -624,6 +656,8 @@ wire                              mem_r_data_ready_i ;
 wire [RW_DATA_WIDTH-1:0]          mem_r_data_o       ;
 wire                              mem_rw_block_o     ;   
 wire                              mem_rw_block_i     ;   
+wire                              mem_fence_i        ;   
+wire                              mem_fence_o        ;   
 
 //assign mem_rw_addr_valid_i = mem_rw_addr_valid_i;        
 //assign mem_rw_addr_ready_o = mem_rw_addr_ready_o;    
@@ -640,6 +674,7 @@ assign mem_w_data_i        = wdata       ;
 assign mem_r_data_ready_i  = EXREG_ctrl_ex[21]|EXREG_ctrl_ex[22];  
 //assign mem_r_data_o        = din                ;
 assign mem_rw_block_i       = block                ;
+assign mem_fence_i        = EXREG_ctrl_mem[7]&~ifu_rw_block_o    ;
 
 // Advanced eXtensible Interface
 
@@ -693,6 +728,8 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_mem(
     .r_data_o         (mem_r_data_o       ),
     .rw_block_o       (mem_rw_block_o     ),
     .rw_block_i       (mem_rw_block_i     ),
+    .fence_i          (mem_fence_i        ),
+    .fence_o          (mem_fence_o        ),
     .io_sram0_addr     (io_sram4_addr     ),
     .io_sram0_cen      (io_sram4_cen      ),
     .io_sram0_wen      (io_sram4_wen      ),
@@ -1053,9 +1090,11 @@ ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .axi_r_data_i         (io_master_rdata   ),  
     .axi_r_last_i         (io_master_rlast   )  
 );
+wire clkint;
 ysyx_22050133_CLINT ysyx_22050133_CLINT_dut(
     .clk               (clk),               
     .rst               (rst),
+    .clkint            (clkint),
     .axi_aw_ready_o    (clint_axi_aw_ready_i ),                   
     .axi_aw_valid_i    (clint_axi_aw_valid_o ),  
 		.axi_aw_id_i       (clint_axi_aw_id_o    ),  

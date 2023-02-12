@@ -150,7 +150,7 @@
 
 `define ysyx_22050133_F7_RXX3   7'b0000001
 
-`define ysyx_22050133_F_FENCE   25'b1000_0011_0011_00000_000_00000 
+`define ysyx_22050133_F_FENCE   25'b0000_0000_0000_00000_001_00000 
 `define ysyx_22050133_F_PAUSE   25'b0000_0001_0000_00000_000_00000 
 `define ysyx_22050133_F_ECALL   25'b0000_0000_0000_00000_000_00000 
 `define ysyx_22050133_F_EBREAK  25'b0000_0000_0001_00000_000_00000 
@@ -233,7 +233,7 @@
 `define ysyx_22050133_forward_src_mem 2
 
 `define ysyx_22050133_ctrl_wb_len   1
-`define ysyx_22050133_ctrl_mem_len  6
+`define ysyx_22050133_ctrl_mem_len  7
 `define ysyx_22050133_ctrl_ex_len   22
 
 //// Burst types

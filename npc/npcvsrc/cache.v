@@ -31,6 +31,8 @@ module ysyx_22050133_cache#(
   output [RW_DATA_WIDTH-1:0]          r_data_o,         
   input                               rw_block_i,
   output                              rw_block_o,
+	input                               fence_i,
+	output                              fence_o,
 
   output[5:0]    io_sram0_addr     ,
   output         io_sram0_cen      ,
@@ -102,7 +104,7 @@ reg valid[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 reg dirty[WAY_DEPTH-1:0][INDEX_DEPTH-1:0];
 
 reg fence;
-reg [INDEX_DEPTH+1:0]fence_index_cnt;
+reg [INDEX_WIDTH+1:0]fence_cnt;
 
 wire[TAG_WIDTH-1:0] tag_in=rw_addr_i[TAGL:TAGR];
 wire[INDEX_WIDTH-1:0] index_in=rw_addr_i[INDEXL:INDEXR];
@@ -200,14 +202,19 @@ always@(posedge clk)begin
   else state<=next_state;
 end
 
-assign rw_block_o=r_data_ready_i&(~(|hit_wayflag));
+assign rw_block_o=r_data_ready_i&(~(|hit_wayflag)|fence);
 assign axi_rw_block_o=0;
+assign fence_o=fence;
 
 
 always@(*) begin
   if(rst)next_state=S_IDLE;
   else case(state)
-    S_IDLE:if(rw_addr_valid_i&rw_addr_ready_o)begin
+		S_IDLE:if(fence_i)begin
+				if(rw_if_i)next_state=S_IDLE;
+				else next_state=S_FENCE;
+			  end
+	      else if(rw_addr_valid_i&rw_addr_ready_o)begin
             if(|hit_wayflag)next_state=S_IDLE;
             else if(dirty[random][index_in])next_state=S_AW;
             else next_state=S_AR;
@@ -224,8 +231,8 @@ always@(*) begin
       else next_state=S_AR;
     S_R:if(axi_r_data_ready_o==0&(axi_rw_len_o==0))next_state=S_IDLE;
       else next_state=S_R;
-		S_FENCE:if(dirty[fence_index_cnt[5]][fence_index_cnt[4:0]])next_state=S_AW;
-			else if(fence_index_cnt[6])next_state=S_IDLE;
+		S_FENCE:if(dirty[fence_cnt[5]][fence_cnt[4:0]])next_state=S_AW;
+			else if(fence_cnt[6])next_state=S_IDLE;
 			else next_state=S_FENCE;
     default:next_state=S_IDLE;
   endcase
@@ -233,6 +240,8 @@ end
   integer m;
   integer n;
   integer p;
+  integer fencea;
+  integer fenceb;
 always@(posedge clk)begin
   if(rst)begin
     rw_addr_ready_o<=1;
@@ -255,7 +264,7 @@ always@(posedge clk)begin
     w_data<=0;
     w_data0<=0;
 		fence<=0;
-		fence_index_cnt<=0;
+		fence_cnt<=0;
   for(m=0;m<WAY_DEPTH;m=m+1)begin
     for(n=0;n<RAM_DEPTH;n=n+1)begin
         RAM_WEN_REG[m][n]<=1;
@@ -269,7 +278,21 @@ always@(posedge clk)begin
   end
   else begin
     case(state)
-      S_IDLE:if(|hit_wayflag)begin
+      S_IDLE:
+				if(fence_i)begin
+					if(rw_if_i)begin
+						for(fencea=0;fencea<WAY_DEPTH;fencea=fencea+1)begin
+							for(fenceb=0;fenceb<INDEX_DEPTH;fenceb=fenceb+1)begin
+									valid[fencea][fenceb]<=0;
+							end
+						end
+					end
+					else begin
+					fence<=1;
+					fence_cnt<=0;
+				  end
+        end
+        else if(|hit_wayflag)begin
         if(~rw_block_i)begin
           waynum<=hit_waynum_in;
           addr<=rw_addr_i;
@@ -345,9 +368,6 @@ always@(posedge clk)begin
           if(rw_if_i==0)cache_rw({32'd0,{rw_addr_i[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,random},{pro_index_0,index_in});
           `endif
         end
-				else if(next_state==S_FENCE)begin
-					//fence_index_cnt<=0;
-        end
         else begin
           rw_addr_ready_o<=1;
           r_data_valid_o<=0;
@@ -355,13 +375,21 @@ always@(posedge clk)begin
           axi_w_data_valid_o<=0;
           axi_r_data_ready_o<=0;
         end
-      S_AW:if(next_state<=S_W)begin
+      S_AW:if(next_state==S_W)begin
           axi_rw_addr_valid_o<=0;
           axi_w_data_valid_o<=1;
         end
       S_W:begin
         if(axi_w_data_valid_o&axi_w_data_ready_i)begin
           if(axi_rw_len_o==0)begin
+						if(fence)begin
+              dirty[waynum][index]<=0;
+						  fence_cnt<=fence_cnt+1;
+              axi_rw_addr_valid_o<=0;
+              axi_rw_we_o<=0;
+              axi_w_data_valid_o<=0;
+						end
+						else begin
             dirty[waynum][index]<=0;
             valid[waynum][index]<=0;
             tag[waynum][index]<=addr0[TAGL:TAGR];
@@ -378,6 +406,7 @@ always@(posedge clk)begin
           `ifdef ysyx_22050133_DEBUGINFO
             if(rw_if==0)cache_rw({32'd0,{addr0[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,waynum},{pro_index_0,index});
           `endif
+				    end
           end
           else begin
             addr<=addr+8;
@@ -386,7 +415,7 @@ always@(posedge clk)begin
           end
         end
         else begin
-          axi_rw_addr_o<=axi_rw_addr_o+8;
+          //axi_rw_addr_o<=axi_rw_addr_o+8;
           axi_w_data_valid_o<=1;
         end
       end
@@ -414,10 +443,22 @@ always@(posedge clk)begin
             axi_r_data_ready_o<=1;
           end
 			S_FENCE:if(next_state==S_AW)begin
+          waynum<=fence_cnt[5];
+          index<=fence_cnt[4:0];
+          addr<={tag[fence_cnt[5]][fence_cnt[4:0]],fence_cnt[4:0],OFFSET0};
+          axi_rw_addr_valid_o<=1;
+          axi_rw_addr_o<={tag[fence_cnt[5]][fence_cnt[4:0]],fence_cnt[4:0],OFFSET0};
+          axi_rw_we_o<=1;
+          axi_rw_len_o<=BURST_LEN;
+          axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
+          axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
+          axi_rw_if_o<=rw_if_i;
 					end
 					else if(next_state==S_IDLE)begin
+						fence<=0;
 					end
 					else begin
+						fence_cnt<=fence_cnt+1;
 					end
       default:begin
       end

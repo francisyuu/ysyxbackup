@@ -35,7 +35,7 @@ wire OPXXI    =  opcode==`ysyx_22050133_OP_XXI   ;
 wire OPXXIW   =  opcode==`ysyx_22050133_OP_XXIW  ; 
 wire OPRXX    =  opcode==`ysyx_22050133_OP_RXX   ; 
 wire OPRWX    =  opcode==`ysyx_22050133_OP_RWX   ; 
-//wire OPFXX    =  opcode==`ysyx_22050133_OP_FXX   ; 
+wire OPFXX    =  opcode==`ysyx_22050133_OP_FXX   ; 
 wire OPSYS    =  opcode==`ysyx_22050133_OP_SYS   ; 
 
 //wire F3JALR    =  funct3==`ysyx_22050133_F3_JALR     ; 
@@ -155,7 +155,7 @@ wire F7MUL     =  funct7==`ysyx_22050133_F7_MUL     ;
 
 //wire F7RXX3    =  funct7==`ysyx_22050133_F7_RXX3    ; 
 
-//wire FFENCE  =  inst[31:7]==`ysyx_22050133_F_FENCE;
+wire FFENCE  =  inst[31:7]==`ysyx_22050133_F_FENCE;
 //wire FPAUSE  =  inst[31:7]==`ysyx_22050133_F_PAUSE;
 wire FECALL  =  inst[31:7]==`ysyx_22050133_F_ECALL; 
 wire FEBREAK =  inst[31:7]==`ysyx_22050133_F_EBREAK;
@@ -186,6 +186,7 @@ assign ctrl_wb_out=has_hazard ? 0:ctrl_wb;
 assign ctrl_mem_out=has_hazard ? 0:ctrl_mem;
 assign ctrl_ex_out=has_hazard ? 0:ctrl_ex;
 
+
 assign ctrl_ex[22]=OPLXX ? 1:0;
 assign ctrl_ex[21]=OPSXX ? 1:0;
 assign ctrl_ex[20:18]=OPSXX ?
@@ -201,7 +202,7 @@ assign ctrl_ex[20:18]=OPSXX ?
                       :F3LD ? `ysyx_22050133_AXI_SIZE_BYTES_8
                       :0
                     :0;
-assign ctrl_ex[17]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))) ? 1:0;
+assign ctrl_ex[17]=(OPJAL|OPJALR|(OPSYS&(FECALL|FMRET))|(OPFXX&FFENCE)) ? 1:0;
 assign ctrl_ex[16]=OPBXX ? 1:0;
 assign ctrl_ex[15:13]=OPSYS ?
                        FECALL ?`ysyx_22050133_CSRop_ecall
@@ -271,6 +272,7 @@ assign ctrl_ex[4:0]=OPBXX ?
                       :`ysyx_22050133_ALUop_NOP
                     :(OPAUIPC|OPJAL|OPJALR|OPLXX|OPSXX)?`ysyx_22050133_ALUop_ADD
                     :`ysyx_22050133_ALUop_NOP;
+assign ctrl_mem[7]=OPFXX&FFENCE;
 assign ctrl_mem[6:5]=OPLUI ? `ysyx_22050133_rdSrc_imm
                     :OPLXX ? `ysyx_22050133_rdSrc_mem
                     :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu

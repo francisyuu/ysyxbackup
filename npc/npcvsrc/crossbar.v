@@ -24,6 +24,8 @@ module ysyx_22050133_crossbar # (
     output [RW_DATA_WIDTH-1:0]          r_data_o       ,
 		input                               rw_block_i     ,
 		output                              rw_block_o     ,
+		input                               fence_i        ,
+	  output                              fence_o        ,
     output[5:0]    io_sram0_addr     ,
     output         io_sram0_cen      ,
     output         io_sram0_wen      ,
@@ -87,7 +89,7 @@ module ysyx_22050133_crossbar # (
 `ifdef ysyx_22050133_NOCACHE
 	wire uncache=1;
 `else
-wire uncache=((rw_addr_i<32'h80000000)||(rw_addr_i>32'h88000000))? 1:0;
+wire uncache=fence_i ? 0:((rw_addr_i<32'h80000000)||(rw_addr_i>32'h88000000))? 1:0;
 //wire uncache=0;
 `endif
 reg uncache_reg;
@@ -229,11 +231,13 @@ ysyx_22050133_cache ysyx_22050133_cache_dut
   .w_data_valid_i         (cachei_w_data_valid_i  ),  
   .w_data_ready_o         (cachei_w_data_ready_o  ),  
   .w_data_i               (cachei_w_data_i        ), 
-  .r_data_valid_o         (cachei_r_data_valid_o ), 
+  .r_data_valid_o         (cachei_r_data_valid_o  ), 
   .r_data_ready_i         (cachei_r_data_ready_i  ), 
   .r_data_o               (cachei_r_data_o        ), 
   .rw_block_i             (cachei_rw_block_i      ), 
   .rw_block_o             (cachei_rw_block_o      ), 
+  .fence_i                (fence_i                ), 
+  .fence_o                (fence_o                ), 
   .io_sram0_addr     (io_sram0_addr     ),
   .io_sram0_cen      (io_sram0_cen      ),
   .io_sram0_wen      (io_sram0_wen      ),

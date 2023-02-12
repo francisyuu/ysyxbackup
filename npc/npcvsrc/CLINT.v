@@ -6,6 +6,7 @@ module ysyx_22050133_CLINT # (
 )(//IF&MEM输入信号
     input                               clk,
     input                               rst,
+		output                           clkint,
 
     // Advanced eXtensible Interface
     output reg                          axi_aw_ready_o,       
@@ -69,6 +70,7 @@ reg[15:0] next_wstate;
 reg[31:0] misp;
 reg[63:0] mtimecmp;
 reg[63:0] mtime;
+assign clkint=0;
     //// ------------------State Machine------------------TODO
     
     //// 写通道状态切换

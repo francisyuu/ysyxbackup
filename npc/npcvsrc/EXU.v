@@ -5,6 +5,8 @@ module ysyx_22050133_EXU(
   input   [15:0]    ctrl_ex  ,
   input   [31:0]   pc      ,
   input            Jpred   ,
+  input            fence   ,
+  input            clkint  ,
   input   [4:0]    rs1     ,
   input   [63:0]   rs1data ,
   input   [63:0]   rs2data ,
@@ -152,7 +154,7 @@ ysyx_22050133_Divider ysyx_22050133_Divider_dut(
 
 
 assign dnpc_EXU=ctrl_ex[10] ? csrdata[31:0]
-	          :Jpred ? pc+4
+	          :Jpred|fence ? pc+4
 	          :imm[31:0]+(ctrl_ex[9] ? rs1data_forward[31:0]:pc);
 assign result=  ctrl_ex[5] ? 
                   ctrl_ex[4:0]==`ysyx_22050133_ALUop_ADD ? Raddw
