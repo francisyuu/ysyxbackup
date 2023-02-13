@@ -202,7 +202,7 @@ always@(posedge clk)begin
   else state<=next_state;
 end
 
-assign rw_block_o=r_data_ready_i&(~(|hit_wayflag)|fence);
+assign rw_block_o=(r_data_ready_i&~(|hit_wayflag))|fence;
 assign axi_rw_block_o=0;
 assign fence_o=fence;
 

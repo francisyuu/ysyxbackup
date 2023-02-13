@@ -294,7 +294,7 @@ begin
 end
 endfunction
 
-function [1:0] CSRi;
+function [2:0] CSRi;
   input[11:0] csr;
 begin
 	case(csr)
@@ -302,9 +302,10 @@ begin
 		12'h305:CSRi=1;
 		12'h341:CSRi=2;
 		12'h342:CSRi=3;
-		//12'h304:CSRi=4;
-		//12'h344:CSRi=5;
-	  default:CSRi=0;
+		12'h304:CSRi=4;
+		12'h344:CSRi=5;
+		12'hF14:CSRi=6;
+	  default:CSRi=7;
 	endcase
 end
 endfunction

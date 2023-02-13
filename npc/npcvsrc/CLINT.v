@@ -6,7 +6,7 @@ module ysyx_22050133_CLINT # (
 )(//IF&MEM输入信号
     input                               clk,
     input                               rst,
-		output                           clkint,
+		output                              mtip,
 
     // Advanced eXtensible Interface
     output reg                          axi_aw_ready_o,       
@@ -25,7 +25,7 @@ module ysyx_22050133_CLINT # (
     
     input                               axi_b_ready_i,      
     output reg                          axi_b_valid_o,
-		output reg  [AXI_ID_WIDTH-1:0]      axi_b_id_o,
+		output      [AXI_ID_WIDTH-1:0]      axi_b_id_o,
     output reg  [1:0]                   axi_b_resp_o,          
 
     output reg                          axi_ar_ready_o,       
@@ -38,7 +38,7 @@ module ysyx_22050133_CLINT # (
     
     input                               axi_r_ready_i,            
     output reg                          axi_r_valid_o,        
-		output reg  [AXI_ID_WIDTH-1:0]      axi_r_id_o,
+		output      [AXI_ID_WIDTH-1:0]      axi_r_id_o,
     output reg  [1:0]                   axi_r_resp_o,
     output reg  [AXI_DATA_WIDTH-1:0]    axi_r_data_o,
     output reg                          axi_r_last_o
@@ -51,6 +51,8 @@ parameter WS_IDLE = 1;
 parameter WS_WHS = 2;
 parameter WS_BHS = 3;
 
+assign axi_b_id_o=0;
+assign axi_r_id_o=0;
 reg  [AXI_ADDR_WIDTH-1:0] ar_pc;          
 reg  [AXI_ADDR_WIDTH-1:0] ar_addr;        
 reg  [7:0]                ar_len;         
@@ -67,10 +69,21 @@ reg[15:0] next_rstate;
 reg[15:0] wstate;
 reg[15:0] next_wstate;
 
-reg[31:0] misp;
+//reg[31:0] misp;
 reg[63:0] mtimecmp;
 reg[63:0] mtime;
-assign clkint=0;
+reg[1:0] tick_count;
+assign mtip=mtime>=mtimecmp?1 : 0;
+
+always@(posedge clk)begin
+	if(rst)begin
+		tick_count<=0;
+	end
+	else begin
+		tick_count<=tick_count+1;
+		//if(tick_count==0)mtime<=mtime+1;
+	end
+end
     //// ------------------State Machine------------------TODO
     
     //// 写通道状态切换
@@ -103,7 +116,6 @@ always@(posedge clk)begin
     axi_w_ready_o<=0;
     axi_b_valid_o<=0;
     axi_b_resp_o<=0;
-		misp<=0;
 		mtimecmp<=0;
 		mtime<=0;
   end
@@ -115,14 +127,22 @@ always@(posedge clk)begin
         aw_addr<=axi_aw_addr_i;
         aw_len<=axi_aw_len_i;
         axi_w_ready_o<=1;
+		    mtime<=mtime+1;
       end
       else begin
         axi_aw_ready_o<=1;
         axi_w_ready_o<=0;
         axi_b_valid_o<=0;
+		    mtime<=mtime+1;
       end
       WS_WHS:if(axi_w_ready_o&axi_w_valid_i)begin
         //vmem_write({32'd0,aw_addr[31:3],3'd0}, axi_w_data_i, axi_w_strb_i);
+				if(aw_addr==32'h2004000)begin
+					mtimecmp<=axi_w_data_i;
+				end
+				else if(aw_addr==32'h200bff8)begin
+		      mtime<=axi_w_data_i;
+				end
         if(next_wstate==WS_BHS)begin
           axi_w_ready_o<=0;
           axi_b_valid_o<=1;
@@ -184,13 +204,8 @@ always@(posedge clk)begin
         ar_len<=axi_ar_len_i;
         axi_ar_ready_o<=0;
         axi_r_valid_o<=1;
-        if(axi_ar_id_i==4'd1)begin
-          //inst_read({32'd0,axi_ar_addr_i},inst64);
-          axi_r_data_o<=inst64;
-        end
-        else begin
-          //vmem_read({32'd0,axi_ar_addr_i}, din);
-          axi_r_data_o<=din;
+				if(axi_ar_addr_i==32'h200BFF8)begin
+          axi_r_data_o<=mtime;
         end
       end
       else begin
@@ -200,13 +215,8 @@ always@(posedge clk)begin
       RS_RHS:if(axi_r_valid_o&axi_r_ready_i&(ar_len!=0))begin
         ar_len<=ar_len-1;
         ar_addr<=ar_addr+8;
-        if(axi_ar_id_i==4'd1)begin
-          //inst_read({32'd0,ar_addr},inst64);
-          axi_r_data_o<=inst64;
-        end
-        else begin
-          //vmem_read({32'd0,ar_addr}, din);
-          axi_r_data_o<=din;
+				if(axi_ar_addr_i==32'h200BFF8)begin
+          axi_r_data_o<=mtime;
         end
       end
       else if(next_rstate==RS_IDLE)begin

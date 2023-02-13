@@ -4,9 +4,12 @@ module ysyx_22050133_EXU(
   input            rst        ,
   input   [15:0]    ctrl_ex  ,
   input   [31:0]   pc      ,
+	input            block   ,
   input            Jpred   ,
   input            fence   ,
+  input            mtip    ,
   input            clkint  ,
+  output           mieo    ,
   input   [4:0]    rs1     ,
   input   [63:0]   rs1data ,
   input   [63:0]   rs2data ,
@@ -194,12 +197,15 @@ assign result=  ctrl_ex[5] ?
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU ? Rremu
                 :0;
  
+assign mieo = csr[0][3]&csr[4][7];
 //reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
-reg[63:0] csr[3:0];
+reg[63:0] csr[6:0];
 assign csrdata=
   ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mtvec ? csr[1]
   :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc ? csr[2]
-  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm ? csr[CSRi(imm[11:0])]
+  :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_imm ? 
+		CSRi(imm[11:0])==5? {csr[5][63:8],mtip,csr[5][6:0]}
+		:CSRi(imm[11:0])==7? 0:csr[CSRi(imm[11:0])]
   :0;
 
 always@(posedge clk)begin
@@ -208,32 +214,50 @@ always@(posedge clk)begin
 		csr[1]<=0;
 		csr[2]<=0;
 		csr[3]<=0;
+		csr[4]<=0;
+		csr[5]<=0;
+		csr[6]<=0;
 	end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_ecall)begin
-			////$monitor("hello\n");
-`ifdef ysyx_22050133_DEBUGINFO
-      npc_etrace({32'd0,pc},64'hb);
-`endif
-      csr[2]<={32'd0,pc};
-      csr[3]<=64'hb;
-  end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrw)begin
-    csr[CSRi(imm[11:0])]<=rs1data_forward;
-  end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrs)begin
-    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|rs1data_forward;
-  end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrc)begin
-    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]&~rs1data_forward;
-  end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrwi)begin
-    csr[CSRi(imm[11:0])]<={59'd0,rs1};
-  end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrsi)begin
-    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|{59'd0,rs1};
-  end
-	else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrci)begin
-    csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]&~{59'd0,rs1};
+	else if(~block)begin
+		if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_ecall)begin
+				////$monitor("hello\n");
+	`ifdef ysyx_22050133_DEBUGINFO
+				npc_etrace({32'd0,pc},64'hb);
+	`endif
+				csr[2]<={32'd0,pc};
+				if(clkint)begin
+					csr[0][7]<=csr[0][3];
+					csr[0][3]<=0;
+					csr[5][7]<=1;
+					csr[3]<=64'h8000000000000007;
+				end
+				else begin
+					csr[3]<=64'hb;
+				end
+		end
+		else if(ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc)begin
+					csr[0][3]<=csr[0][7];
+					csr[0][7]<=1;
+					csr[5][7]<=0;
+		end
+		else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrw)begin
+			csr[CSRi(imm[11:0])]<=rs1data_forward;
+		end
+		else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrs)begin
+			csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|rs1data_forward;
+		end
+		else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrc)begin
+			csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]&~rs1data_forward;
+		end
+		else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrwi)begin
+			csr[CSRi(imm[11:0])]<={59'd0,rs1};
+		end
+		else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrsi)begin
+			csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]|{59'd0,rs1};
+		end
+		else if(ctrl_ex[15:13]==`ysyx_22050133_CSRop_csrrci)begin
+			csr[CSRi(imm[11:0])]<=csr[CSRi(imm[11:0])]&~{59'd0,rs1};
+		end
   end
 end
 

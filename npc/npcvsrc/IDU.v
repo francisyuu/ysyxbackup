@@ -174,7 +174,7 @@ wire[63:0]  immJ={{43{inst[31]}},inst[31],inst[19:12],inst[20],inst[30:21],1'd0}
 
 
 assign imm=
-  (OPJALR|OPLXX|OPXXI|OPXXIW|(OPSYS&(F3CSRRW|F3CSRRS)))?immI
+  (OPJALR|OPLXX|OPXXI|OPXXIW|(OPSYS))?immI
   :(OPSXX)?immS
   :(OPBXX)?immB
   :(OPLUI|OPAUIPC)?immU
@@ -276,7 +276,7 @@ assign ctrl_mem[7]=OPFXX&FFENCE;
 assign ctrl_mem[6:5]=OPLUI ? `ysyx_22050133_rdSrc_imm
                     :OPLXX ? `ysyx_22050133_rdSrc_mem
                     :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu
-                    :OPSYS&(F3CSRRW|F3CSRRS)? `ysyx_22050133_rdSrc_csr
+                    :OPSYS ? `ysyx_22050133_rdSrc_csr
                     :0;
 assign ctrl_mem[4:0]=OPLXX ?
                       F3LB ? `ysyx_22050133_rdSEXT_b

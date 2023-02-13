@@ -185,7 +185,7 @@ reg[31:0] IDREG_inst;
 reg       IDREG_Jpred;
 reg       IDREG_clkint;
 reg       clkint_reg;
-reg       clkint_last;
+wire      mieo;
 
 wire  [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb ;
 wire  [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
@@ -467,18 +467,20 @@ ysyx_22050133_crossbar ysyx_22050133_crossbar_ifu(
     .axi_r_last_i     (ifu_axi_r_last_i)
 );
 
+wire int_state=mtip&mieo;
+reg  int_state_last;
 always@(posedge clk)
 begin
   if(rst)begin
     clkint_reg<=0;
-    clkint_last<=0;
+    int_state_last<=0;
   end
   else begin
-		clkint_last<=clkint;
-		if(IDREG_en&clkint_reg)begin
+		int_state_last<=int_state;
+		if((IDREG_en&~flush)&clkint_reg)begin
 			clkint_reg<=0;
 		end
-		else if(~clkint_reg&clkint)begin
+		else if(~int_state_last&int_state)begin
 			clkint_reg<=1;
 		end
   end
@@ -494,8 +496,8 @@ begin
   end
   else if(IDREG_en)begin
     IDREG_pc<=pc;
-    IDREG_inst<=clkint_reg?32'h00000073:inst;
-    IDREG_Jpred<=Jpred;
+    IDREG_inst<=clkint_reg ? 32'h00000073:inst;
+    IDREG_Jpred<=clkint_reg ? 0:Jpred;
 		IDREG_clkint<=clkint_reg;
   end
 end
@@ -575,8 +577,11 @@ ysyx_22050133_EXU ysyx_22050133_EXU_dut(
   .rst    (rst    ) ,
   .ctrl_ex(EXREG_ctrl_ex[15:0]) ,
   .pc   (EXREG_pc) ,
+  .block   (block) ,
   .Jpred  (EXREG_Jpred) ,
+  .mtip   (mtip) ,
   .clkint (EXREG_clkint) ,
+  .mieo   (mieo) ,
   .fence  (EXREG_ctrl_mem[7]) ,
   .rs1    (EXREG_rs1) ,
   .rs1data(EXREG_rs1data) ,
@@ -903,8 +908,8 @@ wire [1:0]                  mem_axi_r_resp_i   ;
 wire [AXI_DATA_WIDTH-1:0]   mem_axi_r_data_i   ;  
 wire                        mem_axi_r_last_i   ;  
 
-//wire clint=(EXREG_ctrl_ex[22]|EXREG_ctrl_ex[21])&&(mem_rw_addr_i>32'h1ffffff&&mem_rw_addr_i<32'h2010000);
-wire clint=(EXREG_ctrl_ex[22]|EXREG_ctrl_ex[21])&&(mem_rw_addr_i<32'h10000000);
+wire clint=(EXREG_ctrl_ex[22]|EXREG_ctrl_ex[21])&&(mem_rw_addr_i>32'h1ffffff&&mem_rw_addr_i<32'h2010000);
+//wire clint=(EXREG_ctrl_ex[22]|EXREG_ctrl_ex[21])&&(mem_rw_addr_i<32'h10000000);
 
 assign mem_aw_ready_i = clint ? clint_axi_aw_ready_i:mem_axi_aw_ready_i;  ; 
 //assign mem_aw_valid_o = clint ? clint_axi_aw_valid_o:mem_axi_aw_valid_o;  ; 
@@ -1090,11 +1095,11 @@ ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .axi_r_data_i         (io_master_rdata   ),  
     .axi_r_last_i         (io_master_rlast   )  
 );
-wire clkint;
+wire mtip;
 ysyx_22050133_CLINT ysyx_22050133_CLINT_dut(
     .clk               (clk),               
     .rst               (rst),
-    .clkint            (clkint),
+    .mtip              (mtip),
     .axi_aw_ready_o    (clint_axi_aw_ready_i ),                   
     .axi_aw_valid_i    (clint_axi_aw_valid_o ),  
 		.axi_aw_id_i       (clint_axi_aw_id_o    ),  
