@@ -233,8 +233,8 @@
 `define ysyx_22050133_forward_src_mem 2
 
 `define ysyx_22050133_ctrl_wb_len   1
-`define ysyx_22050133_ctrl_mem_len  7
-`define ysyx_22050133_ctrl_ex_len   22
+`define ysyx_22050133_ctrl_mem_len  6
+`define ysyx_22050133_ctrl_ex_len   23
 
 //// Burst types
 `define ysyx_22050133_AXI_BURST_TYPE_FIXED                 2'b00               //突发类型  FIFO

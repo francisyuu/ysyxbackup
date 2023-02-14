@@ -9,7 +9,7 @@ module ysyx_22050133_axi_arbiter # (
     // Advanced eXtensible Interface Slave1
     output                              s1_axi_aw_ready_o,       
     input                               s1_axi_aw_valid_i,
-		input [AXI_ID_WIDTH-1:0]            s1_axi_aw_id_i,
+		//input [AXI_ID_WIDTH-1:0]            s1_axi_aw_id_i,
     input [AXI_ADDR_WIDTH-1:0]          s1_axi_aw_addr_i,
     input [7:0]                         s1_axi_aw_len_i,
     input [2:0]                         s1_axi_aw_size_i,
@@ -23,12 +23,12 @@ module ysyx_22050133_axi_arbiter # (
     
     input                               s1_axi_b_ready_i,      
     output                              s1_axi_b_valid_o,
-		output      [AXI_ID_WIDTH-1:0]      s1_axi_b_id_o,
-    output      [1:0]                   s1_axi_b_resp_o,          
+		//output      [AXI_ID_WIDTH-1:0]      s1_axi_b_id_o,
+    //output      [1:0]                   s1_axi_b_resp_o,          
 
     output                              s1_axi_ar_ready_o,       
     input                               s1_axi_ar_valid_i,
-		input [AXI_ID_WIDTH-1:0]            s1_axi_ar_id_i,
+		//input [AXI_ID_WIDTH-1:0]            s1_axi_ar_id_i,
     input [AXI_ADDR_WIDTH-1:0]          s1_axi_ar_addr_i,
     input [7:0]                         s1_axi_ar_len_i,
     input [2:0]                         s1_axi_ar_size_i,
@@ -36,14 +36,14 @@ module ysyx_22050133_axi_arbiter # (
     
     input                               s1_axi_r_ready_i,          
     output                              s1_axi_r_valid_o,        
-    output      [AXI_ID_WIDTH-1:0]      s1_axi_r_id_o,
-    output      [1:0]                   s1_axi_r_resp_o,
+    //output      [AXI_ID_WIDTH-1:0]      s1_axi_r_id_o,
+    //output      [1:0]                   s1_axi_r_resp_o,
     output      [AXI_DATA_WIDTH-1:0]    s1_axi_r_data_o,
-    output                              s1_axi_r_last_o,
+    //output                              s1_axi_r_last_o,
     // Advanced eXtensible Interface Slave2
     output                              s2_axi_aw_ready_o,       
     input                               s2_axi_aw_valid_i,
-		input [AXI_ID_WIDTH-1:0]            s2_axi_aw_id_i,
+		//input [AXI_ID_WIDTH-1:0]            s2_axi_aw_id_i,
     input [AXI_ADDR_WIDTH-1:0]          s2_axi_aw_addr_i,
     input [7:0]                         s2_axi_aw_len_i,
     input [2:0]                         s2_axi_aw_size_i,
@@ -57,12 +57,12 @@ module ysyx_22050133_axi_arbiter # (
     
     input                               s2_axi_b_ready_i,      
     output                              s2_axi_b_valid_o,
-		output      [AXI_ID_WIDTH-1:0]      s2_axi_b_id_o,
-    output      [1:0]                   s2_axi_b_resp_o,          
+		//output      [AXI_ID_WIDTH-1:0]      s2_axi_b_id_o,
+    //output      [1:0]                   s2_axi_b_resp_o,          
 
     output                              s2_axi_ar_ready_o,       
     input                               s2_axi_ar_valid_i,
-		input [AXI_ID_WIDTH-1:0]            s2_axi_ar_id_i,
+		//input [AXI_ID_WIDTH-1:0]            s2_axi_ar_id_i,
     input [AXI_ADDR_WIDTH-1:0]          s2_axi_ar_addr_i,
     input [7:0]                         s2_axi_ar_len_i,
     input [2:0]                         s2_axi_ar_size_i,
@@ -70,10 +70,10 @@ module ysyx_22050133_axi_arbiter # (
     
     input                               s2_axi_r_ready_i,          
     output                              s2_axi_r_valid_o,        
-    output      [AXI_ID_WIDTH-1:0]      s2_axi_r_id_o,
-    output      [1:0]                   s2_axi_r_resp_o,
+    //output      [AXI_ID_WIDTH-1:0]      s2_axi_r_id_o,
+    //output      [1:0]                   s2_axi_r_resp_o,
     output      [AXI_DATA_WIDTH-1:0]    s2_axi_r_data_o,
-    output                              s2_axi_r_last_o,
+    //output                              s2_axi_r_last_o,
     // Advanced eXtensible Interface  Master
     input                               axi_aw_ready_i,             
     output                              axi_aw_valid_o,
@@ -114,7 +114,7 @@ assign s2_axi_aw_ready_o=w_channel ? axi_aw_ready_i:0;
 assign s1_axi_aw_ready_o=~w_channel ? axi_aw_ready_i:0;
 //assign axi_aw_ready_i=w_channel ?   s2_axi_aw_ready_o  :s1_axi_aw_ready_o;   
 assign axi_aw_valid_o=w_channel ?   s2_axi_aw_valid_i  :s1_axi_aw_valid_i;
-assign axi_aw_id_o=w_channel ?      s2_axi_aw_id_i     :s1_axi_aw_id_i;
+assign axi_aw_id_o=0;
 assign axi_aw_addr_o=w_channel ?    s2_axi_aw_addr_i   :s1_axi_aw_addr_i;
 assign axi_aw_len_o=w_channel ?     s2_axi_aw_len_i    :s1_axi_aw_len_i;
 assign axi_aw_size_o=w_channel ?    s2_axi_aw_size_i   :s1_axi_aw_size_i;
@@ -133,18 +133,18 @@ assign axi_b_ready_o=w_channel ?    s2_axi_b_ready_i   :s1_axi_b_ready_i;
 //assign axi_b_id_i=w_channel ?       s2_axi_b_id_o      :s1_axi_b_id_o;
 //assign axi_b_resp_i=w_channel ?     s2_axi_b_resp_o    :s1_axi_b_resp_o;     
 assign s2_axi_b_valid_o=w_channel ? axi_b_valid_i:0;
-assign s2_axi_b_id_o=w_channel ? axi_b_id_i:0;
-assign s2_axi_b_resp_o=w_channel ? axi_b_resp_i:0;
+//assign s2_axi_b_id_o=w_channel ? axi_b_id_i:0;
+//assign s2_axi_b_resp_o=w_channel ? axi_b_resp_i:0;
 
 assign s1_axi_b_valid_o=~w_channel ? axi_b_valid_i:0;
-assign s1_axi_b_id_o=~w_channel ? axi_b_id_i:0;
-assign s1_axi_b_resp_o=~w_channel ? axi_b_resp_i:0;
+//assign s1_axi_b_id_o=~w_channel ? axi_b_id_i:0;
+//assign s1_axi_b_resp_o=~w_channel ? axi_b_resp_i:0;
 
 assign s2_axi_ar_ready_o=r_channel ? axi_ar_ready_i:0;
 assign s1_axi_ar_ready_o=~r_channel ? axi_ar_ready_i:0;
 //assign axi_ar_ready_i=r_channel ?   s2_axi_ar_ready_o  :s1_axi_ar_ready_o;   
 assign axi_ar_valid_o=r_channel ?   s2_axi_ar_valid_i  :s1_axi_ar_valid_i;
-assign axi_ar_id_o=r_channel ?      s2_axi_ar_id_i     :s1_axi_ar_id_i;
+assign axi_ar_id_o=0;
 assign axi_ar_addr_o=r_channel ?    s2_axi_ar_addr_i   :s1_axi_ar_addr_i;
 assign axi_ar_len_o=r_channel ?     s2_axi_ar_len_i    :s1_axi_ar_len_i;
 assign axi_ar_size_o=r_channel ?    s2_axi_ar_size_i   :s1_axi_ar_size_i;
@@ -157,16 +157,16 @@ assign axi_r_ready_o=r_channel ?    s2_axi_r_ready_i   :s1_axi_r_ready_i;
 //assign axi_r_data_i=r_channel ?     s2_axi_r_data_o    :s1_axi_r_data_o
 //assign axi_r_last_i=r_channel ?     s2_axi_r_last_o    :s1_axi_r_last_o;
 assign s2_axi_r_valid_o=r_channel ? axi_r_valid_i:0;
-assign s2_axi_r_id_o=r_channel ? axi_r_id_i:0;
-assign s2_axi_r_resp_o=r_channel ? axi_r_resp_i:0;
+//assign s2_axi_r_id_o=r_channel ? axi_r_id_i:0;
+//assign s2_axi_r_resp_o=r_channel ? axi_r_resp_i:0;
 assign s2_axi_r_data_o=r_channel ? axi_r_data_i:0;
-assign s2_axi_r_last_o=r_channel ? axi_r_last_i:0;
+//assign s2_axi_r_last_o=r_channel ? axi_r_last_i:0;
 
 assign s1_axi_r_valid_o=~r_channel ? axi_r_valid_i:0;
-assign s1_axi_r_id_o=~r_channel ? axi_r_id_i:0;
-assign s1_axi_r_resp_o=~r_channel ? axi_r_resp_i:0;
+//assign s1_axi_r_id_o=~r_channel ? axi_r_id_i:0;
+//assign s1_axi_r_resp_o=~r_channel ? axi_r_resp_i:0;
 assign s1_axi_r_data_o=~r_channel ? axi_r_data_i:0;
-assign s1_axi_r_last_o=~r_channel ? axi_r_last_i:0;
+//assign s1_axi_r_last_o=~r_channel ? axi_r_last_i:0;
 
 parameter RS_IDLE = 1;
 parameter RS_S1 = 2;

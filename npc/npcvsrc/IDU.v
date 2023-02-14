@@ -187,6 +187,7 @@ assign ctrl_mem_out=has_hazard ? 0:ctrl_mem;
 assign ctrl_ex_out=has_hazard ? 0:ctrl_ex;
 
 
+assign ctrl_ex[23]=OPFXX&FFENCE;
 assign ctrl_ex[22]=OPLXX ? 1:0;
 assign ctrl_ex[21]=OPSXX ? 1:0;
 assign ctrl_ex[20:18]=OPSXX ?
@@ -272,7 +273,6 @@ assign ctrl_ex[4:0]=OPBXX ?
                       :`ysyx_22050133_ALUop_NOP
                     :(OPAUIPC|OPJAL|OPJALR|OPLXX|OPSXX)?`ysyx_22050133_ALUop_ADD
                     :`ysyx_22050133_ALUop_NOP;
-assign ctrl_mem[7]=OPFXX&FFENCE;
 assign ctrl_mem[6:5]=OPLUI ? `ysyx_22050133_rdSrc_imm
                     :OPLXX ? `ysyx_22050133_rdSrc_mem
                     :(OPAUIPC|OPJAL|OPJALR|OPXXI|OPXXIW|OPRXX|OPRWX)?`ysyx_22050133_rdSrc_alu
@@ -288,7 +288,9 @@ assign ctrl_mem[4:0]=OPLXX ?
                       : `ysyx_22050133_rdSEXT_d
                     :(OPXXIW|OPRWX)? `ysyx_22050133_rdSEXT_w
                     :`ysyx_22050133_rdSEXT_d;
+
 assign ctrl_wb[1]=OPSYS&FEBREAK;
+
 assign ctrl_wb[0]=(OPJAL|OPJALR|OPLUI|OPAUIPC|OPLXX|OPXXI|OPXXIW|OPRXX|OPRWX|OPSYS)? 1:0;
 
 

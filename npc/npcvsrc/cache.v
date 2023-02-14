@@ -16,17 +16,17 @@ module ysyx_22050133_cache#(
   input rst,
 
   input                               rw_addr_valid_i,         
-  output reg                          rw_addr_ready_o,     
+  //output reg                          rw_addr_ready_o,     
   input  [RW_ADDR_WIDTH-1:0]          rw_addr_i,    
   input                               rw_we_i,    
-  input  [7:0]                        rw_len_i,    
+  //input  [7:0]                        rw_len_i,    
   input  [2:0]                        rw_size_i,    
-  input  [1:0]                        rw_burst_i,    
+  //input  [1:0]                        rw_burst_i,    
   input                               rw_if_i,         
-  input                               w_data_valid_i,     
-  output                              w_data_ready_o,     
+  //input                               w_data_valid_i,     
+  //output                              w_data_ready_o,     
   input  [RW_DATA_WIDTH-1:0]          w_data_i,  
-  output reg                          r_data_valid_o,     
+  //output reg                          r_data_valid_o,     
   input                               r_data_ready_i,     
   output [RW_DATA_WIDTH-1:0]          r_data_o,         
   input                               rw_block_i,
@@ -66,15 +66,15 @@ module ysyx_22050133_cache#(
   output  reg[7:0]                    axi_rw_len_o,    
   output  reg[2:0]                    axi_rw_size_o,    
   output  reg[1:0]                    axi_rw_burst_o,    
-  output  reg                         axi_rw_if_o,         
+  //output  reg                         axi_rw_if_o,         
   output  reg                         axi_w_data_valid_o,     
   input                               axi_w_data_ready_i,     
   output     [RW_DATA_WIDTH-1:0]      axi_w_data_o,  
   input                               axi_r_data_valid_i,     
   output  reg                         axi_r_data_ready_o,     
-  input  [RW_DATA_WIDTH-1:0]          axi_r_data_i,
-  output                              axi_rw_block_o,
-  input                               axi_rw_block_i
+  input  [RW_DATA_WIDTH-1:0]          axi_r_data_i
+  //output                              axi_rw_block_o,
+  //input                               axi_rw_block_i
 );
 parameter TAGL=ADDR_WIDTH-1;
 parameter TAGR=ADDR_WIDTH-TAG_WIDTH;
@@ -84,15 +84,16 @@ parameter RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
 parameter RAMR=10;
 
 
+`ifdef ysyx_22050133_DEBUGINFO
 wire [7-INDEX_WIDTH:0]pro_index_0=0;
 wire [7-WAY_WIDTH:0]pro_way_0=0;
+`endif
 
-assign w_data_ready_o=1;
+//assign w_data_ready_o=1;
 
 reg [RW_ADDR_WIDTH-1:0] addr;
 reg [RW_ADDR_WIDTH-1:0] addr0;
 reg [2:0] size;
-reg rw_if;
 reg [RW_DATA_WIDTH-1:0] w_data;
 reg [RW_DATA_WIDTH-1:0] w_data0;
 reg [INDEX_WIDTH-1:0]index;
@@ -203,7 +204,7 @@ always@(posedge clk)begin
 end
 
 assign rw_block_o=(r_data_ready_i&~(|hit_wayflag))|fence;
-assign axi_rw_block_o=0;
+//assign axi_rw_block_o=0;
 assign fence_o=fence;
 
 
@@ -214,7 +215,8 @@ always@(*) begin
 				if(rw_if_i)next_state=S_IDLE;
 				else next_state=S_FENCE;
 			  end
-	      else if(rw_addr_valid_i&rw_addr_ready_o)begin
+				//else if(rw_addr_valid_i&rw_addr_ready_o)begin
+	      else if(rw_addr_valid_i)begin
             if(|hit_wayflag)next_state=S_IDLE;
             else if(dirty[random][index_in])next_state=S_AW;
             else next_state=S_AR;
@@ -244,15 +246,15 @@ end
   integer fenceb;
 always@(posedge clk)begin
   if(rst)begin
-    rw_addr_ready_o<=1;
-    r_data_valid_o<=0;
+    //rw_addr_ready_o<=1;
+    //r_data_valid_o<=0;
     axi_rw_addr_valid_o<=0;
     axi_rw_addr_o<=0;
     axi_rw_we_o<=0;
     axi_rw_len_o<=0;
     axi_rw_size_o<=0;
     axi_rw_burst_o<=0;
-    axi_rw_if_o<=0;
+    //axi_rw_if_o<=0;
     axi_w_data_valid_o<=0;
     axi_r_data_ready_o<=0;
     waynum<=0;
@@ -260,7 +262,6 @@ always@(posedge clk)begin
     addr<=0;
     addr0<=0;
     size<=0;
-    rw_if<=0;
     w_data<=0;
     w_data0<=0;
 		fence<=0;
@@ -303,7 +304,7 @@ always@(posedge clk)begin
             //if(addr!=rw_addr_i)begin
             begin
               cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
-          if(rw_if==0)begin
+          if(rw_if_i==0)begin
             if(rw_we_i)cache_rw({32'd0,rw_addr_i},w_data_i,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
             else if(r_data_ready_i)cache_rw({32'd0,rw_addr_i},r_data_o,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
           end
@@ -311,7 +312,7 @@ always@(posedge clk)begin
           `else
             begin
           cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd1,32'd0);
-          if(rw_if==0)begin
+          if(rw_if_i==0)begin
             if(rw_we_i)cache_rw({32'd0,rw_addr_i},w_data_i,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
             else if(r_data_ready_i)cache_rw({32'd0,rw_addr_i},r_data_o,{5'd0,rw_size_i},{7'd0,rw_we_i},{pro_way_0,hit_waynum_in},{pro_index_0,index_in});
           end
@@ -321,13 +322,12 @@ always@(posedge clk)begin
         end
       end
         else if(next_state==S_AW)begin
-          rw_addr_ready_o<=0;
+          //rw_addr_ready_o<=0;
           waynum<=random;
           index<=index_in;
           addr<={tag[random][index_in],index_in,OFFSET0};
           addr0<=rw_addr_i;
           size<=rw_size_i;
-          rw_if<=rw_if_i;
           w_data<=w_data_i;
           w_data0<=w_data_i;
 
@@ -337,20 +337,19 @@ always@(posedge clk)begin
           axi_rw_len_o<=BURST_LEN;
           axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-          axi_rw_if_o<=rw_if_i;
+          //axi_rw_if_o<=rw_if_i;
           `ifdef ysyx_22050133_DEBUGINFO
           cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd1);
           if(rw_if_i==0)cache_rw({32'd0,{tag[random][index_in],index_in,OFFSET0}},64'd0,8'd5,8'd1,{pro_way_0,random},{pro_index_0,index_in});
           `endif
         end
         else if(next_state==S_AR)begin
-          rw_addr_ready_o<=0;
+          //rw_addr_ready_o<=0;
           waynum<=random;
           index<=index_in;
           addr<={rw_addr_i[TAGL:INDEXR],OFFSET0};
           addr0<=rw_addr_i;
           size<=rw_size_i;
-          rw_if<=rw_if_i;
           w_data<=w_data_i;
           w_data0<=w_data_i;
           valid[random][index_in]<=0;
@@ -362,15 +361,15 @@ always@(posedge clk)begin
           axi_rw_len_o<=BURST_LEN;
           axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-          axi_rw_if_o<=rw_if_i;
+          //axi_rw_if_o<=rw_if_i;
           `ifdef ysyx_22050133_DEBUGINFO
           cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd0);
           if(rw_if_i==0)cache_rw({32'd0,{rw_addr_i[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,random},{pro_index_0,index_in});
           `endif
         end
         else begin
-          rw_addr_ready_o<=1;
-          r_data_valid_o<=0;
+          //rw_addr_ready_o<=1;
+          //r_data_valid_o<=0;
           axi_rw_addr_valid_o<=0;
           axi_w_data_valid_o<=0;
           axi_r_data_ready_o<=0;
@@ -400,11 +399,11 @@ always@(posedge clk)begin
             axi_rw_len_o<=BURST_LEN;
             axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
             axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-            axi_rw_if_o<=rw_if;
+            //axi_rw_if_o<=rw_if_i;
             axi_w_data_valid_o<=0;
             axi_r_data_ready_o<=1;
           `ifdef ysyx_22050133_DEBUGINFO
-            if(rw_if==0)cache_rw({32'd0,{addr0[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,waynum},{pro_index_0,index});
+            if(rw_if_i==0)cache_rw({32'd0,{addr0[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,waynum},{pro_index_0,index});
           `endif
 				    end
           end
@@ -429,12 +428,12 @@ always@(posedge clk)begin
               axi_r_data_ready_o<=0;
           end
           else if(next_state==S_IDLE)begin
-              rw_addr_ready_o<=1;
+              //rw_addr_ready_o<=1;
               valid[waynum][index]<=1;
               RAM_WEN_REG[waynum][RAM_N]<=1;
               w_data<=w_data0;
               addr<=addr0;
-              r_data_valid_o<=0;
+              //r_data_valid_o<=0;
             end
           else if(axi_r_data_ready_o==0)begin
             axi_rw_len_o<=axi_rw_len_o-1;
@@ -452,7 +451,7 @@ always@(posedge clk)begin
           axi_rw_len_o<=BURST_LEN;
           axi_rw_size_o<=`ysyx_22050133_AXI_SIZE_BYTES_8;
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
-          axi_rw_if_o<=rw_if_i;
+          //axi_rw_if_o<=rw_if_i;
 					end
 					else if(next_state==S_IDLE)begin
 						fence<=0;

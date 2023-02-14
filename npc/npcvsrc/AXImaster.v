@@ -2,8 +2,8 @@ module ysyx_22050133_axi_master # (
     parameter RW_DATA_WIDTH     = 64,
     parameter RW_ADDR_WIDTH     = 32,
     parameter AXI_DATA_WIDTH    = 64,
-    parameter AXI_ADDR_WIDTH    = 32,
-    parameter AXI_ID_WIDTH      = 4
+    parameter AXI_ADDR_WIDTH    = 32
+    //parameter AXI_ID_WIDTH      = 4
 )(
     input                               clk,
     input                               rst,
@@ -15,20 +15,20 @@ module ysyx_22050133_axi_master # (
     input  [7:0]                        rw_len_i,    
     input  [2:0]                        rw_size_i,    
     input  [1:0]                        rw_burst_i,    
-    input                               rw_if_i,         
+    //input                               rw_if_i,         
     input                               w_data_valid_i,     
     output reg                          w_data_ready_o,     
     input  [RW_DATA_WIDTH-1:0]          w_data_i,  
     output reg                          r_data_valid_o,     
     input                               r_data_ready_i,     
     output [RW_DATA_WIDTH-1:0]          r_data_o,  
-    input                               rw_block_i,
+    //input                               rw_block_i,
     output                              rw_block_o,
 
     // Advanced eXtensible Interface
     input                               axi_aw_ready_i,             
     output reg                          axi_aw_valid_o,
-    output     [AXI_ID_WIDTH-1:0]       axi_aw_id_o,
+    //output     [AXI_ID_WIDTH-1:0]       axi_aw_id_o,
     output reg [AXI_ADDR_WIDTH-1:0]     axi_aw_addr_o,
     output reg [7:0]                    axi_aw_len_o,
     output reg [2:0]                    axi_aw_size_o,
@@ -42,12 +42,12 @@ module ysyx_22050133_axi_master # (
     
     output reg                          axi_b_ready_o,          
     input                               axi_b_valid_i,
-    input  [AXI_ID_WIDTH-1:0]           axi_b_id_i,
-    input  [1:0]                        axi_b_resp_i,               
+		//input  [AXI_ID_WIDTH-1:0]           axi_b_id_i,
+		//input  [1:0]                        axi_b_resp_i,               
 
     input                               axi_ar_ready_i,             
     output reg                          axi_ar_valid_o,
-    output     [AXI_ID_WIDTH-1:0]       axi_ar_id_o,
+    //output     [AXI_ID_WIDTH-1:0]       axi_ar_id_o,
     output reg [AXI_ADDR_WIDTH-1:0]     axi_ar_addr_o,
     output reg [7:0]                    axi_ar_len_o,
     output reg [2:0]                    axi_ar_size_o,
@@ -55,13 +55,14 @@ module ysyx_22050133_axi_master # (
     
     output reg                          axi_r_ready_o,          
     input                               axi_r_valid_i,             
-    input  [AXI_ID_WIDTH-1:0]           axi_r_id_i,
-    input  [1:0]                        axi_r_resp_i,
-    input  [AXI_DATA_WIDTH-1:0]         axi_r_data_i,
-    input                               axi_r_last_i
+    //input  [AXI_ID_WIDTH-1:0]           axi_r_id_i,
+    //input  [1:0]                        axi_r_resp_i,
+    input  [AXI_DATA_WIDTH-1:0]         axi_r_data_i
+    //input                               axi_r_last_i
 );
-assign axi_aw_id_o     =0;
-assign axi_ar_id_o     ={3'd0,rw_if_i};
+//assign axi_aw_id_o     =0;
+//assign axi_ar_id_o     =0;
+//assign axi_ar_id_o     ={3'd0,rw_if_i};
 
 assign rw_block_o=~(~rw_addr_valid_i&rw_addr_ready_o);
 wire [7:0]mask=rw_size_i== `ysyx_22050133_AXI_SIZE_BYTES_1 ? 8'h01
@@ -269,6 +270,7 @@ always@(posedge clk)begin
       end
       WS_BHS:if(next_wstate==WS_IDLE)begin
           axi_b_ready_o<=0;
+          axi_w_last_o<=0;
       end
     default:begin
     end
