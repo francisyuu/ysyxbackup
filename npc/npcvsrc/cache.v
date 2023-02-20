@@ -84,6 +84,15 @@ parameter RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
 parameter RAMR=10;
 
 
+parameter S_IDLE =1;
+parameter S_FENCE  =2;
+parameter S_AW   =3;
+parameter S_W    =4;
+parameter S_AR   =5;
+parameter S_R    =6;
+
+reg[3:0] state;
+reg[3:0] next_state;
 `ifdef ysyx_22050133_DEBUGINFO
 wire [7-INDEX_WIDTH:0]pro_index_0=0;
 wire [7-WAY_WIDTH:0]pro_way_0=0;
@@ -188,15 +197,6 @@ assign r_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 assign axi_w_data_o=data_o[RW_DATA_WIDTH-1:0]&maskb;
 
 
-parameter S_IDLE =1;
-parameter S_FENCE  =2;
-parameter S_AW   =3;
-parameter S_W    =4;
-parameter S_AR   =5;
-parameter S_R    =6;
-
-reg[3:0] state;
-reg[3:0] next_state;
 
 always@(posedge clk)begin
   if(rst)state<=S_IDLE;

@@ -44,6 +44,59 @@ assign wdata=forward_wdataSrc==0 ? rs2data
 :forward_wdataSrc==`ysyx_22050133_forward_src_wb ? forward_data_wb
 :forward_wdataSrc==`ysyx_22050133_forward_src_mem ? forward_data_mem
 :0;
+wire ctrl_mul=ctrl_ex[4]&(~ctrl_ex[3]);//5'b10xxx
+wire ctrl_div=ctrl_ex[4]&ctrl_ex[3];//5'b11xxx
+wire       mul_ready ;
+wire       div_ready ;
+assign result_valid_o=ctrl_mul ? mul_ready
+                      :ctrl_div ? div_ready
+                      :1;
+
+wire       mul_valid   =ctrl_mul&src_valid_i;
+wire       mulw        =ctrl_ex[5];
+wire[1:0]  mul_signed  =ctrl_ex[1:0];
+wire[63:0] multiplicand=ALUdata1;
+wire[63:0] multiplier  =ALUdata2;
+//wire       mul_out_valid ;
+wire[63:0] result_hi ;
+wire[63:0] result_lo ;
+ysyx_22050133_Multipler ysyx_22050133_Multipler_dut(
+    .clk         (clk         ),   //时钟信号
+    .rst         (rst         ),   //复位信号（高有效）
+    .flush       (1'b0       ),   //为高表示取消乘法
+    .mul_valid   (mul_valid   ),   //为高表示输入的数据有效，如果没有新的乘法输入，在乘法被接受的下一个周期要置低
+    .mulw        (mulw        ),   //为高表示是 32 位乘法
+    .mul_signed  (mul_signed  ),   //2’b11（signed x signed）；2’b10（signed x unsigned）；2’b00（unsigned x unsigned）；
+    .multiplicand(multiplicand),   //被乘数，xlen 表示乘法器位数
+    .multiplier  (multiplier  ),   //乘数
+    .mul_ready   (mul_ready   ),   //为高表示乘法器准备好，表示可以输入数据
+    //.out_valid   (mul_out_valid),   //为高表示乘法器输出的结果有效
+    .result_hi   (result_hi   ),   //高 xlen bits 结果
+    .result_lo   (result_lo   )    //低 xlen bits 结果
+    );
+
+wire       div_valid   =ctrl_div&src_valid_i;
+wire       divw        =ctrl_ex[5];
+wire       div_signed  =ctrl_ex[0];
+wire[63:0] dividend=ALUdata1;
+wire[63:0] divisor  =ALUdata2;
+//wire       div_out_valid ;
+wire[63:0] quotient ;
+wire[63:0] remainder ;
+ysyx_22050133_Divider ysyx_22050133_Divider_dut(
+    .clk         (clk         ),   //时钟信号
+    .rst         (rst         ),   //复位信号（高有效）
+    .flush       (1'b0       ),   //为高表示取消乘法
+    .div_valid   (div_valid   ),   //为高表示输入的数据有效，如果没有新的乘法输入，在乘法被接受的下一个周期要置低
+    .divw        (divw        ),   //为高表示是 32 位乘法
+    .div_signed  (div_signed  ),   //2’b11（signed x signed）；2’b10（signed x unsigned）；2’b00（unsigned x unsigned）；
+    .dividend    (dividend    ),   //被乘数，xlen 表示乘法器位数
+    .divisor     (divisor     ),   //乘数
+    .div_ready   (div_ready   ),   //为高表示乘法器准备好，表示可以输入数据
+    //.out_valid   (div_out_valid),   //为高表示乘法器输出的结果有效
+    .quotient    (quotient    ),   //高 xlen bits 结果
+    .remainder   (remainder   )    //低 xlen bits 结果
+    );
 
 wire[63:0] ALUdata2n=~ALUdata2;
 wire[63:0] Radd  =  ALUdata1+ALUdata2;
@@ -101,59 +154,6 @@ wire[63:0] Rremuw =  remainder;
 //wire[63:0] Rremw  =  SEXT({32'd0,signed'(ALUdata1[31:0])%signed'(ALUdata2[31:0])},3);
 //wire[63:0] Rremuw =  SEXT({32'd0,ALUdata1[31:0]%ALUdata2[31:0]},3);
 
-wire ctrl_mul=ctrl_ex[4]&(~ctrl_ex[3]);//5'b10xxx
-wire ctrl_div=ctrl_ex[4]&ctrl_ex[3];//5'b11xxx
-assign result_valid_o=ctrl_mul ? mul_ready
-                      :ctrl_div ? div_ready
-                      :1;
-
-wire       mul_valid   =ctrl_mul&src_valid_i;
-wire       mulw        =ctrl_ex[5];
-wire[1:0]  mul_signed  =ctrl_ex[1:0];
-wire[63:0] multiplicand=ALUdata1;
-wire[63:0] multiplier  =ALUdata2;
-wire       mul_ready ;
-//wire       mul_out_valid ;
-wire[63:0] result_hi ;
-wire[63:0] result_lo ;
-ysyx_22050133_Multipler ysyx_22050133_Multipler_dut(
-    .clk         (clk         ),   //时钟信号
-    .rst         (rst         ),   //复位信号（高有效）
-    .flush       (1'b0       ),   //为高表示取消乘法
-    .mul_valid   (mul_valid   ),   //为高表示输入的数据有效，如果没有新的乘法输入，在乘法被接受的下一个周期要置低
-    .mulw        (mulw        ),   //为高表示是 32 位乘法
-    .mul_signed  (mul_signed  ),   //2’b11（signed x signed）；2’b10（signed x unsigned）；2’b00（unsigned x unsigned）；
-    .multiplicand(multiplicand),   //被乘数，xlen 表示乘法器位数
-    .multiplier  (multiplier  ),   //乘数
-    .mul_ready   (mul_ready   ),   //为高表示乘法器准备好，表示可以输入数据
-    //.out_valid   (mul_out_valid),   //为高表示乘法器输出的结果有效
-    .result_hi   (result_hi   ),   //高 xlen bits 结果
-    .result_lo   (result_lo   )    //低 xlen bits 结果
-    );
-
-wire       div_valid   =ctrl_div&src_valid_i;
-wire       divw        =ctrl_ex[5];
-wire       div_signed  =ctrl_ex[0];
-wire[63:0] dividend=ALUdata1;
-wire[63:0] divisor  =ALUdata2;
-wire       div_ready ;
-//wire       div_out_valid ;
-wire[63:0] quotient ;
-wire[63:0] remainder ;
-ysyx_22050133_Divider ysyx_22050133_Divider_dut(
-    .clk         (clk         ),   //时钟信号
-    .rst         (rst         ),   //复位信号（高有效）
-    .flush       (1'b0       ),   //为高表示取消乘法
-    .div_valid   (div_valid   ),   //为高表示输入的数据有效，如果没有新的乘法输入，在乘法被接受的下一个周期要置低
-    .divw        (divw        ),   //为高表示是 32 位乘法
-    .div_signed  (div_signed  ),   //2’b11（signed x signed）；2’b10（signed x unsigned）；2’b00（unsigned x unsigned）；
-    .dividend    (dividend    ),   //被乘数，xlen 表示乘法器位数
-    .divisor     (divisor     ),   //乘数
-    .div_ready   (div_ready   ),   //为高表示乘法器准备好，表示可以输入数据
-    //.out_valid   (div_out_valid),   //为高表示乘法器输出的结果有效
-    .quotient    (quotient    ),   //高 xlen bits 结果
-    .remainder   (remainder   )    //低 xlen bits 结果
-    );
 
 
 assign dnpc_EXU=ctrl_ex[10] ? csrdata[31:0]
@@ -197,9 +197,9 @@ assign result=  ctrl_ex[5] ?
                 :ctrl_ex[4:0]==`ysyx_22050133_ALUop_REMU ? Rremu
                 :0;
  
+reg[63:0] csr[6:0];
 assign mieo = csr[0][3]&csr[4][7];
 //reg[63:0] 0:mstatus,1:mtvec,2:mepc,3:mcause;4:mie 5:mip
-reg[63:0] csr[6:0];
 assign csrdata=
   ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mtvec ? csr[1]
   :ctrl_ex[12:11]==`ysyx_22050133_CSRSrc_mepc ? csr[2]

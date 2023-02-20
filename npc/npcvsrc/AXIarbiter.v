@@ -110,6 +110,9 @@ module ysyx_22050133_axi_arbiter # (
     input                               axi_r_last_i
 );
 
+reg r_channel;
+reg w_channel;
+
 assign s2_axi_aw_ready_o=w_channel ? axi_aw_ready_i:0;
 assign s1_axi_aw_ready_o=~w_channel ? axi_aw_ready_i:0;
 //assign axi_aw_ready_i=w_channel ?   s2_axi_aw_ready_o  :s1_axi_aw_ready_o;   
@@ -175,8 +178,6 @@ parameter WS_IDLE = 1;
 parameter WS_S1 = 2;
 parameter WS_S2 = 3;
 
-reg r_channel;
-reg w_channel;
 
 reg[2:0] rstate;
 reg[2:0] next_rstate;

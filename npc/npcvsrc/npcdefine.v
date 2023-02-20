@@ -284,7 +284,7 @@
 //`define AXI_SIZE_BYTES_128                                  3'b111
 
 
-function [63:0] SEXT;
+function automatic [63:0] SEXT;
   input[31:0] din;
   input[1:0] len;
 begin
@@ -294,7 +294,7 @@ begin
 end
 endfunction
 
-function [2:0] CSRi;
+function automatic [2:0] CSRi;
   input[11:0] csr;
 begin
 	case(csr)

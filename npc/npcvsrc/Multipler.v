@@ -333,6 +333,10 @@ wire y_sub = src[0];
 //            & ~(sel_positive & x[i] ) & ~(sel_double_positive &  x[i-1]));
 //     end
 // endgenerate
+wire sel_negative =  y_add & (y & ~y_sub | ~y & y_sub);
+wire sel_positive = ~y_add & (y & ~y_sub | ~y & y_sub);
+wire sel_double_negative =  y_add & ~y & ~y_sub;
+wire sel_double_positive = ~y_add &  y &  y_sub;
 assign c =  y_add&~(y&y_sub);
 assign p=sel_negative?~x
       :sel_positive?x
@@ -340,10 +344,6 @@ assign p=sel_negative?~x
       :sel_double_positive?x<<1
       :0;
 
-wire sel_negative =  y_add & (y & ~y_sub | ~y & y_sub);
-wire sel_positive = ~y_add & (y & ~y_sub | ~y & y_sub);
-wire sel_double_negative =  y_add & ~y & ~y_sub;
-wire sel_double_positive = ~y_add &  y &  y_sub;
 
 endmodule
 

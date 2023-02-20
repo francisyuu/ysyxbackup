@@ -132,38 +132,6 @@ assign  io_slave_rlast   =0;
 wire clk=clock;
 wire rst=reset;
 
-`ifdef ysyx_22050133_MULTICYCLE 
-wire flush=0;
-wire pop=0;
-wire has_hazard=0;
-wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
-reg  raw_pcREG_en  ;
-reg  raw_pc1REG_en  ;
-reg  raw_IDREG_en  ;
-reg  raw_EXREG_en  ;
-reg  raw_MEMREG_en ;
-reg  raw_WBREG_en  ;
-wire pcREG_en  =raw_pcREG_en ;
-wire pc1REG_en  =raw_pc1REG_en&(~ifu_rw_block_o) ;
-wire IDREG_en  =raw_IDREG_en ;
-wire EXREG_en  =raw_EXREG_en ;
-wire MEMREG_en =raw_MEMREG_en&(~block_EXU)&(~mem_rw_block_o);
-wire WBREG_en  =raw_WBREG_en ;
-`else
-//wire flush=pcSrc&(~block);
-wire flush=(Jresult^EXREG_Jpred)&(~block);
-//hazard:
-//ld a0 addr
-//add a0 a1 
-wire has_hazard=EXREG_ctrl_ex[22]&((EXREG_rd==rs1)|(EXREG_rd==rs2));
-wire pop=has_hazard;
-wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
-wire pcREG_en  =~(block|pop);
-wire IDREG_en  =~(block|pop);
-wire EXREG_en  =~block;
-wire MEMREG_en =~block;
-wire WBREG_en  =~block;
-`endif
 
 `ifdef ysyx_22050133_DEBUGINFO
 always @(*)begin
@@ -186,6 +154,7 @@ reg       IDREG_Jpred;
 reg       IDREG_clkint;
 reg       clkint_reg;
 wire      mieo;
+wire ifu_rw_block_o;
 
 wire  [`ysyx_22050133_ctrl_wb_len :0]   ctrl_wb ;
 wire  [`ysyx_22050133_ctrl_mem_len:0]   ctrl_mem;
@@ -209,6 +178,9 @@ reg[63:0] EXREG_rs1data  ;
 reg[63:0] EXREG_rs2data  ;
 reg[63:0] EXREG_imm      ;
 reg[4:0]  EXREG_rd       ;
+wire Jresult;
+wire block_EXU;
+wire mem_rw_block_o;
 
 wire  [31:0]   dnpc;
 wire  [31:0]   dnpc_EXU;
@@ -231,6 +203,40 @@ reg [`ysyx_22050133_ctrl_wb_len:0]WBREG_ctrl_wb;
 reg [63:0]WBREG_rddata ;
 reg [4:0] WBREG_rd    ;
 wire[63:0]rddata      ;
+
+wire mtip;
+`ifdef ysyx_22050133_MULTICYCLE 
+wire flush=0;
+wire pop=0;
+wire has_hazard=0;
+wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
+reg  raw_pcREG_en  ;
+reg  raw_pc1REG_en  ;
+reg  raw_IDREG_en  ;
+reg  raw_EXREG_en  ;
+reg  raw_MEMREG_en ;
+reg  raw_WBREG_en  ;
+wire pcREG_en  =raw_pcREG_en ;
+wire pc1REG_en  =raw_pc1REG_en&(~ifu_rw_block_o) ;
+wire IDREG_en  =raw_IDREG_en ;
+wire EXREG_en  =raw_EXREG_en ;
+wire MEMREG_en =raw_MEMREG_en&(~block_EXU)&(~mem_rw_block_o);
+wire WBREG_en  =raw_WBREG_en ;
+`else
+//wire flush=pcSrc&(~block);
+//hazard:
+//ld a0 addr
+//add a0 a1 
+wire has_hazard=EXREG_ctrl_ex[22]&((EXREG_rd==rs1)|(EXREG_rd==rs2));
+wire pop=has_hazard;
+wire block=ifu_rw_block_o|mem_rw_block_o|block_EXU;
+wire pcREG_en  =~(block|pop);
+wire IDREG_en  =~(block|pop);
+wire EXREG_en  =~block;
+wire MEMREG_en =~block;
+wire WBREG_en  =~block;
+wire flush=(Jresult^EXREG_Jpred)&(~block);
+`endif
 
 `ifdef ysyx_22050133_MULTICYCLE 
 always@(posedge clk)
@@ -308,18 +314,6 @@ assign dnpc=(Jresult^EXREG_Jpred) ? dnpc_EXU:dnpc_pred;
 assign pcSrc=Jpred|(Jresult^EXREG_Jpred);
 `endif
 
-ysyx_22050133_IFU ysyx_22050133_IFU_dut(
-  .clk(clk),
-  .rst(rst),
-  .pcREG_en(pcREG_en),
-  .dnpc(dnpc),
-  .pcSrc(pcSrc),
-  .instin(ifu_r_data_o[31:0]),
-  .pc_valid_o(ifu_rw_addr_valid_i),
-  .pc(pc),
-  .npc(npc),
-  .inst(inst)
-  );
 
 wire                              ifu_rw_addr_valid_i;         
 //wire                              ifu_rw_addr_ready_o;     
@@ -335,11 +329,24 @@ wire [RW_DATA_WIDTH-1:0]          ifu_w_data_i       ;
 //wire                              ifu_r_data_valid_o ;   
 wire                              ifu_r_data_ready_i ;   
 wire [RW_DATA_WIDTH-1:0]          ifu_r_data_o       ;
-wire                              ifu_rw_block_o     ;   
+//wire                              ifu_rw_block_o     ;   
 wire                              ifu_rw_block_i     ;   
 wire                              ifu_fence_i        ;   
 wire                              ifu_fence_o        ;   
 
+ysyx_22050133_IFU ysyx_22050133_IFU_dut(
+  .clk(clk),
+  .rst(rst),
+  .pcREG_en(pcREG_en),
+  .dnpc(dnpc),
+  .pcSrc(pcSrc),
+  .instin(ifu_r_data_o[31:0]),
+  .pc_valid_o(ifu_rw_addr_valid_i),
+  .pc(pc),
+  .npc(npc),
+  .inst(inst)
+  );
+wire                              mem_fence_o        ;   
 //assign ifu_rw_addr_valid_i =ifu_rw_addr_valid_i;           
 //assign ifu_rw_addr_ready_o =ifu_rw_addr_ready_o;       
 assign ifu_rw_addr_i       =npc ;  
@@ -525,8 +532,8 @@ ysyx_22050133_IDU ysyx_22050133_IDU_dut(
 reg EXU_valid_i;
 reg  mem_rw_addr_valid_i;         
 wire EXU_valid_o;
-wire block_EXU=~(~EXU_valid_i&EXU_valid_o);
-wire Jresult=EXREG_ctrl_ex[17]|(EXREG_ctrl_ex[16]&result[0]);
+assign block_EXU=~(~EXU_valid_i&EXU_valid_o);
+assign Jresult=EXREG_ctrl_ex[17]|(EXREG_ctrl_ex[16]&result[0]);
 
 always@(posedge clk)
 begin
@@ -646,7 +653,7 @@ begin
   end
 end
 
-wire                              mem_rw_addr_valid_i;         
+//wire                              mem_rw_addr_valid_i;         
 //wire                              mem_rw_addr_ready_o;     
 wire [RW_ADDR_WIDTH-1:0]          mem_rw_addr_i      ;
 wire                              mem_rw_we_i        ;
@@ -660,10 +667,9 @@ wire [RW_DATA_WIDTH-1:0]          mem_w_data_i       ;
 //wire                              mem_r_data_valid_o ;   
 wire                              mem_r_data_ready_i ;   
 wire [RW_DATA_WIDTH-1:0]          mem_r_data_o       ;
-wire                              mem_rw_block_o     ;   
+//wire                              mem_rw_block_o     ;   
 wire                              mem_rw_block_i     ;   
 wire                              mem_fence_i        ;   
-wire                              mem_fence_o        ;   
 
 //assign mem_rw_addr_valid_i = mem_rw_addr_valid_i;        
 //assign mem_rw_addr_ready_o = mem_rw_addr_ready_o;    
@@ -1126,7 +1132,6 @@ ysyx_22050133_axi_arbiter ysyx_22050133_axi_arbiter_dut(
     .axi_r_data_i         (io_master_rdata   ),  
     .axi_r_last_i         (io_master_rlast   )  
 );
-wire mtip;
 ysyx_22050133_CLINT ysyx_22050133_CLINT_dut(
     .clk               (clk),               
     .rst               (rst),

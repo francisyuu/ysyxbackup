@@ -128,6 +128,8 @@ parameter RS_RHS = 3;//address handshake
 parameter RS_DHS = 4;//address handshake
 
 
+reg r_addr_ready_o;
+reg w_addr_ready_o;
 assign rw_addr_ready_o=r_addr_ready_o&w_addr_ready_o;
 //assign rw_ready_o=r_ready_o;
 
@@ -142,7 +144,6 @@ reg[3:0] next_wstate;
 
     //// ------------------State Machine------------------TODO
     //// 写通道状态切换
-reg w_addr_ready_o;
 
 always@(posedge clk)begin
   if(rst)awstate<=AWS_IDLE;
@@ -280,7 +281,6 @@ end
     
 
     //// 读通道状态切换
-reg r_addr_ready_o;
 reg  [RW_ADDR_WIDTH-1:0] r_addr;        
 reg  [7:0]               r_len;        
 wire [5:0]r_shift={r_addr[2:0],3'd0};
