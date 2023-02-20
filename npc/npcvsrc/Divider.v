@@ -57,8 +57,7 @@ module ysyx_22050133_Divider(
             else next_state=S_IDLE;
       S_DIV:if(clk_cnt==8'hff)next_state=S_IDLE;
             else next_state=S_DIV;
-      default:begin
-      end
+      default:next_state=S_IDLE;
     endcase
   end
 

@@ -171,12 +171,12 @@ assign s1_axi_r_valid_o=~r_channel ? axi_r_valid_i:0;
 assign s1_axi_r_data_o=~r_channel ? axi_r_data_i:0;
 //assign s1_axi_r_last_o=~r_channel ? axi_r_last_i:0;
 
-parameter RS_IDLE = 1;
-parameter RS_S1 = 2;
-parameter RS_S2 = 3;
-parameter WS_IDLE = 1;
-parameter WS_S1 = 2;
-parameter WS_S2 = 3;
+localparam RS_IDLE = 1;
+localparam RS_S1 = 2;
+localparam RS_S2 = 3;
+localparam WS_IDLE = 1;
+localparam WS_S1 = 2;
+localparam WS_S2 = 3;
 
 
 reg[2:0] rstate;

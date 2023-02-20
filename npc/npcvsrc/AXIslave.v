@@ -43,12 +43,12 @@ module ysyx_22050133_axi_slave # (
     output reg                          axi_r_last_o
 );
 
-parameter RS_IDLE = 1;
-parameter RS_RHS = 2;
+localparam RS_IDLE = 1;
+localparam RS_RHS = 2;
 
-parameter WS_IDLE = 1;
-parameter WS_WHS = 2;
-parameter WS_BHS = 3;
+localparam WS_IDLE = 1;
+localparam WS_WHS = 2;
+localparam WS_BHS = 3;
 
 reg  [AXI_ADDR_WIDTH-1:0] ar_pc;          
 reg  [AXI_ADDR_WIDTH-1:0] ar_addr;        

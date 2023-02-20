@@ -76,20 +76,20 @@ module ysyx_22050133_cache#(
   //output                              axi_rw_block_o,
   //input                               axi_rw_block_i
 );
-parameter TAGL=ADDR_WIDTH-1;
-parameter TAGR=ADDR_WIDTH-TAG_WIDTH;
-parameter INDEXL=TAGR-1;
-parameter INDEXR=TAGR-INDEX_WIDTH;
-parameter RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
-parameter RAMR=10;
+localparam TAGL=ADDR_WIDTH-1;
+localparam TAGR=ADDR_WIDTH-TAG_WIDTH;
+localparam INDEXL=TAGR-1;
+localparam INDEXR=TAGR-INDEX_WIDTH;
+localparam RAML=INDEX_WIDTH+OFFSET_WIDTH-1;
+localparam RAMR=10;
 
 
-parameter S_IDLE =1;
-parameter S_FENCE  =2;
-parameter S_AW   =3;
-parameter S_W    =4;
-parameter S_AR   =5;
-parameter S_R    =6;
+localparam S_IDLE =1;
+localparam S_FENCE  =2;
+localparam S_AW   =3;
+localparam S_W    =4;
+localparam S_AR   =5;
+localparam S_R    =6;
 
 reg[3:0] state;
 reg[3:0] next_state;

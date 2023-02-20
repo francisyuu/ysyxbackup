@@ -113,19 +113,19 @@ always@(*)begin
 end
 `else
 
-parameter AWS_IDLE = 1;
-parameter AWS_AWHS = 2;
-parameter AWS_BHS = 3;
+localparam AWS_IDLE = 1;
+localparam AWS_AWHS = 2;
+localparam AWS_BHS = 3;
 
-parameter WS_IDLE = 1;
-parameter WS_WHS = 2;
-parameter WS_DHS = 3;
-parameter WS_BHS = 4;
+localparam WS_IDLE = 1;
+localparam WS_WHS = 2;
+localparam WS_DHS = 3;
+localparam WS_BHS = 4;
 
-parameter RS_IDLE = 1;
-parameter RS_ARHS = 2;//address handshake
-parameter RS_RHS = 3;//address handshake
-parameter RS_DHS = 4;//address handshake
+localparam RS_IDLE = 1;
+localparam RS_ARHS = 2;//address handshake
+localparam RS_RHS = 3;//address handshake
+localparam RS_DHS = 4;//address handshake
 
 
 reg r_addr_ready_o;

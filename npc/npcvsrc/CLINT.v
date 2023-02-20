@@ -43,12 +43,12 @@ module ysyx_22050133_CLINT # (
     //output reg                          axi_r_last_o
 );
 
-parameter RS_IDLE = 1;
-parameter RS_RHS = 2;
+localparam RS_IDLE = 1;
+localparam RS_RHS = 2;
 
-parameter WS_IDLE = 1;
-parameter WS_WHS = 2;
-parameter WS_BHS = 3;
+localparam WS_IDLE = 1;
+localparam WS_WHS = 2;
+localparam WS_BHS = 3;
 
 //assign axi_b_id_o=0;
 //assign axi_r_id_o=0;
