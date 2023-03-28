@@ -3,22 +3,34 @@
 
 uint8_t pmem[CONFIG_MSIZE];
 
-uint64_t inst_inst=-2,inst_mem,inst_memr,inst_memw;
-uint64_t inst_cache_hit,inst_cache_miss;
+uint64_t inst_inst=-4,inst_mem,inst_memr,inst_memw;
+uint64_t inst_cache_hit=-4,inst_cache_miss;
 uint64_t mem_cache_hit,mem_cache_miss,mem_cache_miss_dirty;
 extern "C" void cache_profiling(int inst,int we,int hit,int dirty){
   if(inst==1){
-    inst_inst++;
-    if(hit==1)inst_cache_hit++;
-    else inst_cache_miss++;
+		if(hit==1){
+			inst_cache_hit++;
+			inst_inst++;
+			/*printf("inst=%d\n",inst_inst);*/
+		}
+    else 
+		{
+			inst_cache_miss++;
+			inst_cache_hit--;
+		}
   }
   else{
-    inst_mem++;
-    if(we==1)inst_memw++;
-    else inst_memr++;
-    if(hit==1)mem_cache_hit++;
+    if(hit==1)
+		{
+			inst_mem++;
+			mem_cache_hit++;
+			if(we==1)inst_memw++;
+			else inst_memr++;
+
+		}
     else {
       mem_cache_miss++;
+			mem_cache_hit--;
       if(dirty==1)mem_cache_miss_dirty++;
     }
   }
@@ -41,7 +53,16 @@ extern "C" void IPC_profiling(char inst,char alu,char mem,char pop,char flush,ch
 	if(flush==1)npc_flush  ++;
 	if(jump ==1)npc_jump   ++;
 #ifndef MULTICYCLE
-	if(flush ==1)inst_inst-=2;
+	if(flush ==1)
+	{
+		inst_inst-=2;
+    inst_cache_hit-=2;
+	}
+	if(pop==1)
+	{
+		inst_inst-=1;
+    inst_cache_hit-=1;
+	}
 #endif
 	if(inst==1&&alu==0&&mem==0)block_IXX++;
 	if(inst==0&&alu==1&&mem==0)block_XAX++;

@@ -44,7 +44,7 @@ void cpu_single_cycle() {
   if(cpu.pc!=lastpc)g_nr_guest_inst ++;
 		lastpc=cpu.pc;
 #endif
-		/*printf("clk=%ld\n",g_nr_guest_clk);*/
+		/*printf("gnr=%ld\n",g_nr_guest_inst);*/
        // printf("pc = %08x, inst = %08x rd=%08x\n", top->pc, top->inst,top->rddata);
 }
 

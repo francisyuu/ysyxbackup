@@ -232,6 +232,10 @@ end
     
     //// 读通道状态切换
 always@(posedge clk)begin
+`ifdef ysyx_22050133_AXIINFOIFU
+	$display("rchannel=%d",r_channel);	
+	$display("wchannel=%d",w_channel);	
+`endif
   if(rst)rstate<=RS_IDLE;
   else rstate<=next_rstate;
 end

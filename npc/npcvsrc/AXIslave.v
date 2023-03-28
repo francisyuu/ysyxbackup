@@ -183,6 +183,7 @@ always@(posedge clk)begin
           vmem_read({32'd0,axi_ar_addr_i}, din);
           axi_r_data_o<=din;
         end
+				if(axi_ar_len_i==0)axi_r_last_o<=1;
       end
       else begin
         axi_ar_ready_o<=1;
@@ -199,10 +200,12 @@ always@(posedge clk)begin
           vmem_read({32'd0,ar_addr}, din);
           axi_r_data_o<=din;
         end
+				if(ar_len==1)axi_r_last_o<=1;
       end
       else if(next_rstate==RS_IDLE)begin
         axi_ar_ready_o<=1;
         axi_r_valid_o<=0;
+        axi_r_last_o<=0;
       end
       default:begin
       end

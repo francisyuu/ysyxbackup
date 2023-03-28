@@ -1226,50 +1226,52 @@ end
 always@(posedge clk)
   begin
   $display("\
-ifu_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
-    w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
-    r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
+ifu_rw_addr_valid_i=%d,  rw_addr_i=%h,\
+    w_data_valid_i =%d,  w_data_i =%h,\
+    r_data_o =%h,\
+    rw_size_i=%h,\
     \
-    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
+    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h\
     w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
-    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
-    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
-    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
+    b_ready_o =%d, b_valid_i =%d,  \
+    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h\
+    r_ready_o =%d, r_valid_i =%d,   r_data_i=%h\
     "   
-         ,ifu_rw_addr_valid_i,ifu_rw_addr_ready_o,ifu_rw_addr_i
-         ,ifu_w_data_valid_i,ifu_w_data_ready_o,ifu_w_data_i
-         ,ifu_r_data_valid_o,ifu_r_data_ready_i,ifu_r_data_o
-         ,ifu_axi_aw_ready_i,ifu_axi_aw_valid_o,ifu_axi_aw_addr_o,ifu_axi_aw_prot_o
+         ,ifu_rw_addr_valid_i,ifu_rw_addr_i
+         ,ifu_w_data_valid_i,ifu_w_data_i
+         ,ifu_r_data_o
+         ,ifu_rw_size_i
+         ,ifu_axi_aw_ready_i,ifu_axi_aw_valid_o,ifu_axi_aw_addr_o
          ,ifu_axi_w_ready_i, ifu_axi_w_valid_o, ifu_axi_w_data_o, ifu_axi_w_strb_o
-         ,ifu_axi_b_ready_o, ifu_axi_b_valid_i, ifu_axi_b_resp_i
-         ,ifu_axi_ar_ready_i,ifu_axi_ar_valid_o,ifu_axi_ar_addr_o,ifu_axi_ar_prot_o
-         ,ifu_axi_r_ready_o, ifu_axi_r_valid_i, ifu_axi_r_resp_i, ifu_axi_r_data_i
+         ,ifu_axi_b_ready_o, ifu_axi_b_valid_i 
+         ,ifu_axi_ar_ready_i,ifu_axi_ar_valid_o,ifu_axi_ar_addr_o
+         ,ifu_axi_r_ready_o, ifu_axi_r_valid_i,ifu_axi_r_data_i
                );
 end
 `endif
 `ifdef ysyx_22050133_AXIINFOMEM
 always@(posedge clk)begin
   $display("\
-mem_rw_addr_valid_i=%d, rw_addr_ready_o=%d, rw_addr_i=%h,\
-    w_data_valid_i =%d, w_data_ready_o =%d, w_data_i =%h,\
-    r_data_valid_o =%d, r_data_ready_i =%d, r_data_o =%h,\
+mem_rw_addr_valid_i=%d,  rw_addr_i=%h,\
+    w_data_valid_i =%d,  w_data_i =%h,\
+    r_data_o =%h,\
     rw_size_i=%h,\
     \
-    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h, aw_prot=%h\
+    aw_ready_i=%d, aw_valid_o=%d, aw_addr_o=%h\
     w_ready_i =%d, w_valid_o =%d,  w_data_o=%h,  w_strb=%h\
-    b_ready_o =%d, b_valid_i =%d,  b_resp_i=%h, \
-    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h, ar_prot=%h\
-    r_ready_o =%d, r_valid_i =%d,  r_resp_i=%h, r_data_i=%h\
+    b_ready_o =%d, b_valid_i =%d,  \
+    ar_ready_i=%d, ar_valid_o=%d, ar_addr_o=%h\
+    r_ready_o =%d, r_valid_i =%d,   r_data_i=%h\
     "   
-         ,mem_rw_addr_valid_i,mem_rw_addr_ready_o,mem_rw_addr_i
-         ,mem_w_data_valid_i,mem_w_data_ready_o,mem_w_data_i
-         ,mem_r_data_valid_o,mem_r_data_ready_i,mem_r_data_o
+         ,mem_rw_addr_valid_i,mem_rw_addr_i
+         ,mem_w_data_valid_i,mem_w_data_i
+         ,mem_r_data_o
          ,mem_rw_size_i
-         ,mem_axi_aw_ready_i,mem_axi_aw_valid_o,mem_axi_aw_addr_o,mem_axi_aw_prot_o
+         ,mem_axi_aw_ready_i,mem_axi_aw_valid_o,mem_axi_aw_addr_o
          ,mem_axi_w_ready_i, mem_axi_w_valid_o, mem_axi_w_data_o, mem_axi_w_strb_o
-         ,mem_axi_b_ready_o, mem_axi_b_valid_i, mem_axi_b_resp_i
-         ,mem_axi_ar_ready_i,mem_axi_ar_valid_o,mem_axi_ar_addr_o,mem_axi_ar_prot_o
-         ,mem_axi_r_ready_o, mem_axi_r_valid_i, mem_axi_r_resp_i, mem_axi_r_data_i
+         ,mem_axi_b_ready_o, mem_axi_b_valid_i 
+         ,mem_axi_ar_ready_i,mem_axi_ar_valid_o,mem_axi_ar_addr_o
+         ,mem_axi_r_ready_o, mem_axi_r_valid_i,mem_axi_r_data_i
                );
 end
 `endif

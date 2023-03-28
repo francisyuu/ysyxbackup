@@ -339,7 +339,7 @@ always@(posedge clk)begin
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
           //axi_rw_if_o<=rw_if_i;
           `ifdef ysyx_22050133_DEBUGINFO
-          cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd1);
+					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd1);
           if(rw_if_i==0)cache_rw({32'd0,{tag[random][index_in],index_in,OFFSET0}},64'd0,8'd5,8'd1,{pro_way_0,random},{pro_index_0,index_in});
           `endif
         end
@@ -363,7 +363,7 @@ always@(posedge clk)begin
           axi_rw_burst_o<=`ysyx_22050133_AXI_BURST_TYPE_INCR;
           //axi_rw_if_o<=rw_if_i;
           `ifdef ysyx_22050133_DEBUGINFO
-          cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd0);
+					cache_profiling({31'd0,rw_if_i},{31'd0,rw_we_i},32'd0,32'd0);
           if(rw_if_i==0)cache_rw({32'd0,{rw_addr_i[TAGL:INDEXR],OFFSET0}},64'd0,8'd5,8'd0,{pro_way_0,random},{pro_index_0,index_in});
           `endif
         end
@@ -481,7 +481,7 @@ always@(posedge clk)begin
   RAM_D=%h,\
   RAM_BWEN=%h,RAM_WEN=%d\
 a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
-  rw_we_o=%d,rw_len_o=%d,rw_size_o=%d,rw_burst_o=%d,rw_if_o=%d\
+  rw_we_o=%d,rw_len_o=%d,rw_size_o=%d,rw_burst_o=%d,\
   w_data_valid_o=%d,w_data_ready_i=%d,w_data_o=%h\
   r_data_valid_i=%d,r_data_ready_o=%d,r_data_i=%h\
 "
@@ -493,7 +493,7 @@ a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
     RAM_A,RAM_Q[hit_waynum_in][RAM_N_in],RAM_Q[waynum][RAM_N],RAM_D,
     RAM_BWEN,RAM_WEN[hit_waynum_in][RAM_N_in],
     axi_rw_addr_valid_o,axi_rw_addr_ready_i,axi_rw_addr_o,
-    axi_rw_we_o,axi_rw_len_o,axi_rw_size_o,axi_rw_burst_o,axi_rw_if_o,
+    axi_rw_we_o,axi_rw_len_o,axi_rw_size_o,axi_rw_burst_o,
     axi_w_data_valid_o,axi_w_data_ready_i,axi_w_data_o,
     axi_r_data_valid_i,axi_r_data_ready_o,axi_r_data_i
   );
@@ -516,7 +516,7 @@ always@(posedge clk)begin
   RAM_D=%h,\
   RAM_BWEN=%h,RAM_WEN=%d\
 a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
-  rw_we_o=%d,rw_len_o=%d,rw_size_o=%d,rw_burst_o=%d,rw_if_o=%d\
+  rw_we_o=%d,rw_len_o=%d,rw_size_o=%d,rw_burst_o=%d,\
   w_data_valid_o=%d,w_data_ready_i=%d,w_data_o=%h\
   r_data_valid_i=%d,r_data_ready_o=%d,r_data_i=%h\
 "
@@ -528,7 +528,7 @@ a_rw_addr_valid_o=%d, rw_addr_ready_i=%d ,rw_addr_o=%h,\
     RAM_A,RAM_Q[hit_waynum_in][RAM_N_in],RAM_Q[waynum][RAM_N],RAM_D,
     RAM_BWEN,RAM_WEN[hit_waynum_in][RAM_N_in],
     axi_rw_addr_valid_o,axi_rw_addr_ready_i,axi_rw_addr_o,
-    axi_rw_we_o,axi_rw_len_o,axi_rw_size_o,axi_rw_burst_o,axi_rw_if_o,
+    axi_rw_we_o,axi_rw_len_o,axi_rw_size_o,axi_rw_burst_o,
     axi_w_data_valid_o,axi_w_data_ready_i,axi_w_data_o,
     axi_r_data_valid_i,axi_r_data_ready_o,axi_r_data_i
   );

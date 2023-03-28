@@ -23,14 +23,14 @@ NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt $(IMAGE).bin
 .PHONY: $(AM_HOME)/am/src/riscv/npc/trm.c
 
 image: $(IMAGE).elf
-	#$(MAKE) clean -C $(AM_HOME)/../npc
+	$(MAKE) clean -C $(AM_HOME)/../npc
 	$(MAKE) -C $(AM_HOME)/../npc
 	@$(OBJDUMP) -d $(IMAGE).elf > $(IMAGE).txt
 	@echo + OBJCOPY "->" $(IMAGE_REL).bin
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(IMAGE).elf $(IMAGE).bin
 run: image
 	@echo $(BIN)
-	$(AM_HOME)/../npc/build/ysyx_22050133_NPC  $(NEMUFLAGS)
+	$(AM_HOME)/../npc/build/ysyx_22050133_NPC_top  $(NEMUFLAGS)
 gdb: image
 	@echo $(BIN)
 	@gdb --args $(AM_HOME)/../npc/build/ysyx_22050133_NPC  $(NEMUFLAGS)
